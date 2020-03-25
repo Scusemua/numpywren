@@ -22,7 +22,9 @@ from pywren.serialize import serialize
 import redis
 import sympy
 import hashlib
+import aioredis 
 
+redis_host = ""
 
 REDIS_CLIENT = None
 logger = logging.getLogger(__name__)
@@ -76,6 +78,7 @@ class LambdaPackExecutor(object):
 
     #@profile
     async def run(self, expr_idx, var_values, computer=None, profile=True):
+        self.redis_client = await aioredis.create_redis_pool(redis_host)
         operator_refs = [(expr_idx, var_values)]
         event = asyncio.Event()
         operator_refs_to_ret = []

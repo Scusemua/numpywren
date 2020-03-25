@@ -4,6 +4,7 @@ import itertools
 import os
 import time
 
+import aioredis 
 import boto3
 import botocore
 import cloudpickle
@@ -105,6 +106,15 @@ def key_exists(bucket, key):
         if exc.response['Error']['Code'] != '404':
             raise
         return False
+
+async def key_exists_async_redis(redis_client, bucket, key, loop = None):
+    exists = False 
+    try:
+        exists = await redis_client.exists(bucket + key)
+    except Exception:
+        raise 
+    
+    return exists 
 
 async def key_exists_async(bucket, key, loop=None):
     '''Return true if a key exists in s3 bucket'''

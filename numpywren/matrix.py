@@ -20,7 +20,7 @@ import dill
 from collections import defaultdict
 
 from . import matrix_utils
-from .matrix_utils import list_all_keys, block_key_to_block, get_local_matrix, key_exists_async
+from .matrix_utils import list_all_keys, block_key_to_block, get_local_matrix, key_exists_async, key_exists_async_redis
 from . import utils
 
 cpu_count = multiprocessing.cpu_count()
@@ -291,7 +291,8 @@ class BigMatrix(object):
             print("shape", self.shape)
             raise Exception("Get block query does not match shape {0} vs {1}".format(block_idx, self.shape))
         key = self.__shard_idx_to_key__(block_idx)
-        exists = await key_exists_async(self.bucket, key, loop)
+        #exists = await key_exists_async(self.bucket, key, loop)
+        exists = await key_exists_async_redis(None, self.bucket, key, loop = loop)
         if (not exists and dill.loads(self.parent_fn) == None):
             logger.warning(self.bucket)
             logger.warning(key)
@@ -493,6 +494,23 @@ class BigMatrix(object):
         real_idxs = self.__block_idx_to_real_idx__(block_idx)
         key = self.__get_matrix_shard_key__(real_idxs)
         return key
+
+    async def __s3_key_to_byte_io_redis__(self, redis_client, key):
+        n_tries = 0
+        max_n_tries = 5
+        bio = None
+        while bio is None and n_tries <= max_n_tries:
+            try:
+                resp = await redis_client.get(self.bucket + key) 
+                async with resp['Body'] as stream:
+                    matrix_bytes = await stream.read()
+                bio = io.BytesIO(matrix_bytes)
+            except Exception as e:
+                raise
+                n_tries += 1
+        if bio is None:
+            raise Exception("Read Failed")
+        return bio
 
     async def __s3_key_to_byte_io__(self, key, loop=None):
         if (loop == None):
