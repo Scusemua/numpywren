@@ -15,7 +15,9 @@ import pywren.serialize as serialize
 import inspect
 import multiprocessing
 import aiobotocore
+import pywren.wrenconfig as wc
 
+redis_hostname = wc.get_redis_host()
 cpu_count = multiprocessing.cpu_count()
 
 class MmapArray():
@@ -107,9 +109,10 @@ def key_exists(bucket, key):
             raise
         return False
 
-async def key_exists_async_redis(redis_client, bucket, key, loop = None):
+async def key_exists_async_redis(bucket, key, loop = None):
     exists = False 
     try:
+        redis_client = await aioredis.create_redis_pool(redis_hostname)
         exists = await redis_client.exists(bucket + key)
     except Exception:
         raise 

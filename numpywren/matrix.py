@@ -8,11 +8,14 @@ import multiprocessing
 import os
 import pickle
 import time
+import struct
 
 import aiobotocore
+import aioredis
 import asyncio
 import boto3
 import botocore
+import collections
 import cloudpickle
 import numpy as np
 import pywren.wrenconfig as wc
@@ -23,6 +26,7 @@ from . import matrix_utils
 from .matrix_utils import list_all_keys, block_key_to_block, get_local_matrix, key_exists_async, key_exists_async_redis
 from . import utils
 
+redis_hostname = wc.get_redis_host()
 cpu_count = multiprocessing.cpu_count()
 logger = logging.getLogger('numpywren')
 
@@ -266,6 +270,8 @@ class BigMatrix(object):
     def get_block(self, *block_idx):
         loop = asyncio.new_event_loop()
         #asyncio.set_event_loop(loop)
+
+        # I believe get_block_async() is converted entirely.
         get_block_async_coro = self.get_block_async(loop, *block_idx)
         res = loop.run_until_complete(asyncio.ensure_future(get_block_async_coro, loop=loop))
         return res
@@ -292,7 +298,7 @@ class BigMatrix(object):
             raise Exception("Get block query does not match shape {0} vs {1}".format(block_idx, self.shape))
         key = self.__shard_idx_to_key__(block_idx)
         #exists = await key_exists_async(self.bucket, key, loop)
-        exists = await key_exists_async_redis(None, self.bucket, key, loop = loop)
+        exists = await key_exists_async_redis(self.bucket, key, loop = loop)
         if (not exists and dill.loads(self.parent_fn) == None):
             logger.warning(self.bucket)
             logger.warning(key)
@@ -301,7 +307,8 @@ class BigMatrix(object):
         elif (not exists and dill.loads(self.parent_fn) != None):
             X_block = await dill.loads(self.parent_fn)(self, loop, *block_idx)
         else:
-            bio = await self.__s3_key_to_byte_io__(key, loop=loop)
+            #bio = await self.__s3_key_to_byte_io__(key, loop=loop)
+            bio = await self.__redis_key_to_byte_io__(key)
             X_block = np.load(bio)
         if (self.autosqueeze):
             X_block = np.squeeze(X_block)
@@ -343,7 +350,8 @@ class BigMatrix(object):
 
         key = self.__shard_idx_to_key__(block_idx)
         if (no_overwrite):
-            exists = await key_exists_async(self.bucket, key, loop)
+            #exists = await key_exists_async(self.bucket, key, loop)
+            exists = await key_exists_async_redis(self.bucket, key, loop)
             if (exists):
                 old_block = await self.get_block_async(loop, *block_idx)
                 assert(np.allclose(old_block, block))
@@ -359,10 +367,12 @@ class BigMatrix(object):
             raise Exception("{2} Incompatible block size: {0} vs {1}".format(block.shape, current_shape, self))
 
         #block = block.astype(self.dtype)
-        return await self.__save_matrix_to_s3__(block, key, loop)
+        # return await self.__save_matrix_to_s3__(block, key, loop)
+        return await self.__save_matrix_to_redis__(block, key)
 
     def delete_block(self, block, *block_idx):
         loop = asyncio.new_event_loop()
+        # delete_block_async uses Redis now
         delete_block_async_coro = self.delete_block_async(loop, block, *block_idx)
         res = loop.run_until_complete(asyncio.ensure_future(delete_block_async_coro, loop=loop))
         return res
@@ -391,9 +401,11 @@ class BigMatrix(object):
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
         key = self.__shard_idx_to_key__(block_idx)
-        session = aiobotocore.get_session(loop=loop)
-        async with session.create_client('s3', use_ssl=False, verify=False, region_name=self.region) as client:
-            resp = await client.delete_object(Key=key, Bucket=self.bucket)
+        redis_client = await aioredis.create_redis_pool(redis_hostname)
+        resp = await redis_client.delete(self.bucket + key)
+        #session = aiobotocore.get_session(loop=loop)
+        #async with session.create_client('s3', use_ssl=False, verify=False, region_name=self.region) as client:
+        #    resp = await client.delete_object(Key=key, Bucket=self.bucket)
         return resp
 
     def free(self):
@@ -495,12 +507,13 @@ class BigMatrix(object):
         key = self.__get_matrix_shard_key__(real_idxs)
         return key
 
-    async def __s3_key_to_byte_io_redis__(self, redis_client, key):
+    async def __redis_key_to_byte_io__(self, key):
         n_tries = 0
         max_n_tries = 5
         bio = None
         while bio is None and n_tries <= max_n_tries:
             try:
+                redis_client = await aioredis.create_redis_pool(redis_hostname)
                 resp = await redis_client.get(self.bucket + key) 
                 async with resp['Body'] as stream:
                     matrix_bytes = await stream.read()
@@ -533,6 +546,15 @@ class BigMatrix(object):
         if bio is None:
             raise Exception("S3 Read Failed")
         return bio
+
+    async def __save_matrix_to_redis__(self, X, out_key):
+        redis_client = await aioredis.create_redis_pool(redis_hostname)
+        outb = io.BytesIO()
+        np.save(outb, X)
+
+        await redis_client.set(self.bucket + out_key, outb.getvalue())
+        del outb
+        del X
 
     async def __save_matrix_to_s3__(self, X, out_key, loop, client=None):
         if (loop == None):
@@ -802,15 +824,60 @@ class BigMatrixView(BigMatrix):
 
 class RowPivotedBigMatrix(BigMatrix):
     def __init__(self, matrix, row_permutation_dict):
-        if (len(permutation_dict) >  4.0 * matrix.shard_sizes[0]):
+        if (len(row_permutation_dict) >  4.0 * matrix.shard_sizes[0]):
             logger.warning("Permutation seems to permute *too many* rows consider doing a full shuffle")
         self.matrix = matrix
         super().__init__(self, key=matrix.key, shape=matrix.shape, shard_sizes=matrix.shard_sizes, bucket=matrix.bucket, prefix=matrix.prefix, dtype=matrix.dtype, parent_fn=matrix.parent_fn, write_header=matrix_write_header, autosqueeze=matrix.autosqueeze, lambdav=matrix.lambdav, region=matrix.region)
-        self.permutation_dict = permutation_dict
+        self.permutation_dict = row_permutation_dict
         self.block_permutation_dict = collections.defaultdict(list)
         for in_row, out_row in self.permutation_dict.items():
             bidx_in = in_row//self.shard_sizes[0]
             self.block_permutation_dict[bidx_in].append(out_row)
+
+    async def __redis_key_to_row__(self, key, row_idx, loop=None):
+        MAGIC_LEN = 6
+        VERSION = 1
+        HEADER_LEN_SIZE = 2
+        HEADER_LEN_START = 8
+        HEADER_LEN_END = 9
+        HEADER_START = 10
+        row = None
+        if (loop == None):
+            loop = asyncio.get_event_loop()
+        
+        redis_client = await aioredis.create_redis_pool(redis_hostname)
+
+        n_tries = 0
+        max_n_tries = 5
+        bio = None
+        while bio is None and n_tries <= max_n_tries:
+            try:
+                header_range_query = 'bytes={0}-{1}'.format(HEADER_LEN_START, HEADER_LEN_END)
+                header_resp = await redis_client.get(self.bucket + key)
+                #header_resp = await client.get_object(Bucket=self.bucket, Key=key, Range=header_range_query)["Body"]
+                
+                header_resp = header_resp[HEADER_LEN_START:HEADER_LEN_END]
+                async with header_resp["Body"] as stream:
+                    header_len_bytes = await stream.read()
+                header_size = struct.unpack("<H", header_len_bytes)[0]
+                item_size = self.dtype.itemsize
+                row_start = row_idx*(item_size * self.shape[1])
+                row_end = (row_idx+1)*((item_size) * self.shape[1]) - 1
+                query_start = HEADER_START + header_size + row_start
+                query_end = HEADER_START + header_size + row_end
+                row_range_query = 'bytes={0}-{1}'.format(query_start, query_end)
+                #resp = await client.get_object(Bucket=self.bucket, Key=key, Range=row_range_query)
+                resp = await redis_client.get(self.bucket + key)
+                resp = resp[query_start:query_end]
+                async with resp['Body'] as stream:
+                    matrix_bytes = await stream.read()
+                row = np.frombuffer(matrix_bytes, dtype=self.dtype)
+            except Exception as e:
+                raise
+                n_tries += 1
+        if row is None:
+            raise Exception("Redis Read Failed")
+        return row
 
     async def __s3_key_to_row__(self, key, row_idx, loop=None):
         MAGIC_LEN = 6
@@ -868,7 +935,7 @@ class RowPivotedBigMatrix(BigMatrix):
                 offset = globa_idx_1 % self.shard_sizes[0]
                 new_block_idx =  (bidx,) + block_idx[1:]
                 key = self.__shard_idx_to_key__(new_block_idx)
-                row_task = self.__s3_key_to_row__(self, key, offset, loop=loop)
+                row_task = self.__redis_key_to_row__(self, key, offset)
                 row_task = asyncio.ensure_future(block, loop=loop)
                 local_rep_dict[local_idx] = row_task
         block = await block_task
