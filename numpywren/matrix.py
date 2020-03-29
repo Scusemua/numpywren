@@ -298,7 +298,7 @@ class BigMatrix(object):
             raise Exception("Get block query does not match shape {0} vs {1}".format(block_idx, self.shape))
         key = self.__shard_idx_to_key__(block_idx)
         #exists = await key_exists_async(self.bucket, key, loop)
-        exists = await key_exists_async_redis(self.bucket, key, loop = loop)
+        exists = await key_exists_async_redis(key, loop = loop)
         if (not exists and dill.loads(self.parent_fn) == None):
             logger.warning(self.bucket)
             logger.warning(key)
@@ -351,7 +351,7 @@ class BigMatrix(object):
         key = self.__shard_idx_to_key__(block_idx)
         if (no_overwrite):
             #exists = await key_exists_async(self.bucket, key, loop)
-            exists = await key_exists_async_redis(self.bucket, key, loop)
+            exists = await key_exists_async_redis(key, loop)
             if (exists):
                 old_block = await self.get_block_async(loop, *block_idx)
                 assert(np.allclose(old_block, block))
@@ -402,7 +402,7 @@ class BigMatrix(object):
             asyncio.set_event_loop(loop)
         key = self.__shard_idx_to_key__(block_idx)
         redis_client = await aioredis.create_redis()
-        resp = await redis_client.delete(self.bucket + key)
+        resp = await redis_client.delete(key)
         #session = aiobotocore.get_session(loop=loop)
         #async with session.create_client('s3', use_ssl=False, verify=False, region_name=self.region) as client:
         #    resp = await client.delete_object(Key=key, Bucket=self.bucket)
@@ -514,7 +514,7 @@ class BigMatrix(object):
         while bio is None and n_tries <= max_n_tries:
             try:
                 redis_client = await aioredis.create_redis_pool(redis_hostname)
-                resp = await redis_client.get(self.bucket + key) 
+                resp = await redis_client.get(key) 
                 async with resp['Body'] as stream:
                     matrix_bytes = await stream.read()
                 bio = io.BytesIO(matrix_bytes)
@@ -552,7 +552,7 @@ class BigMatrix(object):
         outb = io.BytesIO()
         np.save(outb, X)
 
-        await redis_client.set(self.bucket + out_key, outb.getvalue())
+        await redis_client.set(out_key, outb.getvalue())
         del outb
         del X
 
@@ -853,7 +853,7 @@ class RowPivotedBigMatrix(BigMatrix):
         while bio is None and n_tries <= max_n_tries:
             try:
                 header_range_query = 'bytes={0}-{1}'.format(HEADER_LEN_START, HEADER_LEN_END)
-                header_resp = await redis_client.get(self.bucket + key)
+                header_resp = await redis_client.get(key)
                 #header_resp = await client.get_object(Bucket=self.bucket, Key=key, Range=header_range_query)["Body"]
                 
                 header_resp = header_resp[HEADER_LEN_START:HEADER_LEN_END]
@@ -867,7 +867,7 @@ class RowPivotedBigMatrix(BigMatrix):
                 query_end = HEADER_START + header_size + row_end
                 row_range_query = 'bytes={0}-{1}'.format(query_start, query_end)
                 #resp = await client.get_object(Bucket=self.bucket, Key=key, Range=row_range_query)
-                resp = await redis_client.get(self.bucket + key)
+                resp = await redis_client.get(key)
                 resp = resp[query_start:query_end]
                 async with resp['Body'] as stream:
                     matrix_bytes = await stream.read()
@@ -932,7 +932,7 @@ class RowPivotedBigMatrix(BigMatrix):
             rows_to_replace = block_permutation_dict[block[0]]
             for (local_idx, global_idx_1), in rows_to_replace:
                 bidx = global_idx_1 // self.shard_sizes[0]
-                offset = globa_idx_1 % self.shard_sizes[0]
+                offset = global_idx_1 % self.shard_sizes[0]
                 new_block_idx =  (bidx,) + block_idx[1:]
                 key = self.__shard_idx_to_key__(new_block_idx)
                 row_task = self.__redis_key_to_row__(self, key, offset)

@@ -83,12 +83,12 @@ def get_object_with_backoff(s3_client, bucket, key, max_tries=MAX_TRIES, backoff
             num_tries += 1
     return func_obj_stream
 
-def get_object_with_backoff_redis(bucket, key, max_tries=MAX_TRIES, backoff=BACKOFF, **extra_get_args):
+def get_object_with_backoff_redis(key, max_tries=MAX_TRIES, backoff=BACKOFF, **extra_get_args):
     num_tries = 0
     while (num_tries < max_tries):
         try:
             #func_obj_stream = s3_client.get_object(Bucket=bucket, Key=key, **extra_get_args)
-            func_obj_stream = redis_client.get(bucket + key) 
+            func_obj_stream = redis_client.get(key) 
             break
         except Exception:
             time.sleep(backoff)
@@ -100,7 +100,7 @@ try:
     func_download_time_t1 = time.time()
 
     #func_obj_stream = get_object_with_backoff(s3_client, bucket=func_bucket, key=func_key)
-    func_obj_stream = get_object_with_backoff_redis(bucket=func_bucket, key=func_key)
+    func_obj_stream = get_object_with_backoff_redis(key=func_key)
 
     loaded_func_all = pickle.loads(func_obj_stream['Body'].read())
     func_download_time_t2 = time.time()
@@ -148,7 +148,7 @@ try:
     #data_obj_stream = get_object_with_backoff(s3_client, bucket=data_bucket,
     #                                          key=data_key,
     #                                          **extra_get_args)
-    data_obj_stream = get_object_with_backoff_redis(bucket = data_bucket, key = data_key)
+    data_obj_stream = get_object_with_backoff_redis(key = data_key)
 
     if data_byte_range is not None:
         data_obj_stream = data_obj_stream[data_byte_range[0]:data_byte_range[1]]
@@ -203,7 +203,7 @@ finally:
     #s3_client.put_object(Body=pickled_output,
     #                     Bucket=output_bucket,
     #                     Key=output_key)
-    redis_client.set(output_bucket + output_key, pickled_output)
+    redis_client.set(output_key, pickled_output)
     output_upload_timestamp_t2 = time.time()
     write_stat("output_upload_time",
                output_upload_timestamp_t2 - output_upload_timestamp_t1)

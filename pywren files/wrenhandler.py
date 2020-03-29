@@ -79,8 +79,8 @@ def get_key_size(s3client, bucket, key):
         else:
             raise e
 
-def key_exists_redis(bucket, key):
-    return redis_client.exists(bucket + key)
+def key_exists_redis(key):
+    return redis_client.exists(key)
 
 def key_exists(s3client, bucket, key):
     return get_key_size(s3client, bucket, key) is not None
@@ -231,9 +231,11 @@ def generic_handler(event, context_dict, custom_handler_env=None):
     """
     pid = os.getpid()
 
+    s3_bucket = ""
+    status_key = ""
     response_status = {'exception': None}
     try:
-        if event['storage_config']['storage_backend'] != 's3':
+        if event['storage_config']['storage_backend'] != 's3' and event['storage_config']['storage_backend'] != 'redis':
             raise NotImplementedError(("Using {} as storage backend is not supported " +
                                        "yet.").format(event['storage_config']['storage_backend']))
         s3_client = boto3.client("s3")
@@ -249,7 +251,7 @@ def generic_handler(event, context_dict, custom_handler_env=None):
 
         # Check for cancel
         #if key_exists(s3_client, s3_bucket, cancel_key):
-        if key_exists_redis(s3_bucket, cancel_key):
+        if key_exists_redis(cancel_key):
             logger.info("invocation cancelled")
             raise Exception("CANCELLED", "Function cancelled")
         time_of_last_cancel_check = time.time()
@@ -282,13 +284,13 @@ def generic_handler(event, context_dict, custom_handler_env=None):
         response_status['status_key'] = status_key
 
         #data_key_size = get_key_size(s3_client, s3_bucket, data_key)
-        exists = key_exists_redis(s3_bucket, data_key)
+        exists = key_exists_redis(data_key)
         #logger.info("bucket=", s3_bucket, "key=", data_key,  "status: ", data_key_size, "bytes" )
         while exists is False:
             logger.warning("WARNING COULD NOT GET FIRST KEY")
 
             #data_key_size = get_key_size(s3_client, s3_bucket, data_key)
-            exists = key_exists_redis(s3_bucket, data_key)
+            exists = key_exists_redis(data_key)
         if not event['use_cached_runtime']:
             shutil.rmtree(RUNTIME_LOC, True)
             os.mkdir(RUNTIME_LOC)
@@ -413,7 +415,7 @@ def generic_handler(event, context_dict, custom_handler_env=None):
             if time_since_cancel_check > CANCEL_CHECK_EVERY_SECS:
 
                 #if key_exists(s3_client, s3_bucket, cancel_key):
-                if key_exists_redis(s3_bucket, cancel_key):
+                if key_exists_redis(cancel_key):
                     logger.info("invocation cancelled")
                     # kill the process
                     kill_process(process)
@@ -458,12 +460,14 @@ def generic_handler(event, context_dict, custom_handler_env=None):
 
         response_status.update(context_dict)
     except Exception as e:
+        print("[ERROR] Encountered exception.\n{}".format(str(e)))
         # internal runtime exceptions
         response_status['exception'] = str(e)
         response_status['exception_args'] = e.args
         response_status['exception_traceback'] = traceback.format_exc()
     finally:
-        redis_client.set(s3_bucket + status_key, json.dumps(response_status))
+        print("Attempting to store data in Redis at key {}".format(status_key))
+        redis_client.set(status_key, json.dumps(response_status))
         # creating new client in case the client has not been created
         #boto3.client("s3").put_object(Bucket=s3_bucket, Key=status_key,
         #                              Body=json.dumps(response_status))

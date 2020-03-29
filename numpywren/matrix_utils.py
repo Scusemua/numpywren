@@ -109,11 +109,11 @@ def key_exists(bucket, key):
             raise
         return False
 
-async def key_exists_async_redis(bucket, key, loop = None):
+async def key_exists_async_redis(key, loop = None):
     exists = False 
     try:
         redis_client = await aioredis.create_redis_pool(redis_hostname)
-        exists = await redis_client.exists(bucket + key)
+        exists = await redis_client.exists(key)
     except Exception:
         raise 
     
