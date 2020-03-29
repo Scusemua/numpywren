@@ -26,7 +26,7 @@ from . import matrix_utils
 from .matrix_utils import list_all_keys, block_key_to_block, get_local_matrix, key_exists_async, key_exists_async_redis
 from . import utils
 
-redis_hostname = wc.get_redis_host()
+redis_hostname = 'redis://ec2-54-84-185-30.compute-1.amazonaws.com'
 cpu_count = multiprocessing.cpu_count()
 logger = logging.getLogger('numpywren')
 
@@ -401,7 +401,7 @@ class BigMatrix(object):
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
         key = self.__shard_idx_to_key__(block_idx)
-        redis_client = await aioredis.create_redis_pool(redis_hostname)
+        redis_client = await aioredis.create_redis()
         resp = await redis_client.delete(self.bucket + key)
         #session = aiobotocore.get_session(loop=loop)
         #async with session.create_client('s3', use_ssl=False, verify=False, region_name=self.region) as client:
