@@ -34,7 +34,7 @@ import redis
 import boto3
 import botocore
 
-redis_client = redis.StrictRedis(host = "", port = 6379)
+redis_client = redis.StrictRedis(host = "ec2-54-84-185-30.compute-1.amazonaws.com", port = 6379)
 
 if sys.version_info > (3, 0):
     from queue import Queue, Empty # pylint: disable=import-error

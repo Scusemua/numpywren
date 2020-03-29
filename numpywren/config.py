@@ -1,7 +1,7 @@
 import os
 import copy
 
-AWS_REGION_DEFAULT = 'us-west-2'
+AWS_REGION_DEFAULT = 'us-east-1'
 AWS_S3_BUCKET_DEFAULT = "numpywren"
 AWS_S3_PREFIX_DEFAULT = "npw"
 AWS_ROLE_DEFAULT = 'numpywren_exec_role_1'

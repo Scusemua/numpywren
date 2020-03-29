@@ -22,7 +22,6 @@ from pywren.serialize import serialize
 import redis
 import sympy
 import hashlib
-import aioredis 
 
 redis_host = ""
 
@@ -78,7 +77,9 @@ class LambdaPackExecutor(object):
 
     #@profile
     async def run(self, expr_idx, var_values, computer=None, profile=True):
-        self.redis_client = await aioredis.create_redis_pool(redis_host)
+        global REDIS_CLIENT 
+        if (REDIS_CLIENT == None):
+            REDIS_CLIENT = self.program.control_plane.client
         operator_refs = [(expr_idx, var_values)]
         event = asyncio.Event()
         operator_refs_to_ret = []
@@ -128,7 +129,7 @@ class LambdaPackExecutor(object):
                     if next_operator is not None:
                         operator_refs.append(next_operator)
                 elif (node_status == lp.NS.NOT_READY):
-                   program.not_ready_incr()
+                   self.program.not_ready_incr()
                    logger.warning("node: {0}:{1} not ready skipping...".format(expr_idx, var_values))
 
                    continue
@@ -249,7 +250,7 @@ async def read(read_queue, compute_queue, program, loop):
                 program.decr_up(1)
                 traceback.print_exc()
                 tb = traceback.format_exc()
-                self.program.handle_exception("READ_EXCEPTION", tb=tb, expr_idx=expr_idx, var_values=var_values)
+                program.handle_exception("READ_EXCEPTION", tb=tb, expr_idx=expr_idx, var_values=var_values)
                 loop.stop()
                 raise
 
