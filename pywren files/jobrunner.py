@@ -176,7 +176,7 @@ except Exception as e:
     # being unpickleable. As a result, we actually wrap this in a try/catch block
     # and more-carefully handle the exceptions if any part of this save / test-reload
     # fails
-
+    print("[ERROR] Encountered exception.\n{}".format(e))
     try:
         pickled_output = pickle.dumps({'result' : e,
                                        'exc_type' : exc_type,
@@ -203,6 +203,7 @@ finally:
     #s3_client.put_object(Body=pickled_output,
     #                     Bucket=output_bucket,
     #                     Key=output_key)
+    print("Storing output/result/data in Redis at key \"{}\".".format(output_key))
     redis_client.set(output_key, pickled_output)
     output_upload_timestamp_t2 = time.time()
     write_stat("output_upload_time",
