@@ -466,7 +466,8 @@ def generic_handler(event, context_dict, custom_handler_env=None):
         response_status['exception_args'] = e.args
         response_status['exception_traceback'] = traceback.format_exc()
     finally:
-        print("Attempting to store data in Redis at key {}".format(status_key))
+        print("Attempting to store final data in Redis at key {}".format(status_key))
+        print("Response Status: {}".format(response_status))
         redis_client.set(status_key, json.dumps(response_status))
         # creating new client in case the client has not been created
         #boto3.client("s3").put_object(Bucket=s3_bucket, Key=status_key,
