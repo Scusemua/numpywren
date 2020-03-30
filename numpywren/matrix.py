@@ -514,9 +514,9 @@ class BigMatrix(object):
         while bio is None and n_tries <= max_n_tries:
             try:
                 redis_client = await aioredis.create_redis_pool(redis_hostname)
-                resp = await redis_client.get(key) 
-                async with resp as stream:
-                    matrix_bytes = await stream.read()
+                matrix_bytes = await redis_client.get(key) 
+                #async with resp as stream:
+                #    matrix_bytes = await stream.read()
                 bio = io.BytesIO(matrix_bytes)
             except Exception as e:
                 raise
