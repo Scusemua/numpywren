@@ -34,7 +34,7 @@ import redis
 import boto3
 import botocore
 
-redis_client = redis.StrictRedis(host = "ec2-54-84-185-30.compute-1.amazonaws.com", port = 6379)
+redis_client = redis.StrictRedis(host = "ec2-54-163-216-212.compute-1.amazonaws.com", port = 6379)
 
 if sys.version_info > (3, 0):
     from queue import Queue, Empty # pylint: disable=import-error
@@ -196,7 +196,7 @@ def b64str_to_bytes(str_data):
 
 
 def aws_lambda_handler(event, context):
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
     context_dict = {
         'aws_request_id' : context.aws_request_id,
         'log_group_name' : context.log_group_name,
@@ -250,7 +250,6 @@ def generic_handler(event, context_dict, custom_handler_env=None):
         cancel_key = event['cancel_key']
 
         # Check for cancel
-        #if key_exists(s3_client, s3_bucket, cancel_key):
         if key_exists_redis(cancel_key):
             logger.info("invocation cancelled")
             raise Exception("CANCELLED", "Function cancelled")
@@ -258,6 +257,9 @@ def generic_handler(event, context_dict, custom_handler_env=None):
 
         data_byte_range = event['data_byte_range']
         output_key = event['output_key']
+
+        print("data_byte_range = {}".format(data_byte_range))
+        print("output_key = {}".format(output_key))
 
         if version.__version__ != event['pywren_version']:
             raise Exception("WRONGVERSION", "Pywren version mismatch",
@@ -450,8 +452,6 @@ def generic_handler(event, context_dict, custom_handler_env=None):
 
         response_status['stdout'] = stdout.decode("ascii")
 
-
-
         response_status['exec_time'] = time.time() - setup_time
         response_status['end_time'] = end_time
 
@@ -466,7 +466,7 @@ def generic_handler(event, context_dict, custom_handler_env=None):
         response_status['exception_args'] = e.args
         response_status['exception_traceback'] = traceback.format_exc()
     finally:
-        print("Attempting to store final data in Redis at key {}".format(status_key))
+        print("Attempting to store status data in Redis at key {}".format(status_key))
         print("Response Status: {}".format(response_status))
         redis_client.set(status_key, json.dumps(response_status))
         # creating new client in case the client has not been created

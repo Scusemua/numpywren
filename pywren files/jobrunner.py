@@ -41,12 +41,14 @@ def b64str_to_bytes(str_data):
 output_dict = {'result' : None,
                'success' : False}
 
+print("JobRunner is executing!")
+
 pickled_output = pickle.dumps(output_dict)
 jobrunner_config_filename = sys.argv[1]
 
 jobrunner_config = json.load(open(jobrunner_config_filename, 'r'))
 
-redis_client = redis.StrictRedis(host = "ec2-54-84-185-30.compute-1.amazonaws.com", port = 6379)
+redis_client = redis.StrictRedis(host = "ec2-54-163-216-212.compute-1.amazonaws.com", port = 6379)
 
 # FIXME someday switch to storage handler
 # download the func data into memory
@@ -87,10 +89,12 @@ def get_object_with_backoff_redis(key, max_tries=MAX_TRIES, backoff=BACKOFF, **e
     num_tries = 0
     while (num_tries < max_tries):
         try:
+            print("[JobRunner] Reading data from Redis at key \"{}\".".format(key))
             #func_obj_stream = s3_client.get_object(Bucket=bucket, Key=key, **extra_get_args)
             func_obj_stream = redis_client.get(key) 
             break
         except Exception:
+            print("[JobRunner - WARNING] Failed to retrieve data from Redis at key \"{}\".".format(key))
             time.sleep(backoff)
             backoff *= 2
             num_tries += 1
@@ -99,7 +103,6 @@ def get_object_with_backoff_redis(key, max_tries=MAX_TRIES, backoff=BACKOFF, **e
 try:
     func_download_time_t1 = time.time()
 
-    #func_obj_stream = get_object_with_backoff(s3_client, bucket=func_bucket, key=func_key)
     func_obj_stream = get_object_with_backoff_redis(key=func_key)
 
     loaded_func_all = pickle.loads(func_obj_stream['Body'].read())
@@ -145,12 +148,10 @@ try:
     #    extra_get_args['Range'] = range_str
 
     data_download_time_t1 = time.time()
-    #data_obj_stream = get_object_with_backoff(s3_client, bucket=data_bucket,
-    #                                          key=data_key,
-    #                                          **extra_get_args)
     data_obj_stream = get_object_with_backoff_redis(key = data_key)
 
     if data_byte_range is not None:
+        print("We only want bytes {} through {} of the object...".format(data_byte_range[0], data_byte_range[1]))
         data_obj_stream = data_obj_stream[data_byte_range[0]:data_byte_range[1]]
 
     # FIXME make this streaming
@@ -159,9 +160,9 @@ try:
     write_stat('data_download_time',
                data_download_time_t2-data_download_time_t1)
 
-    #print("loaded")
+    print("calling loaded_func")
     y = loaded_func(loaded_data)
-    #print("success")
+    print("successfully called loaded_func")
     output_dict = {'result' : y,
                    'success' : True,
                    'sys.path' : sys.path}
@@ -182,6 +183,7 @@ except Exception as e:
                                        'exc_type' : exc_type,
                                        'exc_value' : exc_value,
                                        'exc_traceback' : exc_traceback,
+                                       'exc_traceback_str' : str(exc_traceback),
                                        'sys.path' : sys.path,
                                        'success' : False})
 

@@ -26,7 +26,7 @@ from . import matrix_utils
 from .matrix_utils import list_all_keys, block_key_to_block, get_local_matrix, key_exists_async, key_exists_async_redis
 from . import utils
 
-redis_hostname = 'redis://ec2-54-84-185-30.compute-1.amazonaws.com'
+redis_hostname = 'redis://ec2-54-163-216-212.compute-1.amazonaws.com'
 cpu_count = multiprocessing.cpu_count()
 logger = logging.getLogger('numpywren')
 
