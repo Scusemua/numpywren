@@ -515,7 +515,7 @@ class BigMatrix(object):
             try:
                 redis_client = await aioredis.create_redis_pool(redis_hostname)
                 resp = await redis_client.get(key) 
-                async with resp['Body'] as stream:
+                async with resp as stream:
                     matrix_bytes = await stream.read()
                 bio = io.BytesIO(matrix_bytes)
             except Exception as e:
