@@ -66,7 +66,7 @@ RUNTIME_DOWNLOAD_LOCK = os.path.join(TEMP, "runtime_download_lock")
 
 logger = logging.getLogger(__name__)
 
-PROCESS_STDOUT_SLEEP_SECS = 2
+PROCESS_STDOUT_SLEEP_SECS = 0.1
 CANCEL_CHECK_EVERY_SECS = 5.0
 
 def get_key_size(s3client, bucket, key):
@@ -401,7 +401,7 @@ def generic_handler(event, context_dict, custom_handler_env=None):
 
         stdout = b""
         while t.isAlive() or process.returncode is None:
-            logger.info("Running {} {}".format(time.time(), process.returncode))
+            #logger.info("Running {} {}".format(time.time(), process.returncode))
             try:
                 line = q.get_nowait()
                 stdout += line

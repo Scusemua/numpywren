@@ -17,7 +17,7 @@ import multiprocessing
 import aiobotocore
 import pywren.wrenconfig as wc
 
-redis_hostname = 'redis://ec2-54-84-185-30.compute-1.amazonaws.com'
+redis_hostname = 'redis://ec2-54-163-216-212.compute-1.amazonaws.com'
 cpu_count = multiprocessing.cpu_count()
 
 class MmapArray():

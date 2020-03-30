@@ -20,6 +20,7 @@ import base64
 import shutil
 import json
 import sys
+import traceback
 import time
 import redis 
 import boto3
@@ -105,7 +106,7 @@ try:
 
     func_obj_stream = get_object_with_backoff_redis(key=func_key)
 
-    loaded_func_all = pickle.loads(func_obj_stream['Body'].read())
+    loaded_func_all = pickle.loads(func_obj_stream)
     func_download_time_t2 = time.time()
     write_stat('func_download_time',
                func_download_time_t2-func_download_time_t1)
@@ -151,11 +152,11 @@ try:
     data_obj_stream = get_object_with_backoff_redis(key = data_key)
 
     if data_byte_range is not None:
-        print("We only want bytes {} through {} of the object...".format(data_byte_range[0], data_byte_range[1]))
-        data_obj_stream = data_obj_stream[data_byte_range[0]:data_byte_range[1]]
+        print("We only want bytes {} through {} (inclusive) of the object...".format(data_byte_range[0], data_byte_range[1]))
+        data_obj_stream = data_obj_stream[data_byte_range[0]:data_byte_range[1] + 1] # INCLUSIVE
 
     # FIXME make this streaming
-    loaded_data = pickle.loads(data_obj_stream['Body'].read())
+    loaded_data = pickle.loads(data_obj_stream)
     data_download_time_t2 = time.time()
     write_stat('data_download_time',
                data_download_time_t2-data_download_time_t1)
@@ -169,21 +170,23 @@ try:
     pickled_output = pickle.dumps(output_dict)
 
 except Exception as e:
-    exc_type, exc_value, exc_traceback = sys.exc_info()
-    #traceback.print_tb(exc_traceback)
+    print("[ERROR] Encountered exception.\n{}".format(e))
+    exc_type, exc_value, exc_traceback = sys.exc_info() # Creates circular reference!
+    print("Traceback:")
+    traceback.print_tb(exc_traceback)
+
+    print("Exeception Type: {}\nException Value: {}\nTraceback: {}".format(exc_type, exc_value, exc_traceback))
 
     # Shockingly often, modules like subprocess don't properly
     # call the base Exception.__init__, which results in them
     # being unpickleable. As a result, we actually wrap this in a try/catch block
     # and more-carefully handle the exceptions if any part of this save / test-reload
     # fails
-    print("[ERROR] Encountered exception.\n{}".format(e))
     try:
         pickled_output = pickle.dumps({'result' : e,
                                        'exc_type' : exc_type,
                                        'exc_value' : exc_value,
                                        'exc_traceback' : exc_traceback,
-                                       'exc_traceback_str' : str(exc_traceback),
                                        'sys.path' : sys.path,
                                        'success' : False})
 
@@ -191,6 +194,7 @@ except Exception as e:
         pickle.loads(pickled_output)
 
     except Exception as pickle_exception:
+        print("[WARNING] Pickle exception encountered!")
         pickled_output = pickle.dumps({'result' : str(e),
                                        'exc_type' : str(exc_type),
                                        'exc_value' : str(exc_value),
