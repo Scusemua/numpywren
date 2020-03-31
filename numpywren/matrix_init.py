@@ -86,8 +86,10 @@ def shard_matrix(bigm, X_local, n_jobs=1, executor=None, overwrite=True):
     e = time.time()
     np.copyto(X_local_mmaped, X_local)
     X_local_mmap = MmapArray(X_local_mmaped, "r")
+    print("Sharding matrix...")
     for (bidxs,blocks) in zip(all_bidxs, all_blocks):
         slices = [slice(s,e) for s,e in blocks]
+        print("Sharding another {} slices...".format(len(slices)))
         X_block = X_local.__getitem__(slices)
         future = executor.submit(mmap_put_block, bigm, X_local_mmap, zip(bidxs, blocks))
         futures.append(future)
