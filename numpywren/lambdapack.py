@@ -86,8 +86,9 @@ def put(client, key, value, s3=False, s3_bucket=""):
     return val
 
 def upload(key, bucket, data):
-    client = boto3.client('s3')
-    client.put_object(Bucket=bucket, Key=key, Body=data)
+    raise NotImplementedError("Don't call upload")
+    #client = boto3.client('s3')
+    #client.put_object(Bucket=bucket, Key=key, Body=data)
 
 def get(client, key, s3=False, s3_bucket=""):
     #TODO: fall back to S3 here
