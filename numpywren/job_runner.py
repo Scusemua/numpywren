@@ -23,7 +23,7 @@ import redis
 import sympy
 import hashlib
 
-REDIS_CLIENT = None
+REDIS_CLIENT = redis.StrictRedis(host = "ec2-54-221-8-100.compute-1.amazonaws.com", port = 6379)
 logger = logging.getLogger(__name__)
 
 def mem():
@@ -75,9 +75,7 @@ class LambdaPackExecutor(object):
 
     #@profile
     async def run(self, expr_idx, var_values, computer=None, profile=True):
-        global REDIS_CLIENT 
-        if (REDIS_CLIENT == None):
-            REDIS_CLIENT = self.program.control_plane.client
+        global REDIS_CLIENT
         operator_refs = [(expr_idx, var_values)]
         event = asyncio.Event()
         operator_refs_to_ret = []
@@ -179,8 +177,6 @@ def calculate_busy_time(rtimes):
 
 async def check_failure(loop, program, failure_key):
     global REDIS_CLIENT
-    if (REDIS_CLIENT == None):
-       REDIS_CLIENT = program.control_plane.client
     while (loop.is_running()):
       f_key = REDIS_CLIENT.get(failure_key)
       if (f_key is not None):
@@ -423,8 +419,6 @@ async def lambdapack_run_async(loop, program, computer, cache, shared_state, rea
     lmpk_executor = LambdaPackExecutor(program, loop, cache, read_queue)
     start_time = time.time()
     running_times = shared_state['running_times']
-    if (REDIS_CLIENT == None):
-       REDIS_CLIENT = program.control_plane.client
     redis_client = REDIS_CLIENT
     try:
         while(loop.is_running()):
