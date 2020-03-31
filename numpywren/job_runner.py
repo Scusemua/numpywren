@@ -23,8 +23,6 @@ import redis
 import sympy
 import hashlib
 
-redis_host = ""
-
 REDIS_CLIENT = None
 logger = logging.getLogger(__name__)
 

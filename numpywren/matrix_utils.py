@@ -18,7 +18,7 @@ import aiobotocore
 import pywren.wrenconfig as wc
 
 # Need to change in wrenhandler.py, wrenconfig.py, matrix.py, matrix_utils.py, jobrunner.py.
-redis_hostname = 'redis://ec2-3-84-243-112.compute-1.amazonaws.com'
+redis_hostname = 'redis://ec2-54-221-8-100.compute-1.amazonaws.com'
 cpu_count = multiprocessing.cpu_count()
 
 class MmapArray():

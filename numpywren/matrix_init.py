@@ -95,8 +95,6 @@ def shard_matrix(bigm, X_local, n_jobs=1, executor=None, overwrite=True):
     [f.result() for f in futures]
     return bigm
 
-
-
 def reshard_down(bigm, breakdowns, pwex=None):
     ''' Return a new bigm whose shard sizes are bigm.shard_sizes/break_downs
         if a pwex is provided reshards in parallel, else reshards locally (very slow)
