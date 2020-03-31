@@ -17,7 +17,8 @@
 import os
 import copy
 
-redis_hostname = "ec2-3-95-180-175.compute-1.amazonaws.com"
+# Need to change in wrenhandler.py, wrenconfig.py, matrix.py, matrix_utils.py, jobrunner.py.
+redis_hostname = "ec2-3-84-243-112.compute-1.amazonaws.com"
 
 GENERIC_HANDLER_NAME = "wrenhandler.generic_handler"
 AWS_LAMBDA_HANDLER_NAME = "wrenhandler.aws_lambda_handler"

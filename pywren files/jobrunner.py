@@ -49,7 +49,8 @@ jobrunner_config_filename = sys.argv[1]
 
 jobrunner_config = json.load(open(jobrunner_config_filename, 'r'))
 
-redis_client = redis.StrictRedis(host = "ec2-54-163-216-212.compute-1.amazonaws.com", port = 6379)
+# Need to change in wrenhandler.py, wrenconfig.py, matrix.py, matrix_utils.py, jobrunner.py.
+redis_client = redis.StrictRedis(host = "ec2-3-84-243-112.compute-1.amazonaws.com", port = 6379)
 
 # FIXME someday switch to storage handler
 # download the func data into memory
