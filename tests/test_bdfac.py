@@ -92,7 +92,7 @@ class BDFACTest(unittest.TestCase):
         S0 = BigMatrix("S0", shape=(N, N, N, num_tree_levels*shard_size), shard_sizes=(shard_size, shard_size, shard_size, shard_size), write_header=True, parent_fn=parent_fn, safe=False)
         S1 = BigMatrix("S1", shape=(N, N, N, num_tree_levels*shard_size), shard_sizes=(shard_size, shard_size, shard_size, shard_size), write_header=True, parent_fn=parent_fn, safe=False)
         Sigma = BigMatrix("Sigma", shape=(num_tree_levels, N, N), shard_sizes=(1, shard_size, shard_size), write_header=True, safe=False, parent_fn=parent_fn)
-        pc = frontend.lpcompile(BDFAC)(VLs, TLs, Rs, Sigma, VRs, TRs, S0, S1, N_blocks, 0)
+        pc = compiler.lpcompile(BDFAC)(VLs, TLs, Rs, Sigma, VRs, TRs, S0, S1, N_blocks, 0)
 
 if __name__ == "__main__":
     test  = BDFACTest()
