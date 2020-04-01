@@ -317,7 +317,7 @@ def lambdapack_run(program, pipeline_width=5, msg_vis_timeout=60, cache_size=5, 
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     computer = fs.ThreadPoolExecutor(compute_threads)
-    program.control_plane.cache()
+    #program.control_plane.cache()
 
     read_queue = asyncio.Queue(pipeline_width)
     compute_queue = asyncio.Queue(pipeline_width)
@@ -358,7 +358,7 @@ def lambdapack_run(program, pipeline_width=5, msg_vis_timeout=60, cache_size=5, 
     m.update(profile_bytes)
     p_key = m.hexdigest()
     p_key = "{0}/{1}/{2}".format("lambdapack", program.hash, p_key)
-    client = boto3.client('s3', region_name=program.control_plane.region)
+    client = boto3.client('s3', region_name=program.aws_region)
     client.put_object(Bucket=program.bucket, Key=p_key, Body=profile_bytes)
     program.decr_up(1)
     return {"up_time": [lambda_start, lambda_stop],
@@ -438,7 +438,7 @@ async def lambdapack_run_async(loop, program, computer, cache, shared_state, rea
             await asyncio.sleep(0)
             # go from high priority -> low priority
             for queue_url in program.queue_urls[::-1]:
-                async with session.create_client('sqs', use_ssl=False,  region_name=program.control_plane.region) as sqs_client:
+                async with session.create_client('sqs', use_ssl=False,  region_name=program.aws_region) as sqs_client:
                     messages = await sqs_client.receive_message(QueueUrl=queue_url, MaxNumberOfMessages=1, VisibilityTimeout=200)
                 if ("Messages" not in messages):
                     continue
@@ -475,7 +475,7 @@ async def lambdapack_run_async(loop, program, computer, cache, shared_state, rea
                 program.set_node_status(*operator_ref, lp.NS.FINISHED)
                 all_operator_refs.append(operator_ref)
                 profiles[str(operator_ref)] = p_info
-            async with session.create_client('sqs', use_ssl=False,  region_name=program.control_plane.region) as sqs_client:
+            async with session.create_client('sqs', use_ssl=False,  region_name=program.aws_region) as sqs_client:
                 lock[0] = 0
                 await sqs_client.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)
             end_processing_time = time.time()

@@ -154,7 +154,7 @@ def test_cholesky_multi_repeats():
 
     np.random.seed(0)
     while(program.program_status() == lp.PS.RUNNING):
-        sqs = boto3.resource('sqs', region_name=program.control_plane.region)
+        sqs = boto3.resource('sqs', region_name=program.aws_region)
         time.sleep(0.5)
         waiting = 0
         running = 0

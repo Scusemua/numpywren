@@ -1,0 +1,32 @@
+iam:
+    role_name: pywren_exec_role_1
+    instance_profile_name: pywren-standalone
+s3:
+    bucket: ben-pywren-632
+    prefix: numpywren.jobs
+    # how many days do you want object to stay alive
+    lifespan: 1
+
+redis_host: ec2-54-221-8-100.compute-1.amazonaws.com
+region: us-east-1
+
+runtime:
+    bucket: numpywrenpublic
+    s3_key: pywren.runtime/pywren_runtime-3.6-numpywren.tar.gz
+
+control_plane:
+    ec2_instance_type: m4.4xlarge
+    target_ami : ami-db710fa3
+    password: potato
+    spot_price: 0.0
+    port: 6379
+    max_idle_time: 300
+    idle_terminate_granularity: 1200
+    control_plane_prefix: numpywren.control
+    ec2_ssh_key : AWS_SSH_KEY
+
+logging:
+    level: INFO
+
+
+

@@ -60,7 +60,7 @@ class FailureTests(unittest.TestCase):
         np.random.seed(0)
         try:
             while(program.program_status() == lp.PS.RUNNING):
-                sqs = boto3.resource('sqs', region_name=program.control_plane.region)
+                sqs = boto3.resource('sqs', region_name=program.aws_region)
                 time.sleep(0.5)
                 waiting = 0
                 running = 0
@@ -155,7 +155,7 @@ class FailureTests(unittest.TestCase):
 
         np.random.seed(0)
         while(program.program_status() == lp.PS.RUNNING):
-            sqs = boto3.resource('sqs', region_name=program.control_plane.region)
+            sqs = boto3.resource('sqs', region_name=program.aws_region)
             waiting = 0
             running = 0
             for i, queue_url in enumerate(program.queue_urls):

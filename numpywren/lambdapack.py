@@ -488,22 +488,24 @@ class LambdaPackProgram(object):
         self.block_sparse = block_sparse
         self.max_priority = num_priorities - 1
         self.eager = eager
-        cpid = control_plane.get_control_plane_id(config=config)
-        if (cpid is None):
-          raise Exception("No active control planes")
-        self.control_plane = control_plane.get_control_plane(config=config)
+        self.redis_client = redis.Redis(host = config["redis_host"], port = 6379)
+        #cpid = control_plane.get_control_plane_id(config=config)
+        #if (cpid is None):
+        #  raise Exception("No active control planes")
+        #self.control_plane = control_plane.get_control_plane(config=config)
         hashed = hashlib.sha1()
         #HACK to have interpretable runs
         self.hash = str(int(time.time()))
         self.up = 'up' + self.hash
         self.set_up(0)
-        client = boto3.client('sqs', region_name=self.control_plane.region)
+        self.aws_region = config["region"]
+        client = boto3.client('sqs', region_name=self.aws_region)
         self.queue_urls = []
         for i in range(num_priorities):
           queue_url = client.create_queue(QueueName=self.hash + str(i))["QueueUrl"]
           self.queue_urls.append(queue_url)
           client.purge_queue(QueueUrl=queue_url)
-        put(self.control_plane.client, self.hash, PS.NOT_STARTED.value)
+        put(self.redis_client, self.hash, PS.NOT_STARTED.value)
 
     def _node_key(self, expr_idx, var_values):
       return "{0}_{1}".format(self.hash, self._node_str(expr_idx, var_values))
@@ -520,13 +522,13 @@ class LambdaPackProgram(object):
         return "{0}_({1})".format(expr_idx, "-".join(var_strs))
 
     def get_node_status(self, expr_idx, var_values):
-      s = get(self.control_plane.client, self._node_key(expr_idx, var_values))
+      s = get(self.redis_client, self._node_key(expr_idx, var_values))
       if (s == None):
         s = 0
       return NS(int(s))
 
     def set_node_status(self, expr_id, var_values, status):
-      put(self.control_plane.client, self._node_key(expr_id, var_values), status.value)
+      put(self.redis_client, self._node_key(expr_id, var_values), status.value)
       return status
 
     def dump_profiling_info(self, inst_block, expr_idx, var_values):
@@ -571,7 +573,7 @@ class LambdaPackProgram(object):
               child_edge_sum_key = self._node_edge_sum_key(*child)
               # redis transaction should be atomic
               tp = fs.ThreadPoolExecutor(1)
-              val_future = tp.submit(conditional_increment, self.control_plane.client, child_edge_sum_key, my_child_edge)
+              val_future = tp.submit(conditional_increment, self.redis_client, child_edge_sum_key, my_child_edge)
               done, not_done = fs.wait([val_future], timeout=60)
               if len(done) == 0:
                 raise Exception("Redis Atomic Set and Sum timed out!")
@@ -596,7 +598,7 @@ class LambdaPackProgram(object):
           # the idea is that if we do something like a local cholesky decomposition
           # we would run its highest priority child *locally* by adding the instructions to the local instruction queue
           # this has 2 key benefits, first we completely obliviete scheduling overhead between these two nodes but also because of the local LRU cache the first read of this node will be saved this will translate
-          client = boto3.client('sqs', region_name=self.control_plane.region)
+          client = boto3.client('sqs', region_name=self.aws_region)
           assert (expr_idx, var_values) not in ready_children
           for child in ready_children:
             # TODO: Re-add priorities here
@@ -620,7 +622,7 @@ class LambdaPackProgram(object):
             return_key = self.hash + "_return"
             return_edge = self._edge_key(expr_idx, var_values, return_key, {})
             tp = fs.ThreadPoolExecutor(1)
-            val_future = tp.submit(conditional_increment, self.control_plane.client, return_key, return_edge)
+            val_future = tp.submit(conditional_increment, self.redis_client, return_key, return_edge)
             done, not_done = fs.wait([val_future], timeout=60)
             if len(done) == 0:
               raise Exception("Redis Atomic Set and Sum timed out!")
@@ -640,7 +642,7 @@ class LambdaPackProgram(object):
             raise
 
     def start(self, parallel=False):
-        put(self.control_plane.client, self.hash, PS.RUNNING.value)
+        put(self.redis_client, self.hash, PS.RUNNING.value)
         print("len starters", len(self.program.starters))
         chunked_starters = chunk(self.program.starters, 100)
         def start_chunk(c):
@@ -663,11 +665,11 @@ class LambdaPackProgram(object):
         client = boto3.client('s3')
         client.put_object(Key="lambdapack/" + self.hash + "/EXCEPTION.DRIVER.CANCELLED", Bucket=self.bucket, Body="cancelled by driver")
         e = PS.EXCEPTION.value
-        put(self.control_plane.client, self.hash, e)
+        put(self.redis_client, self.hash, e)
 
     def return_success(self):
       #print("RETURNING....")
-      put(self.control_plane.client, self.hash, PS.SUCCESS.value)
+      put(self.redis_client, self.hash, PS.SUCCESS.value)
 
 
 
@@ -675,82 +677,82 @@ class LambdaPackProgram(object):
         client = boto3.client('s3')
         client.put_object(Key="lambdapack/" + self.hash + "/EXCEPTION.{0}".format(self._node_str(expr_idx, var_values)), Bucket=self.bucket, Body=tb + str(error))
         e = PS.EXCEPTION.value
-        put(self.control_plane.client, self.hash, e)
+        put(self.redis_client, self.hash, e)
 
     def program_status(self):
-      status = get(self.control_plane.client, self.hash)
+      status = get(self.redis_client, self.hash)
       return PS(int(status))
 
     def incr_up(self, amount):
-      incr(self.control_plane.client, self.up, amount)
+      incr(self.redis_client, self.up, amount)
 
     def incr_repeated_compute(self, amount=1):
-      incr(self.control_plane.client, "{0}_repeated_compute".format(self.hash), amount)
+      incr(self.redis_client, "{0}_repeated_compute".format(self.hash), amount)
 
     def incr_repeated_post_op(self, amount=1):
-      incr(self.control_plane.client, "{0}_repeated_post_op".format(self.hash), amount)
+      incr(self.redis_client, "{0}_repeated_post_op".format(self.hash), amount)
     def incr_repeated_finish(self, amount=1):
-      incr(self.control_plane.client, "{0}_repeated_finish".format(self.hash), amount)
+      incr(self.redis_client, "{0}_repeated_finish".format(self.hash), amount)
 
     def incr_not_ready(self, amount=1):
-      incr(self.control_plane.client, "{0}_not_ready".format(self.hash), amount)
+      incr(self.redis_client, "{0}_not_ready".format(self.hash), amount)
 
     def incr_progress(self):
-      incr(self.control_plane.client, "{0}_progress".format(self.hash))
+      incr(self.redis_client, "{0}_progress".format(self.hash))
 
 
     def incr_flops(self, amount):
       if (amount > 0):
-        incr(self.control_plane.client, "{0}_flops".format(self.hash), amount)
+        incr(self.redis_client, "{0}_flops".format(self.hash), amount)
 
     def incr_read(self, amount):
       if (amount > 0):
-        incr(self.control_plane.client,"{0}_read".format(self.hash), amount)
+        incr(self.redis_client,"{0}_read".format(self.hash), amount)
 
     def incr_sparse_read(self, amount):
       if (amount > 0):
-        incr(self.control_plane.client,"{0}_sparse_read".format(self.hash), amount)
+        incr(self.redis_client,"{0}_sparse_read".format(self.hash), amount)
 
     def incr_write(self, amount):
       if (amount > 0):
-        incr(self.control_plane.client,"{0}_write".format(self.hash), amount)
+        incr(self.redis_client,"{0}_write".format(self.hash), amount)
 
     def incr_sparse_write(self, amount):
       if (amount > 0):
-        incr(self.control_plane.client,"{0}_write_sparse".format(self.hash), amount)
+        incr(self.redis_client,"{0}_write_sparse".format(self.hash), amount)
 
     def decr_flops(self, amount):
       if (amount > 0):
-        decr(self.control_plane.client,"{0}_flops".format(self.hash), amount)
+        decr(self.redis_client,"{0}_flops".format(self.hash), amount)
 
     def decr_read(self, amount):
       if (amount > 0):
-        decr(self.control_plane.client,"{0}_read".format(self.hash), amount)
+        decr(self.redis_client,"{0}_read".format(self.hash), amount)
 
     def decr_write(self, amount):
       if (amount > 0):
-        decr(self.control_plane.client,"{0}_write".format(self.hash), amount)
+        decr(self.redis_client,"{0}_write".format(self.hash), amount)
 
     def decr_up(self, amount):
-      decr(self.control_plane.client,self.up, amount)
+      decr(self.redis_client,self.up, amount)
 
     def get_up(self):
-      return get(self.control_plane.client, self.up)
+      return get(self.redis_client, self.up)
 
     def get_flops(self):
-      return get(self.control_plane.client, "{0}_flops".format(self.hash))
+      return get(self.redis_client, "{0}_flops".format(self.hash))
 
     def get_read(self):
-      return get(self.control_plane.client, "{0}_read".format(self.hash))
+      return get(self.redis_client, "{0}_read".format(self.hash))
 
     def get_write(self):
-      return get(self.control_plane.client, "{0}_write".format(self.hash))
+      return get(self.redis_client, "{0}_write".format(self.hash))
 
     def get_progress(self):
-      return get(self.control_plane.client, "{0}_progress".format(self.hash))
+      return get(self.redis_client, "{0}_progress".format(self.hash))
 
     def set_up(self, value):
-      put(self.control_plane.client, self.up, value)
+      put(self.redis_client, self.up, value)
 
     def wait(self, sleep_time=1):
         status = self.program_status()
