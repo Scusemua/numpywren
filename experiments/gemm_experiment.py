@@ -24,8 +24,6 @@ import numpywren as npw
 import dill
 import traceback
 
-
-
 INFO_FREQ = 5
 
 def parse_int(x):
@@ -77,7 +75,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     if (not matrix_exists):
         X = np.random.randn(problem_size, 1)
         shard_sizes = [shard_size, 1]
-        X_sharded = BigMatrix("gemm_test_{0}_{1}".format(problem_size, shard_size), shape=X.shape, shard_sizes=shard_sizes, write_header=True, autosqueeze=False, bucket="numpywrentest")
+        X_sharded = BigMatrix("gemm_test_{0}_{1}".format(problem_size, shard_size), shape=X.shape, shard_sizes=shard_sizes, write_header=True, autosqueeze=False, bucket="ec2-user-pywren-899")
         shard_matrix(X_sharded, X)
         print("Generating PSD matrix...")
         t = time.time()
@@ -86,9 +84,9 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
         e = time.time()
         print("GEMM took {0}".format(e - t))
     else:
-        X_sharded = BigMatrix("gemm_test_{0}_{1}".format(problem_size, shard_size), autosqueeze=False, bucket="numpywrentest")
+        X_sharded = BigMatrix("gemm_test_{0}_{1}".format(problem_size, shard_size), autosqueeze=False, bucket="ec2-user-pywren-899")
         key_name = binops.generate_key_name_binop(X_sharded, X_sharded.T, "gemm")
-        XXT_sharded = BigMatrix(key_name, hash_keys=False, bucket="numpywrentest")
+        XXT_sharded = BigMatrix(key_name, hash_keys=False, bucket="ec2-user-pywren-899")
     XXT_sharded.lambdav = problem_size*10
     t = time.time()
     program, meta = gemm(XXT_sharded, XXT_sharded.T)

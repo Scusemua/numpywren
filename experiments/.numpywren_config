@@ -1,7 +1,7 @@
 control_plane:
   control_plane_prefix: numpywren.control
   ec2_instance_type: m5.24xlarge
-  ec2_ssh_key: imagenet_exps
+  ec2_ssh_key: CS484_DESKTOP2
   idle_terminate_granularity: 1200
   max_idle_time: 300
   password: potato
@@ -16,7 +16,7 @@ runtime:
   bucket: numpywrenpublic
   s3_key: pywren.runtime/pywren_runtime-3.6-numpywren.tar.gz
 s3:
-  bucket: numpywrentest
+  bucket: ec2-user-pywren-899
   lifespan: 1
   prefix: npw
 logging:
