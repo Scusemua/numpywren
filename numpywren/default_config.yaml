@@ -21,7 +21,7 @@ control_plane:
     max_idle_time: 300
     idle_terminate_granularity: 1200
     control_plane_prefix: numpywren.control
-    ec2_ssh_key : AWS_SSH_KEY
+    ec2_ssh_key : CS484_DESKTOP
 
 logging:
     level: INFO

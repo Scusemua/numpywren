@@ -14,7 +14,6 @@ import pickle
 import pywren.serialize as serialize
 import inspect
 import multiprocessing
-import aiobotocore
 import pywren.wrenconfig as wc
 
 # Need to change in wrenhandler.py, wrenconfig.py, matrix.py, matrix_utils.py, jobrunner.py.
@@ -118,21 +117,7 @@ async def key_exists_async_redis(key, loop = None):
     except Exception:
         raise 
     
-    return exists 
-
-async def key_exists_async(bucket, key, loop=None):
-    '''Return true if a key exists in s3 bucket'''
-    session = aiobotocore.get_session(loop=loop)
-    async with session.create_client('s3', use_ssl=False, verify=False) as client:
-        try:
-            obj = await client.head_object(Bucket=bucket, Key=key)
-            resp = True
-        except botocore.exceptions.ClientError as exc:
-            if exc.response['Error']['Code'] != '404':
-                raise
-            else:
-                resp = False
-    return resp
+    return exists
 
 def block_key_to_block(key):
     try:

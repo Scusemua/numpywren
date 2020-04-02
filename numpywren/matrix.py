@@ -10,7 +10,6 @@ import pickle
 import time
 import struct
 
-import aiobotocore
 import aioredis
 import asyncio
 import boto3
@@ -308,7 +307,6 @@ class BigMatrix(object):
         elif (not exists and dill.loads(self.parent_fn) != None):
             X_block = await dill.loads(self.parent_fn)(self, loop, *block_idx)
         else:
-            #bio = await self.__s3_key_to_byte_io__(key, loop=loop)
             bio = await self.__redis_key_to_byte_io__(key)
             X_block = np.load(bio)
         if (self.autosqueeze):
@@ -404,9 +402,6 @@ class BigMatrix(object):
         key = self.__shard_idx_to_key__(block_idx)
         redis_client = await aioredis.create_redis()
         resp = await redis_client.delete(key)
-        #session = aiobotocore.get_session(loop=loop)
-        #async with session.create_client('s3', use_ssl=False, verify=False, region_name=self.region) as client:
-        #    resp = await client.delete_object(Key=key, Bucket=self.bucket)
         return resp
 
     def free(self):
@@ -526,28 +521,6 @@ class BigMatrix(object):
             raise Exception("Read Failed")
         return bio
 
-    async def __s3_key_to_byte_io__(self, key, loop=None):
-        if (loop == None):
-            loop = asyncio.get_event_loop()
-
-        session = aiobotocore.get_session(loop=loop)
-        async with session.create_client('s3', use_ssl=False, verify=False, region_name=self.region) as client:
-            n_tries = 0
-            max_n_tries = 5
-            bio = None
-            while bio is None and n_tries <= max_n_tries:
-                try:
-                    resp = await client.get_object(Bucket=self.bucket, Key=key)
-                    async with resp['Body'] as stream:
-                        matrix_bytes = await stream.read()
-                    bio = io.BytesIO(matrix_bytes)
-                except Exception as e:
-                    raise
-                    n_tries += 1
-        if bio is None:
-            raise Exception("S3 Read Failed")
-        return bio
-
     async def __save_matrix_to_redis__(self, X, out_key):
         redis_client = await aioredis.create_redis_pool(redis_hostname)
         outb = io.BytesIO()
@@ -556,22 +529,6 @@ class BigMatrix(object):
         await redis_client.set(out_key, outb.getvalue())
         del outb
         del X
-
-    async def __save_matrix_to_s3__(self, X, out_key, loop, client=None):
-        if (loop == None):
-            loop = asyncio.get_event_loop()
-
-        session = aiobotocore.get_session(loop=loop)
-        async with session.create_client('s3', use_ssl=False, verify=False, region_name=self.region) as client:
-            outb = io.BytesIO()
-            np.save(outb, X)
-            response = await client.put_object(Key=out_key,
-                                         Bucket=self.bucket,
-                                         Body=outb.getvalue(),
-                                         ACL="bucket-owner-full-control")
-            del outb
-            del X
-        return None
 
     def __write_header__(self):
         key = os.path.join(self.key_base, "header")
@@ -878,46 +835,6 @@ class RowPivotedBigMatrix(BigMatrix):
                 n_tries += 1
         if row is None:
             raise Exception("Redis Read Failed")
-        return row
-
-    async def __s3_key_to_row__(self, key, row_idx, loop=None):
-        MAGIC_LEN = 6
-        VERSION = 1
-        HEADER_LEN_SIZE = 2
-        HEADER_LEN_START = 8
-        HEADER_LEN_END = 9
-        HEADER_START = 10
-        row = None
-        if (loop == None):
-            loop = asyncio.get_event_loop()
-
-        session = aiobotocore.get_session(loop=loop)
-        async with session.create_client('s3', use_ssl=False, verify=False, region_name=self.region) as client:
-            n_tries = 0
-            max_n_tries = 5
-            bio = None
-            while bio is None and n_tries <= max_n_tries:
-                try:
-                    header_range_query = 'bytes={0}-{1}'.format(HEADER_LEN_START, HEADER_LEN_END)
-                    header_resp = await client.get_object(Bucket=self.bucket, Key=key, Range=header_range_query)["Body"]
-                    async with resp["Body"] as stream:
-                        header_len_bytes = await stream.read()
-                    header_size = struct.unpack("<H", header_len_bytes)[0]
-                    item_size = self.dtype.itemsize
-                    row_start = row_idx*(item_size * self.shape[1])
-                    row_end = (row_idx+1)*((item_size) * self.shape[1]) - 1
-                    query_start = HEADER_START + header_size + row_start
-                    query_end = HEADER_START + header_size + row_end
-                    row_range_query = 'bytes={0}-{1}'.format(query_start, query_end)
-                    resp = await client.get_object(Bucket=self.bucket, Key=key, Range=row_range_query)
-                    async with resp['Body'] as stream:
-                        matrix_bytes = await stream.read()
-                    row = np.frombuffer(matrix_bytes, dtype=self.dtype)
-                except Exception as e:
-                    raise
-                    n_tries += 1
-        if row is None:
-            raise Exception("S3 Read Failed")
         return row
 
         # convert rows in permutation dict to what block they belong to
