@@ -27,7 +27,7 @@ from .matrix_utils import list_all_keys, block_key_to_block, get_local_matrix, k
 from . import utils
 
 # Need to change in wrenhandler.py, wrenconfig.py, matrix.py, matrix_utils.py, jobrunner.py.
-redis_hostname = 'redis://ec2-54-221-8-100.compute-1.amazonaws.com'
+redis_hostname = 'redis://ec2-54-208-187-69.compute-1.amazonaws.com'
 cpu_count = multiprocessing.cpu_count()
 logger = logging.getLogger('numpywren')
 

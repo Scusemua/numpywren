@@ -358,7 +358,7 @@ def interactive_setup(ctx):
     default_yaml["iam"]["role_name"] = npw.config.AWS_ROLE_DEFAULT
     default_yaml["iam"]["instance_profile_name"] = npw.config.AWS_INSTANCE_PROFILE_DEFAULT
     try:
-        ec2_client = boto3.client('ec2')
+        ec2_client = boto3.client('ec2', region_name = "us-east-1")
         response = ec2_client.describe_key_pairs()
         key_pairs = [x['KeyName'] for x in response["KeyPairs"]]
         key_pair = key_pairs[0]

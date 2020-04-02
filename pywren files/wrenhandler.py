@@ -35,7 +35,7 @@ import boto3
 import botocore
 
 # Need to change in wrenhandler.py, wrenconfig.py, matrix.py, matrix_utils.py, jobrunner.py.
-redis_client = redis.StrictRedis(host = "ec2-54-221-8-100.compute-1.amazonaws.com", port = 6379)
+redis_client = redis.StrictRedis(host = "ec2-54-208-187-69.compute-1.amazonaws.com", port = 6379)
 
 if sys.version_info > (3, 0):
     from queue import Queue, Empty # pylint: disable=import-error

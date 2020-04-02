@@ -7,8 +7,8 @@ control_plane:
   password: potato
   port: 6379
   spot_price: 0.0
-  #target_ami: ami-759bc50a
-  target_ami: ami-db710fa3
+  target_ami: ami-759bc50a
+  #target_ami: ami-db710fa3
 iam:
   instance_profile_name: numpywren_exec_instance_profile
   role_name: numpywren_exec_role_1

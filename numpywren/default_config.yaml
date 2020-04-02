@@ -13,7 +13,8 @@ runtime:
 
 control_plane:
     ec2_instance_type: m4.4xlarge
-    target_ami : ami-db710fa3
+    #target_ami : ami-db710fa3
+    target_ami: ami-759bc50a
     password: potato
     spot_price: 0.0
     port: 6379

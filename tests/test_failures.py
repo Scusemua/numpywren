@@ -95,7 +95,7 @@ class FailureTests(unittest.TestCase):
         print("Program status")
         print(program.program_status())
         for node in all_nodes:
-            edge_sum = lp.get(program.control_plane.client, program._node_edge_sum_key(*node))
+            edge_sum = lp.get(program.redis_client, program._node_edge_sum_key(*node))
             if (edge_sum == None):
                 edge_sum = 0
             edge_sum = int(edge_sum)
@@ -109,7 +109,7 @@ class FailureTests(unittest.TestCase):
                 for p in parents:
                     p_status = program.get_node_status(*p)
                     edge_key = program._edge_key(p[0], p[1], node[0], node[1])
-                    edge_value = lp.get(program.control_plane.client, edge_key)
+                    edge_value = lp.get(program.redis_client, edge_key)
                     child_str = "Parent Node: {0}, Parent Status: {1}, Edge Key: {2}".format(p, p_status, edge_value)
                     print(child_str)
             #assert(edge_sum == indegree)

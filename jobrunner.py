@@ -16,6 +16,7 @@
 
 from __future__ import print_function
 import os
+import traceback
 import base64
 import shutil
 import json
@@ -23,7 +24,7 @@ import sys
 import time
 import boto3
 from botocore.vendored.requests.packages.urllib3.exceptions import ReadTimeoutError
-
+#from requests.packages.urllib3.exceptions import ReadTimeoutError
 
 from six.moves import cPickle as pickle
 from tblib import pickling_support
@@ -150,8 +151,12 @@ try:
     pickled_output = pickle.dumps(output_dict)
 
 except Exception as e:
+    print("[ERROR] Encountered exception.\n{}".format(e))
     exc_type, exc_value, exc_traceback = sys.exc_info()
     #traceback.print_tb(exc_traceback)
+    print("Traceback:")
+    traceback.print_tb(exc_traceback)   
+    print("Exeception Type: {}\nException Value: {}\nTraceback: {}".format(exc_type, exc_value, exc_traceback))    
 
     # Shockingly often, modules like subprocess don't properly
     # call the base Exception.__init__, which results in them
