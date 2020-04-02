@@ -13,7 +13,6 @@ import time
 import traceback
 import sys
 
-import aiobotocore
 import aiohttp
 import asyncio
 import boto3

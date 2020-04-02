@@ -22,7 +22,7 @@ import dill
 from collections import defaultdict
 
 from . import matrix_utils
-from .matrix_utils import list_all_keys, block_key_to_block, get_local_matrix, key_exists_async, key_exists_async_redis
+from .matrix_utils import list_all_keys, block_key_to_block, get_local_matrix, key_exists_async_redis
 from . import utils
 
 # Need to change in wrenhandler.py, wrenconfig.py, matrix.py, matrix_utils.py, jobrunner.py.
@@ -297,7 +297,6 @@ class BigMatrix(object):
             print("shape", self.shape)
             raise Exception("Get block query does not match shape {0} vs {1}".format(block_idx, self.shape))
         key = self.__shard_idx_to_key__(block_idx)
-        #exists = await key_exists_async(self.bucket, key, loop)
         exists = await key_exists_async_redis(key, loop = loop)
         if (not exists and dill.loads(self.parent_fn) == None):
             logger.warning(self.bucket)
@@ -349,7 +348,6 @@ class BigMatrix(object):
 
         key = self.__shard_idx_to_key__(block_idx)
         if (no_overwrite):
-            #exists = await key_exists_async(self.bucket, key, loop)
             exists = await key_exists_async_redis(key, loop)
             if (exists):
                 old_block = await self.get_block_async(loop, *block_idx)
