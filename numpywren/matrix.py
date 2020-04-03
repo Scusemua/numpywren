@@ -304,7 +304,7 @@ class BigMatrix(object):
             logger.warning(self.bucket)
             logger.warning(key)
             logger.warning(block_idx)
-            raise Exception("Key {0} does not exist, and no parent function prescripted".format(key))
+            raise Exception("Key \"{0}\" does not exist, and no parent function prescripted".format(key))
         elif (not exists and dill.loads(self.parent_fn) != None):
             X_block = await dill.loads(self.parent_fn)(self, loop, *block_idx)
         else:
@@ -349,6 +349,7 @@ class BigMatrix(object):
             loop = asyncio.get_event_loop()
 
         key = self.__shard_idx_to_key__(block_idx)
+        print("[REDIS] PutBlock into Redis for key \"{}\"".format(key))
         if (no_overwrite):
             exists = await key_exists_async_redis(key, loop)
             if (exists):
