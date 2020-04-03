@@ -3,6 +3,7 @@ import io
 import itertools
 import os
 import time
+import traceback
 
 import aioredis 
 import boto3
@@ -83,6 +84,8 @@ def load_mmap(mmap_loc, mmap_shape, mmap_dtype):
     return np.memmap(mmap_loc, dtype=mmap_dtype, mode='r+', shape=mmap_shape)
 
 def list_all_keys(bucket, prefix):
+    print("[WARNING] list_all_keys (S3) called!!! Prefix: {}, Bucket: {}".format(prefix, bucket))
+    print(traceback.print_stack())
     client = boto3.client('s3')
     objects = client.list_objects(Bucket=bucket, Prefix=prefix + "/", Delimiter=prefix)
     if (objects.get('Contents') == None):
@@ -100,6 +103,8 @@ def list_all_keys(bucket, prefix):
 
 def key_exists(bucket, key):
     '''Return true if a key exists in s3 bucket'''
+    print("[WARNING] key_exists for S3 called!!! Key: {}, Bucket: {}".format(key, bucket))
+    print(traceback.print_stack())
     client = boto3.client('s3')
     try:
         obj = client.head_object(Bucket=bucket, Key=key)

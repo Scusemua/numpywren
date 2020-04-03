@@ -160,6 +160,7 @@ def gemm(pwex, X, Y, out_bucket=None, tasks_per_job=1, local=False, dtype=np.flo
     def pywren_run(x):
         return _gemms[gemm_impl](x, XY, X, Y, reduce_idxs=reduce_idxs, dtype=dtype, block_chunk_size=gemm_chunk_size)
 
+    print("Number of chunked blocks: {}".format(len(chunked_blocks)))
     all_futures = []
     for i, c in enumerate(chunked_blocks):
         print("Submitting job for chunk {0} in axis 0".format(i))

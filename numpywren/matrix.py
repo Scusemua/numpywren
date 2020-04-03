@@ -9,6 +9,7 @@ import os
 import pickle
 import time
 import struct
+import traceback
 
 import aioredis
 import asyncio
@@ -476,6 +477,8 @@ class BigMatrix(object):
             return os.path.join(self.key_base, key_string)
 
     def __read_header__(self):
+        print("[WARNING] __read_header__ called!!!")
+        print(traceback.print_stack())
         client = boto3.client('s3')
         try:
             key = os.path.join(self.key_base, "header")
@@ -486,6 +489,8 @@ class BigMatrix(object):
         return header
 
     def __delete_header__(self):
+        print("[WARNING] __delete_header__ called!!!")
+        print(traceback.print_stack())        
         key = os.path.join(self.key_base, "header")
         client = boto3.client('s3')
         client.delete_object(Bucket=self.bucket, Key=key)
@@ -536,6 +541,8 @@ class BigMatrix(object):
         del X
 
     def __write_header__(self):
+        print("[WARNING] __write_header__ called!!!")
+        print(traceback.print_stack())           
         key = os.path.join(self.key_base, "header")
         client = boto3.client('s3')
         header = {}
