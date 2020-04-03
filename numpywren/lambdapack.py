@@ -649,11 +649,11 @@ class LambdaPackProgram(object):
             queue.send_message(MessageBody=json.dumps([x[0], {str(key): val for key, val in x[1].items()}]))
         if (parallel):
           pwex = pywren.default_executor()
-          print("Mapping function 'start_chunk' over {} chunked starters.".format(len(chunked_starters)))
+          print("Mapping function 'start_chunk' over chunked starters.")
           futures = pwex.map(start_chunk, chunked_starters)
           pywren.wait(futures)
         else:
-          print("Iteratively executing function 'start_chunk' for {} chunked starters.".format(len(chunked_starters)))
+          print("Iteratively executing function 'start_chunk' for the chunked starters.")
           for c in chunked_starters:
             start_chunk(c)
           return 0
