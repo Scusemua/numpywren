@@ -238,8 +238,8 @@ async def read(read_queue, compute_queue, program, loop):
                program.incr_read(read_size)
             except (GeneratorExit, RuntimeError):
                pass
-            except:
-                print("EXCEPTION")
+            except Exception as ex:
+                print("EXCEPTION: {}".format(str(ex)))
                 loop.close()
                 instr.run = True
                 instr.cache = None
@@ -247,6 +247,7 @@ async def read(read_queue, compute_queue, program, loop):
                 program.decr_up(1)
                 traceback.print_exc()
                 tb = traceback.format_exc()
+                print("Traceback:\n{}".format(tb))
                 self.program.handle_exception("READ_EXCEPTION", tb=tb, expr_idx=expr_idx, var_values=var_values)
                 loop.stop()
                 raise
@@ -440,7 +441,7 @@ async def lambdapack_run_async(loop, program, computer, cache, shared_state, rea
                   print("program status is ", s)
                   print("program stopped returning now!")
                   loop.stop()
-                  break;
+                  break
             await asyncio.sleep(0)
             # go from high priority -> low priority
             for queue_url in program.queue_urls[::-1]:
