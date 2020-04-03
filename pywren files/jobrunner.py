@@ -166,11 +166,12 @@ try:
     # FIXME make this streaming
     print("Got data from Redis. Trying to deserialize it now.")
     loaded_data = pickle.loads(data_obj_stream)
+    print("Deserialized data from Redis successfully.")
     data_download_time_t2 = time.time()
     write_stat('data_download_time',
                data_download_time_t2-data_download_time_t1)
 
-    print("Executing function now...")
+    print("Executing function {} with arguments {} now.".format(loaded_func, loaded_data))
     y = loaded_func(loaded_data)
     print("Function executed successfully!")
     output_dict = {'result' : y,

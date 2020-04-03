@@ -411,9 +411,15 @@ def generic_handler(event, context_dict, custom_handler_env=None):
         t.daemon = True
         t.start()
 
+        logger.info("Created and started consume_stdout thread.")
+
+        print("t.isAlive == {}\nprocess.returncode == {}\nPolling for output/updates from process now...".format(t.isAlive(), process.returncode))
+
         stdout = b""
         while t.isAlive() or process.returncode is None:
             #logger.info("Running {} {}".format(time.time(), process.returncode))
+            if (t.isAlive() == False):
+                print("t.isAlive() == False... process.returncode == {}".format(process.returncode))            
             try:
                 line = q.get_nowait()
                 stdout += line

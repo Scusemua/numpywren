@@ -156,6 +156,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     exp["failed"] = False
 
     t = time.time()
+    print("[{}] Starting program!".format(datetime.datetime.utcnow()))
     program.start(parallel=True)
     e = time.time()
     print("[{}] Program start took {} seconds.".format(datetime.datetime.utcnow(), e - t))

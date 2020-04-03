@@ -654,6 +654,7 @@ class LambdaPackProgram(object):
           futures = pwex.map(start_chunk, chunked_starters)
           print("Waiting for start_chunk functions to finish...")
           pywren.wait(futures)
+          print("Futures for start_chunk have finished!")
         else:
           print("Iteratively executing function 'start_chunk' for the chunked starters.")
           for c in chunked_starters:

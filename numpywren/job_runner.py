@@ -383,7 +383,8 @@ async def reset_msg_visibility(msg, queue_url, loop, timeout, timeout_jitter, lo
             operator_ref = tuple(json.loads(msg["Body"]))
             session = aiobotocore.get_session(loop=loop)
             async with session.create_client('sqs', use_ssl=False,  region_name="us-west-2") as sqs_client:
-               res = await sqs_client.change_message_visibility(VisibilityTimeout=60, QueueUrl=queue_url, ReceiptHandle=receipt_handle)
+                print("Calling 'change_message_visibility' for queue \"{}\". Changing VisibilityTimeout to 60.".format(queue_url))
+                res = await sqs_client.change_message_visibility(VisibilityTimeout=60, QueueUrl=queue_url, ReceiptHandle=receipt_handle)
             num_tries += 1
             await asyncio.sleep(30)
 
@@ -444,6 +445,7 @@ async def lambdapack_run_async(loop, program, computer, cache, shared_state, rea
             # go from high priority -> low priority
             for queue_url in program.queue_urls[::-1]:
                 async with session.create_client('sqs', use_ssl=False,  region_name=program.control_plane.region) as sqs_client:
+                    print("Attempting to receive messages from SQS Queue with URL \"{}\".".format(queue_url))
                     messages = await sqs_client.receive_message(QueueUrl=queue_url, MaxNumberOfMessages=1, VisibilityTimeout=200)
                 if ("Messages" not in messages):
                     continue
@@ -467,7 +469,7 @@ async def lambdapack_run_async(loop, program, computer, cache, shared_state, rea
             operator_ref = json.loads(msg["Body"])
             shared_state["tot_messages"].append(operator_ref)
             redis_client.set(msg["MessageId"], str(time.time()))
-            print("creating lock")
+            print("Creating lock")
             lock = [1]
             coro = reset_msg_visibility(msg, queue_url, loop, msg_vis_timeout, msg_vis_timeout_jitter, lock)
             loop.create_task(coro)
@@ -482,6 +484,7 @@ async def lambdapack_run_async(loop, program, computer, cache, shared_state, rea
                 profiles[str(operator_ref)] = p_info
             async with session.create_client('sqs', use_ssl=False,  region_name=program.control_plane.region) as sqs_client:
                 lock[0] = 0
+                print("Deleting message from SQS queue with URL \"{}\".".format(queue_url))
                 await sqs_client.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)
             end_processing_time = time.time()
             running_times.append((start_processing_time, end_processing_time))
