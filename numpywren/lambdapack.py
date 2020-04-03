@@ -644,10 +644,13 @@ class LambdaPackProgram(object):
         chunked_starters = chunk(self.program.starters, 100)
         def start_chunk(c):
           sqs = boto3.resource('sqs')
+          print("LambdaPack.Start() -- Creating local reference to SQS queue with URL \"{}\".".format(self.queue_urls[0]))
           queue = sqs.Queue(self.queue_urls[0])
           for x in c:
             self.set_node_status(*x, NS.READY)
-            queue.send_message(MessageBody=json.dumps([x[0], {str(key): val for key, val in x[1].items()}]))
+            message_body = MessageBody=json.dumps([x[0], {str(key): val for key, val in x[1].items()}])
+            print("Sending message to queue {}: {}".format(self.queue_urls[0], message_body))
+            queue.send_message(message_body)
         if (parallel):
           pwex = pywren.default_executor()
           print("Mapping function 'start_chunk' over chunked starters.")
