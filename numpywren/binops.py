@@ -117,6 +117,13 @@ def gemm(pwex, X, Y, out_bucket=None, tasks_per_job=1, local=False, dtype=np.flo
         @param local - run locally? #TODO remove once local pywren executor is provided
     '''
     # 0 -> 1 or 1 -> 0
+    print("====== binops.gemm ======")
+    print("out_bucket: {}".format(out_bucket))
+    print("tasks_per_job: {}".format(tasks_per_job))
+    print("local: {}".format(local))
+    print("overwrite: {}".format(overwrite))
+    print("gemm_chunk_size: {}".format(gemm_chunk_size))
+    print("=========================")
 
     reduce_idxs = Y._block_idxs(axis=0)
     if (out_bucket == None):
@@ -125,6 +132,8 @@ def gemm(pwex, X, Y, out_bucket=None, tasks_per_job=1, local=False, dtype=np.flo
     root_key = generate_key_name_binop(X, Y, "gemm")
     if (Y.shard_sizes[0] !=  X.shard_sizes[1]):
         raise Exception("X dim 1 shard size must match Y dim 0 shard size")
+    
+    print("Creating 'BigMatrix' from input arrays in binops.gemm.")
     XY = BigMatrix(root_key, shape=(X.shape[0], Y.shape[1]), bucket=out_bucket, shard_sizes=[X.shard_sizes[0], Y.shard_sizes[1]], dtype=dtype, write_header=True)
 
 
@@ -133,16 +142,16 @@ def gemm(pwex, X, Y, out_bucket=None, tasks_per_job=1, local=False, dtype=np.flo
         tasks_per_job = 1
     num_jobs = int(num_out_blocks/float(tasks_per_job))
 
-    print("Out Shape", XY.shape)
-    print("Total number of output blocks", len(XY.block_idxs))
-    print("Total number of output blocks that exist", len(XY.blocks_exist))
+    print("Out Shape:", XY.shape)
+    print("Total number of output blocks:", len(XY.block_idxs))
+    print("Total number of output blocks that exist:", len(XY.blocks_exist))
 
     if (overwrite):
         block_idxs_to_map = list(set(XY.block_idxs))
     else:
         block_idxs_to_map = list(set(XY.block_idxs_not_exist))
 
-    print("Number of output blocks to generate ", len(block_idxs_to_map))
+    print("Number of output blocks to generate: ", len(block_idxs_to_map))
     chunked_blocks = list(chunk(list(chunk(block_idxs_to_map, tasks_per_job)), num_jobs))
     if (not isinstance(pwex.invoker, pywren.queues.SQSInvoker) and gemm_impl > 0):
             raise Exception("GEMM IMPL > 0 only supported for standalone mode pywren")
@@ -168,7 +177,7 @@ def gemm(pwex, X, Y, out_bucket=None, tasks_per_job=1, local=False, dtype=np.flo
         return XY
 
     for i, futures, in all_futures:
-        print("waiting")
+        print("Waiting for gemm() futures to finish.")
         pywren.wait(futures)
         [f.result() for f in futures]
 

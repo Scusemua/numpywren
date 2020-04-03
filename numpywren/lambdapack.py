@@ -86,6 +86,7 @@ def put(client, key, value, s3=False, s3_bucket=""):
 
 def upload(key, bucket, data):
     client = boto3.client('s3')
+    print("[LambdaPack] Storing object in S3 at key {} in bucket {}.".format(key, bucket))
     client.put_object(Bucket=bucket, Key=key, Body=data)
 
 def get(client, key, s3=False, s3_bucket=""):

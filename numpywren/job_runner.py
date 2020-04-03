@@ -78,6 +78,7 @@ class LambdaPackExecutor(object):
 
     #@profile
     async def run(self, expr_idx, var_values, computer=None, profile=True):
+        print("LambdaPackExecutor -- Run!")
         operator_refs = [(expr_idx, var_values)]
         event = asyncio.Event()
         operator_refs_to_ret = []
