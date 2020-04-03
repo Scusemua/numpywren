@@ -190,6 +190,9 @@ async def check_failure(loop, program, failure_key):
 
 
 def lambdapack_run_with_failures(failure_key, program, pipeline_width=5, msg_vis_timeout=60, cache_size=0, timeout=200, idle_timeout=5, msg_vis_timeout_jitter=15, compute_threads=1):
+    print("[JOB_RUNNER] lambdapack_run_with_failures ====")
+    print("Failure Key: {}".format(failure_key))
+    print("==============================================")
     program.incr_up(1)
     lambda_start = time.time()
     loop = asyncio.new_event_loop(200)
@@ -316,6 +319,7 @@ async def write(write_queue, program, loop, start_time, timeout):
 
 #@profile
 def lambdapack_run(program, pipeline_width=5, msg_vis_timeout=60, cache_size=5, timeout=200, idle_timeout=5, msg_vis_timeout_jitter=15, compute_threads=1):
+    print("[JOB_RUNNER] lambdapack_run")
     program.incr_up(1)
     lambda_start = time.time()
     loop = asyncio.new_event_loop()
@@ -420,6 +424,7 @@ async def check_program_state(program, loop, shared_state, timeout, idle_timeout
 #@profile
 async def lambdapack_run_async(loop, program, computer, cache, shared_state, read_queue, pipeline_width=1, msg_vis_timeout=60, timeout=200, msg_vis_timeout_jitter=15):
     global REDIS_CLIENT
+    print("[JOB_RUNNER] lambdapack_run_async")
     session = aiobotocore.get_session(loop=loop)
     lmpk_executor = LambdaPackExecutor(program, loop, cache, read_queue)
     start_time = time.time()
@@ -465,6 +470,7 @@ async def lambdapack_run_async(loop, program, computer, cache, shared_state, rea
             #last_message_time = time.time()
             start_processing_time = time.time()
             msg = messages["Messages"][0]
+            print("Received message from SQS: {}".format(msg))
             receipt_handle = msg["ReceiptHandle"]
             # if we don't finish in 75s count as a failure
             #res = sqs_client.change_message_visibility(VisibilityTimeout=90, QueueUrl=queue_url, ReceiptHandle=receipt_handle)
