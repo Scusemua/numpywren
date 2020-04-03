@@ -524,6 +524,7 @@ class LambdaPackProgram(object):
       return NS(int(s))
 
     def set_node_status(self, expr_id, var_values, status):
+      print("Storing status {} with key {} in control-plane Redis client.".format(status.value, self._node_key(expr_id, var_values)))
       put(self.control_plane.client, self._node_key(expr_id, var_values), status.value)
       return status
 
@@ -651,6 +652,7 @@ class LambdaPackProgram(object):
           pwex = pywren.default_executor()
           print("Mapping function 'start_chunk' over chunked starters.")
           futures = pwex.map(start_chunk, chunked_starters)
+          print("Waiting for start_chunk functions to finish...")
           pywren.wait(futures)
         else:
           print("Iteratively executing function 'start_chunk' for the chunked starters.")
