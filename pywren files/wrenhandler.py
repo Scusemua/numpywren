@@ -29,13 +29,9 @@ from threading import Thread
 import io
 import tempfile
 import platform
-import redis 
 
 import boto3
 import botocore
-
-# Need to change in wrenhandler.py, wrenconfig.py, matrix.py, matrix_utils.py, jobrunner.py.
-redis_client = redis.StrictRedis(host = "ec2-54-208-187-69.compute-1.amazonaws.com", port = 6379)
 
 if sys.version_info > (3, 0):
     from queue import Queue, Empty # pylint: disable=import-error
@@ -79,9 +75,6 @@ def get_key_size(s3client, bucket, key):
             return None
         else:
             raise e
-
-def key_exists_redis(key):
-    return redis_client.exists(key)
 
 def key_exists(s3client, bucket, key):
     return get_key_size(s3client, bucket, key) is not None
@@ -251,7 +244,7 @@ def generic_handler(event, context_dict, custom_handler_env=None):
         cancel_key = event['cancel_key']
 
         # Check for cancel
-        if key_exists_redis(cancel_key):
+        if key_exists(cancel_key):
             logger.info("invocation cancelled")
             raise Exception("CANCELLED", "Function cancelled")
         time_of_last_cancel_check = time.time()
@@ -287,13 +280,12 @@ def generic_handler(event, context_dict, custom_handler_env=None):
         response_status['status_key'] = status_key
 
         #data_key_size = get_key_size(s3_client, s3_bucket, data_key)
-        exists = key_exists_redis(data_key)
+        data_key_size = get_key_size(s3_client, s3_bucket, data_key)
         #logger.info("bucket=", s3_bucket, "key=", data_key,  "status: ", data_key_size, "bytes" )
-        while exists is False:
+        while data_key_size is None:
             logger.warning("WARNING COULD NOT GET FIRST KEY")
 
-            #data_key_size = get_key_size(s3_client, s3_bucket, data_key)
-            exists = key_exists_redis(data_key)
+            data_key_size = get_key_size(s3_client, s3_bucket, data_key)
         if not event['use_cached_runtime']:
             shutil.rmtree(RUNTIME_LOC, True)
             os.mkdir(RUNTIME_LOC)
@@ -417,8 +409,7 @@ def generic_handler(event, context_dict, custom_handler_env=None):
             time_since_cancel_check = time.time() - time_of_last_cancel_check
             if time_since_cancel_check > CANCEL_CHECK_EVERY_SECS:
 
-                #if key_exists(s3_client, s3_bucket, cancel_key):
-                if key_exists_redis(cancel_key):
+                if key_exists(s3_client, s3_bucket, cancel_key):
                     logger.info("invocation cancelled")
                     # kill the process
                     kill_process(process)
@@ -467,9 +458,10 @@ def generic_handler(event, context_dict, custom_handler_env=None):
         response_status['exception_args'] = e.args
         response_status['exception_traceback'] = traceback.format_exc()
     finally:
-        print("Attempting to store status data in Redis at key {}".format(status_key))
+        print("Attempting to store status data in S3 at key {}".format(status_key))
         print("Response Status: {}".format(response_status))
-        redis_client.set(status_key, json.dumps(response_status))
+        boto3.client("s3").put_object(Bucket=s3_bucket, Key=status_key,
+                                      Body=json.dumps(response_status))
         # creating new client in case the client has not been created
         #boto3.client("s3").put_object(Bucket=s3_bucket, Key=status_key,
         #                              Body=json.dumps(response_status))
