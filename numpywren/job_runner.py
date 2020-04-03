@@ -27,7 +27,7 @@ import hashlib
 REDIS_CLIENT = None
 logger = logging.getLogger(__name__)
 
-data_redis_client = redis.Redis(host = "ec2-54-160-229-49.compute-1.amazonaws.com", port = 6379)
+data_redis_client = redis.Redis(host = "ec2-3-87-92-30.compute-1.amazonaws.com", port = 6379)
 
 def mem():
    mem_bytes = os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES')
@@ -415,7 +415,7 @@ async def check_program_state(program, loop, shared_state, timeout, idle_timeout
         #TODO make this coroutine friendly
         await asyncio.sleep(idle_timeout)
 
-
+#TODO: ADD PRINTS EVERYWHERE LIKE IN WORKING VERSION.
 
 #@profile
 async def lambdapack_run_async(loop, program, computer, cache, shared_state, read_queue, pipeline_width=1, msg_vis_timeout=60, timeout=200, msg_vis_timeout_jitter=15):
