@@ -399,7 +399,9 @@ class BigMatrix(object):
         if (loop == None):
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
+        print("[REDIS] Deleting block(s) at index(es) {}".format(block_idx))
         key = self.__shard_idx_to_key__(block_idx)
+        print("\t\t[REDIS] Block-to-delete key: {}".format(key))
         redis_client = await aioredis.create_redis()
         resp = await redis_client.delete(key)
         return resp
@@ -510,6 +512,7 @@ class BigMatrix(object):
         while bio is None and n_tries <= max_n_tries:
             try:
                 redis_client = await aioredis.create_redis_pool(redis_hostname)
+                print("[REDIS] Retrieving data from Redis at key \"{}\".".format(key))
                 matrix_bytes = await redis_client.get(key) 
                 #async with resp as stream:
                 #    matrix_bytes = await stream.read()
@@ -526,7 +529,7 @@ class BigMatrix(object):
         outb = io.BytesIO()
         np.save(outb, X)
 
-        print("Storing matrix with key {} in Redis.".format(out_key))
+        print("[REDIS] Storing matrix with key {} in Redis.".format(out_key))
         await redis_client.set(out_key, outb.getvalue())
         del outb
         del X
@@ -812,6 +815,7 @@ class RowPivotedBigMatrix(BigMatrix):
         while bio is None and n_tries <= max_n_tries:
             try:
                 header_range_query = 'bytes={0}-{1}'.format(HEADER_LEN_START, HEADER_LEN_END)
+                print("[REDIS] Getting row(?) from Redis at key \"{}\".".format(key))
                 header_resp = await redis_client.get(key)
                 #header_resp = await client.get_object(Bucket=self.bucket, Key=key, Range=header_range_query)["Body"]
                 
@@ -826,6 +830,7 @@ class RowPivotedBigMatrix(BigMatrix):
                 query_end = HEADER_START + header_size + row_end
                 row_range_query = 'bytes={0}-{1}'.format(query_start, query_end)
                 #resp = await client.get_object(Bucket=self.bucket, Key=key, Range=row_range_query)
+                print("[REDIS] Getting value from Redis at key \"{}\".".format(key))
                 resp = await redis_client.get(key)
                 resp = resp[query_start:query_end]
                 async with resp['Body'] as stream:

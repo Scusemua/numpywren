@@ -391,12 +391,14 @@ def generic_handler(event, context_dict, custom_handler_env=None):
         # reasons for setting process group: http://stackoverflow.com/a/4791612
 
         if os.name == 'nt':
-            process = subprocess.Popen(cmdstr, shell=True, env=local_env,
+            #process = subprocess.Popen(cmdstr, shell=True, env=local_env,
+            process = subprocess.Popen(cmdstr, shell=False, env=local_env,
                                        bufsize=1, stdout=subprocess.PIPE,
                                        creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
         else:
             process = subprocess.Popen(cmdstr, # pylint: disable=subprocess-popen-preexec-fn
-                                       shell=True, env=local_env, bufsize=1,
+                                       #shell=True, env=local_env, bufsize=1,
+                                       shell=False, env=local_env, bufsize=1,                                       
                                        stdout=subprocess.PIPE, preexec_fn=os.setsid)
         logger.info("launched process")
 

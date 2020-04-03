@@ -96,7 +96,7 @@ def get_object_with_backoff_redis(key, max_tries=MAX_TRIES, backoff=BACKOFF, **e
 try:
     func_download_time_t1 = time.time()
 
-    print("Attempting to download func_obj_stream from S3...")
+    print("Attempting to download func_obj_stream from Redis...")
 
     func_obj_stream = get_object_with_backoff_redis(key=func_key)
 
