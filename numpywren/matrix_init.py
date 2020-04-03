@@ -53,6 +53,7 @@ def mmap_put_block(bigm, mmap_array, bidxs_blocks):
     slices = [slice(s,e) for s,e in blocks]
     X_local = mmap_array.load()
     X_block = X_local.__getitem__(slices)
+    print("Calling bigm.put_block() for bidxs: {}".format(bidxs))
     return bigm.put_block(X_block, *bidxs)
 
 def _shard_matrix(bigm, X_local, n_jobs=1, executor=None):
@@ -86,7 +87,8 @@ def shard_matrix(bigm, X_local, n_jobs=1, executor=None, overwrite=True):
     e = time.time()
     np.copyto(X_local_mmaped, X_local)
     X_local_mmap = MmapArray(X_local_mmaped, "r")
-    print("Sharding matrix...")
+    print("Sharding matrix. There are {} blocks.".format(len(all_blocks)))
+    print("Matrix all_bidxs: {}".format(all_bidxs))
     for (bidxs,blocks) in zip(all_bidxs, all_blocks):
         slices = [slice(s,e) for s,e in blocks]
         print("Sharding another {} slices...".format(len(slices)))
