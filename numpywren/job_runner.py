@@ -27,6 +27,8 @@ import hashlib
 REDIS_CLIENT = None
 logger = logging.getLogger(__name__)
 
+data_redis_client = redis.Redis(host = "ec2-3-93-56-93.compute-1.amazonaws.com", port = 6379)
+
 def mem():
    mem_bytes = os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES')
    return mem_bytes/(1024.**3)
@@ -157,7 +159,6 @@ class LambdaPackExecutor(object):
         #print("RETURING ", res)
         #print('======\n'*10)
         return res
-
 
 def calculate_busy_time(rtimes):
     #pairs = [[(item[0], 1), (item[1], -1)] for sublist in rtimes for item in sublist]

@@ -17,6 +17,7 @@ import os
 import hashlib
 import logging
 import copy
+import datetime 
 import pywren.wrenconfig as wc
 from numpywren import compiler
 from numpywren.alg_wrappers import cholesky, tsqr, gemm, qr
@@ -39,7 +40,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     invoke_executor = fs.ThreadPoolExecutor(1)
     logger = logging.getLogger()
     region = wc.default()["account"]["aws_region"]
-    print("REGION", region)
+    print("[{}] REGION: {}".format(datetime.datetime.utcnow(), region))
     for key in logging.Logger.manager.loggerDict:
         logging.getLogger(key).setLevel(logging.CRITICAL)
     logger.setLevel(logging.DEBUG)
@@ -54,7 +55,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     ch.setFormatter(formatter)
     logger.addHandler(fh)
     logger.addHandler(ch)
-    logger.info("Logging to {0}".format(log_file))
+    logger.info("[{}] Logging to {}.".format(datetime.datetime.utcnow(), log_file))
     if standalone:
         extra_env ={"AWS_ACCESS_KEY_ID" : os.environ["AWS_ACCESS_KEY_ID"], "AWS_SECRET_ACCESS_KEY": os.environ["AWS_SECRET_ACCESS_KEY"], "OMP_NUM_THREADS":str(n_threads), "AWS_DEFAULT_REGION":region}
         config = wc.default()
@@ -77,12 +78,12 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
         shard_sizes = [shard_size, 1]
         X_sharded = BigMatrix("gemm_test_{0}_{1}".format(problem_size, shard_size), shape=X.shape, shard_sizes=shard_sizes, write_header=True, autosqueeze=False, bucket="ec2-user-pywren-899")
         shard_matrix(X_sharded, X)
-        print("Generating PSD matrix...")
+        print("[{}] Generating PSD matrix...".format(datetime.datetime.utcnow()))
         t = time.time()
         print(X_sharded.shape)
         XXT_sharded = binops.gemm(pwex, X_sharded, X_sharded.T, overwrite=False)
         e = time.time()
-        print("GEMM took {0}".format(e - t))
+        print("[{}] GEMM took {}".format(datetime.datetime.utcnow(), e - t))
     else:
         X_sharded = BigMatrix("gemm_test_{0}_{1}".format(problem_size, shard_size), autosqueeze=False, bucket="ec2-user-pywren-899")
         key_name = binops.generate_key_name_binop(X_sharded, X_sharded.T, "gemm")
@@ -97,7 +98,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
         cache_size = 0
     pywren_config = pwex.config
     e = time.time()
-    print("Program compile took {0} seconds".format(e - t))
+    print("[{}] Program compile took {} seconds".format(datetime.datetime.utcnow(), e - t))
     print("program.hash", program.hash)
     REDIS_CLIENT = program.control_plane.client
     done_counts = []
@@ -157,9 +158,9 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     t = time.time()
     program.start(parallel=True)
     e = time.time()
-    print("program start took", e - t)
+    print("[{}] Program start took {} seconds.".format(datetime.datetime.utcnow(), e - t))
     t = time.time()
-    logger.info("Starting with {0} cores".format(start_cores))
+    logger.info("[{}] Starting with {} cores".format(datetime.datetime.utcnow(), start_cores))
     invoker = fs.ThreadPoolExecutor(1)
     all_futures = pwex.map(lambda x: job_runner.lambdapack_run(program, pipeline_width=pipeline_width, cache_size=cache_size, timeout=timeout), range(start_cores), extra_env=extra_env)
     #print('waiting...')
@@ -170,6 +171,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     print(program.program_status())
     print("QUEUE URLS", len(program.queue_urls))
     total_lambda_epochs = start_cores
+    print("[{}] --- START".format(datetime.datetime.utcnow()))
     times = [time.time()]
     exp["times"] = times
     try:
@@ -178,7 +180,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
             curr_time = int(time.time() - start_time)
             p = program.get_progress()
             if (p is None):
-                print("no progress...")
+                print("[{}] No progress...".format(datetime.datetime.utcnow()))
                 continue
             else:
                p = int(p)
@@ -271,6 +273,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
             read_timeouts_fraction = read_timeouts/(current_objects_read+1e-8)
             write_timeouts_fraction = write_timeouts/(current_objects_write+1e-8)
             print("=======================================")
+            print("[{}]".format(datetime.datetime.utcnow()))
             print("Max PC is {0}".format(max_pc))
             print("Waiting: {0}, Currently Processing: {1}".format(waiting, running))
             print("{2}: Up Workers: {0}, Busy Workers: {1}".format(up_workers, busy_workers, curr_time))
@@ -322,6 +325,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     client.put_object(Key="lambdapack/{0}/runtime.pickle".format(program.hash), Body=exp_bytes, Bucket=program.bucket)
     print("=======================")
     print("=======================")
+    print("[{}]".format(datetime.datetime.utcnow()))
     print("Execution Summary:")
     print("Executed Program ID: {0}".format(program.hash))
     print("Program Success: {0}".format((not exp["failed"])))

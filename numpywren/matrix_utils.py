@@ -17,7 +17,7 @@ import multiprocessing
 import pywren.wrenconfig as wc
 
 # Need to change in wrenhandler.py, wrenconfig.py, matrix.py, matrix_utils.py, jobrunner.py.
-redis_hostname = 'redis://ec2-54-208-187-69.compute-1.amazonaws.com'
+redis_hostname = 'redis://ec2-3-93-56-93.compute-1.amazonaws.com'
 cpu_count = multiprocessing.cpu_count()
 
 class MmapArray():
