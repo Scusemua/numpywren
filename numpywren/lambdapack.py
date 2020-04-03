@@ -495,6 +495,7 @@ class LambdaPackProgram(object):
         self.hash = str(int(time.time()))
         self.up = 'up' + self.hash
         self.set_up(0)
+        print("Creating SQS client for region {}.".format(self.control_plane.region))
         client = boto3.client('sqs', region_name=self.control_plane.region)
         self.queue_urls = []
         for i in range(num_priorities):
@@ -595,6 +596,7 @@ class LambdaPackProgram(object):
           # the idea is that if we do something like a local cholesky decomposition
           # we would run its highest priority child *locally* by adding the instructions to the local instruction queue
           # this has 2 key benefits, first we completely obliviete scheduling overhead between these two nodes but also because of the local LRU cache the first read of this node will be saved this will translate
+          print("Creating SQS client for region {}.".format(self.control_plane.region))
           client = boto3.client('sqs', region_name=self.control_plane.region)
           assert (expr_idx, var_values) not in ready_children
           for child in ready_children:
@@ -768,7 +770,7 @@ class LambdaPackProgram(object):
 
     def free(self):
         for queue_url in self.queue_urls:
-          client = boto3.client('sqs')
+          client = boto3.client('sqs', region_name = "us-east-1")
           client.delete_queue(QueueUrl=queue_url)
 
     def get_all_profiling_info(self):

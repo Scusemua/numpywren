@@ -382,7 +382,7 @@ async def reset_msg_visibility(msg, queue_url, loop, timeout, timeout_jitter, lo
             receipt_handle = msg["ReceiptHandle"]
             operator_ref = tuple(json.loads(msg["Body"]))
             session = aiobotocore.get_session(loop=loop)
-            async with session.create_client('sqs', use_ssl=False,  region_name="us-west-2") as sqs_client:
+            async with session.create_client('sqs', use_ssl=False,  region_name="us-east-1") as sqs_client:
                 print("Calling 'change_message_visibility' for queue \"{}\". Changing VisibilityTimeout to 60.".format(queue_url))
                 res = await sqs_client.change_message_visibility(VisibilityTimeout=60, QueueUrl=queue_url, ReceiptHandle=receipt_handle)
             num_tries += 1
@@ -444,6 +444,7 @@ async def lambdapack_run_async(loop, program, computer, cache, shared_state, rea
             await asyncio.sleep(0)
             # go from high priority -> low priority
             for queue_url in program.queue_urls[::-1]:
+                print("Creating SQS client for region {}.".format(program.control_plane.region))
                 async with session.create_client('sqs', use_ssl=False,  region_name=program.control_plane.region) as sqs_client:
                     print("Attempting to receive messages from SQS Queue with URL \"{}\".".format(queue_url))
                     messages = await sqs_client.receive_message(QueueUrl=queue_url, MaxNumberOfMessages=1, VisibilityTimeout=200)
@@ -482,6 +483,7 @@ async def lambdapack_run_async(loop, program, computer, cache, shared_state, rea
                 program.set_node_status(*operator_ref, lp.NS.FINISHED)
                 all_operator_refs.append(operator_ref)
                 profiles[str(operator_ref)] = p_info
+            print("Creating SQS client for region {}.".format(program.control_plane.region))
             async with session.create_client('sqs', use_ssl=False,  region_name=program.control_plane.region) as sqs_client:
                 lock[0] = 0
                 print("Deleting message from SQS queue with URL \"{}\".".format(queue_url))
