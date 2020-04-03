@@ -296,13 +296,15 @@ class BigMatrix(object):
             print("block_idx", block_idx)
             print("shape", self.shape)
             raise Exception("Get block query does not match shape {0} vs {1}".format(block_idx, self.shape))
+        print("Getting contents of block(s) for block index(es) {}.".format(block_idx))
         key = self.__shard_idx_to_key__(block_idx)
+        print("Block key (for Redis): {}".format(key))
         exists = await key_exists_async_redis(key, loop = loop)
         if (not exists and dill.loads(self.parent_fn) == None):
             logger.warning(self.bucket)
             logger.warning(key)
             logger.warning(block_idx)
-            raise Exception("Key does {0} not exist, and no parent function prescripted".format(key))
+            raise Exception("Key {0} does not exist, and no parent function prescripted".format(key))
         elif (not exists and dill.loads(self.parent_fn) != None):
             X_block = await dill.loads(self.parent_fn)(self, loop, *block_idx)
         else:
@@ -524,6 +526,7 @@ class BigMatrix(object):
         outb = io.BytesIO()
         np.save(outb, X)
 
+        print("Storing matrix with key {} in Redis.".format(out_key))
         await redis_client.set(out_key, outb.getvalue())
         del outb
         del X

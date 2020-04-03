@@ -85,6 +85,7 @@ def get_key_size(s3client, bucket, key):
             raise e
 
 def key_exists_redis(key):
+    print("Checking if key \"{}\" exists in Redis.".format(key))
     return redis_client.exists(key)
 
 def key_exists(s3client, bucket, key):
@@ -358,6 +359,11 @@ def generic_handler(event, context_dict, custom_handler_env=None):
                             'output_key' : output_key,
                             'stats_filename' : jobrunner_stats_filename}
 
+        print("==== JobRunner Configuration ====")
+        for key,value in jobrunner_config.items():
+            print("{}: {}".format(key,value))
+        print("=================================")                                
+
         with open(jobrunner_config_filename, 'w') as jobrunner_fid:
             json.dump(jobrunner_config, jobrunner_fid)
 
@@ -380,7 +386,7 @@ def generic_handler(event, context_dict, custom_handler_env=None):
         local_env['PATH'] = "{}{}{}".format(conda_python_path, os.pathsep,
                                             local_env.get("PATH", ""))
 
-        logger.debug("command str=%s", cmdstr)
+        logger.debug("command str = %s", cmdstr)
         # This is copied from http://stackoverflow.com/a/17698359/4577954
         # reasons for setting process group: http://stackoverflow.com/a/4791612
 
@@ -428,6 +434,7 @@ def generic_handler(event, context_dict, custom_handler_env=None):
                 time.sleep(PROCESS_STDOUT_SLEEP_SECS)
             process.poll() # this updates retcode but does not block
             if not t.isAlive() and process.returncode is None:
+                print("Process is NOT alive but return code is NONE.")
                 time.sleep(PROCESS_STDOUT_SLEEP_SECS)
 
             total_runtime = time.time() - start_time
