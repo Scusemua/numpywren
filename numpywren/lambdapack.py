@@ -648,9 +648,9 @@ class LambdaPackProgram(object):
           queue = sqs.Queue(self.queue_urls[0])
           for x in c:
             self.set_node_status(*x, NS.READY)
-            message_body = MessageBody=json.dumps([x[0], {str(key): val for key, val in x[1].items()}])
+            message_body = json.dumps([x[0], {str(key): val for key, val in x[1].items()}])
             print("Sending message to queue {}: {}".format(self.queue_urls[0], message_body))
-            queue.send_message(message_body)
+            queue.send_message(MessageBody = message_body)
         if (parallel):
           pwex = pywren.default_executor()
           print("Mapping function 'start_chunk' over chunked starters.")
