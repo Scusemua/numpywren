@@ -99,7 +99,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     pywren_config = pwex.config
     e = time.time()
     print("[{}] Program compile took {} seconds".format(datetime.datetime.utcnow(), e - t))
-    print("program.hash", program.hash)
+    print("program.hash:", program.hash)
     REDIS_CLIENT = program.control_plane.client
     done_counts = []
     ready_counts = []
@@ -118,8 +118,8 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     flops = [0]
     reads = [0]
     writes = [0]
-    print("LRU", lru)
-    print("eager", eager)
+    print("LRU:", lru)
+    print("eager:", eager)
     exp = {}
     exp["redis_done_counts"] = done_counts
     exp["redis_ready_counts"] = ready_counts

@@ -23,9 +23,9 @@ def b64s(string):
     return base64.b64encode(string.encode('utf-8')).decode('ascii')
 
 
-def create_security_group(name="numpywren.group"):
+def create_security_group(name="numpywren.group", region = "us-east-1"):
     #TODO figure out how to security
-    client = boto3.client('ec2')
+    client = boto3.client('ec2', region_name = region)
     groups = [x for x in client.describe_security_groups()['SecurityGroups'] if x['GroupName'] == name]
 
     if (len(groups) == 0):
@@ -194,7 +194,7 @@ def launch_and_provision_redis(config=None):
     iam = boto3.resource('iam')
     instance_profile = iam.InstanceProfile(ipn)
     instance_profile_dict = {'Name' : instance_profile.name}
-    group_id = create_security_group()
+    group_id = create_security_group(region = aws_region)
     instances = _create_instances(1, aws_region, spot_price, ami=ami, instance_type=instance_type, block_device_mappings=None, security_group_ids=[group_id], ebs_optimized=True, availability_zone=None, instance_profile=instance_profile_dict, user_data=user_data, key_name=key_name)
     inst = instances[0]
     inst.reload()

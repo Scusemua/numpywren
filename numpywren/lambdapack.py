@@ -639,7 +639,7 @@ class LambdaPackProgram(object):
 
     def start(self, parallel=False):
         put(self.control_plane.client, self.hash, PS.RUNNING.value)
-        print("len starters", len(self.program.starters))
+        print("len(program.starters): ", len(self.program.starters))
         chunked_starters = chunk(self.program.starters, 100)
         def start_chunk(c):
           sqs = boto3.resource('sqs')
@@ -649,9 +649,11 @@ class LambdaPackProgram(object):
             queue.send_message(MessageBody=json.dumps([x[0], {str(key): val for key, val in x[1].items()}]))
         if (parallel):
           pwex = pywren.default_executor()
+          print("Mapping function 'start_chunk' over {} chunked starters.".format(len(chunked_starters)))
           futures = pwex.map(start_chunk, chunked_starters)
           pywren.wait(futures)
         else:
+          print("Iteratively executing function 'start_chunk' for {} chunked starters.".format(len(chunked_starters)))
           for c in chunked_starters:
             start_chunk(c)
           return 0

@@ -30,6 +30,8 @@ import io
 import tempfile
 import platform
 
+import redis_alt 
+
 import boto3
 import botocore
 
@@ -63,8 +65,14 @@ RUNTIME_DOWNLOAD_LOCK = os.path.join(TEMP, "runtime_download_lock")
 
 logger = logging.getLogger(__name__)
 
-PROCESS_STDOUT_SLEEP_SECS = 0.1
+PROCESS_STDOUT_SLEEP_SECS = 0.25
 CANCEL_CHECK_EVERY_SECS = 5.0
+
+redis_client = redis_alt.RedisAlt(host = "ec2-54-160-229-49.compute-1.amazonaws.com", port = 6379)
+
+redis_client.set("test", "hello")
+test_redis_var = redis_client.get("test")
+print("test_redis_var = {}".format(test_redis_var))
 
 def get_key_size(s3client, bucket, key):
     try:
@@ -75,6 +83,9 @@ def get_key_size(s3client, bucket, key):
             return None
         else:
             raise e
+
+def key_exists_redis(key):
+    return redis_client.exists(key)
 
 def key_exists(s3client, bucket, key):
     return get_key_size(s3client, bucket, key) is not None
@@ -148,7 +159,9 @@ def download_runtime_if_necessary(s3_client, runtime_s3_bucket, runtime_s3_key,
         shutil.rmtree(RUNTIME_LOC, True)
 
     os.makedirs(runtime_etag_dir)
+    print("Created directory {} for runtime.".format(runtime_etag_dir))
 
+    print("Reading runtime from S3 from bucket {} and key {}".format(runtime_s3_bucket, runtime_s3_key))
     res = s3_client.get_object(Bucket=runtime_s3_bucket,
                                Key=runtime_s3_key)
     res_buffer = res['Body'].read()
@@ -177,7 +190,10 @@ def download_runtime_if_necessary(s3_client, runtime_s3_bucket, runtime_s3_key,
         raise
 
     # final operation
+    dir = expected_target + "/lib/python3.6/site-packages/"
+    print("Contents of {}: {}".format(dir, os.listdir(dir)))
     os.symlink(expected_target, conda_runtime_dir)
+    print("Created system link between {} and {}".format(expected_target, conda_runtime_dir))
     file_unlock(lock)
     lock.close()
     return False
@@ -244,7 +260,8 @@ def generic_handler(event, context_dict, custom_handler_env=None):
         cancel_key = event['cancel_key']
 
         # Check for cancel
-        if key_exists(cancel_key):
+        #if key_exists(s3_client, s3_bucket, cancel_key):
+        if key_exists_redis(cancel_key):
             logger.info("invocation cancelled")
             raise Exception("CANCELLED", "Function cancelled")
         time_of_last_cancel_check = time.time()
@@ -280,12 +297,14 @@ def generic_handler(event, context_dict, custom_handler_env=None):
         response_status['status_key'] = status_key
 
         #data_key_size = get_key_size(s3_client, s3_bucket, data_key)
-        data_key_size = get_key_size(s3_client, s3_bucket, data_key)
+        #data_key_size = get_key_size(s3_client, s3_bucket, data_key)
+        _key_exists = key_exists_redis(data_key)
         #logger.info("bucket=", s3_bucket, "key=", data_key,  "status: ", data_key_size, "bytes" )
-        while data_key_size is None:
-            logger.warning("WARNING COULD NOT GET FIRST KEY")
+        while _key_exists is False:
+            logger.warning("WARNING COULD NOT GET FIRST KEY \"{}\" FROM BUCKET \"{}\"".format(data_key, s3_bucket))
 
-            data_key_size = get_key_size(s3_client, s3_bucket, data_key)
+            #data_key_size = get_key_size(s3_client, s3_bucket, data_key)
+            _key_exists = key_exists_redis(data_key)
         if not event['use_cached_runtime']:
             shutil.rmtree(RUNTIME_LOC, True)
             os.mkdir(RUNTIME_LOC)
@@ -409,7 +428,8 @@ def generic_handler(event, context_dict, custom_handler_env=None):
             time_since_cancel_check = time.time() - time_of_last_cancel_check
             if time_since_cancel_check > CANCEL_CHECK_EVERY_SECS:
 
-                if key_exists(s3_client, s3_bucket, cancel_key):
+                #if key_exists(s3_client, s3_bucket, cancel_key):
+                if key_exists_redis(cancel_key):
                     logger.info("invocation cancelled")
                     # kill the process
                     kill_process(process)
@@ -453,6 +473,7 @@ def generic_handler(event, context_dict, custom_handler_env=None):
         response_status.update(context_dict)
     except Exception as e:
         print("[ERROR] Encountered exception.\n{}".format(str(e)))
+        print(traceback.format_exc())
         # internal runtime exceptions
         response_status['exception'] = str(e)
         response_status['exception_args'] = e.args
@@ -460,8 +481,9 @@ def generic_handler(event, context_dict, custom_handler_env=None):
     finally:
         print("Attempting to store status data in S3 at key {}".format(status_key))
         print("Response Status: {}".format(response_status))
-        boto3.client("s3").put_object(Bucket=s3_bucket, Key=status_key,
-                                      Body=json.dumps(response_status))
+        #boto3.client("s3").put_object(Bucket=s3_bucket, Key=status_key,
+        #                              Body=json.dumps(response_status))
+        redis_client.set(status_key, json.dumps(response_status))
         # creating new client in case the client has not been created
         #boto3.client("s3").put_object(Bucket=s3_bucket, Key=status_key,
         #                              Body=json.dumps(response_status))

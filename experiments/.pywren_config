@@ -20,6 +20,7 @@ s3:
 runtime:
   s3_bucket: numpywrenpublic
   s3_key: pywren.runtime/pywren_runtime-3.6-numpywren.tar.gz
+  runtime_storage: s3
 
 scheduler:
     map_item_limit: 30000
