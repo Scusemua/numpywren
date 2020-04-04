@@ -20,6 +20,7 @@ import cloudpickle
 import numpy as np
 import pywren.wrenconfig as wc
 import dill
+import redis
 from collections import defaultdict
 
 from . import matrix_utils
@@ -27,7 +28,8 @@ from .matrix_utils import list_all_keys, block_key_to_block, get_local_matrix, k
 from . import utils
 
 # Need to change in wrenhandler.py, wrenconfig.py, matrix.py, matrix_utils.py, jobrunner.py.
-redis_hostname = 'redis://ec2-3-87-92-30.compute-1.amazonaws.com'
+base_redis_ip = "ec2-3-87-92-30.compute-1.amazonaws.com"
+redis_hostname = 'redis://' + base_redis_ip
 cpu_count = multiprocessing.cpu_count()
 logger = logging.getLogger('numpywren')
 
@@ -477,23 +479,30 @@ class BigMatrix(object):
             return os.path.join(self.key_base, key_string)
 
     def __read_header__(self):
-        print("[WARNING] __read_header__ called!!!")
-        print(traceback.print_stack())
-        client = boto3.client('s3')
+        #print("[WARNING] __read_header__ called!!!")
+        #print(traceback.print_stack())
+        #client = boto3.client('s3')
+        redis_client = redis.Redis(host = base_redis_ip, port = 6379)
         try:
             key = os.path.join(self.key_base, "header")
-            header = json.loads(client.get_object(Bucket=self.bucket,
-                                                  Key=key)['Body'].read().decode('utf-8'))
+            print("[REDIS] Reading header for key \"{}\".".format(key))
+            header = json.loads(redis_client.get(key).decode('utf-8'))
+            #header = json.loads(client.get_object(Bucket=self.bucket,
+            #                                      Key=key)['Body'].read().decode('utf-8'))
         except Exception as e:
+            print(str(e))
             header = None
         return header
 
     def __delete_header__(self):
-        print("[WARNING] __delete_header__ called!!!")
-        print(traceback.print_stack())        
+        #print("[WARNING] __delete_header__ called!!!")
+        #print(traceback.print_stack())        
         key = os.path.join(self.key_base, "header")
-        client = boto3.client('s3')
-        client.delete_object(Bucket=self.bucket, Key=key)
+        print("[REDIS] Deleting header for key \"{}\".".format(key))
+        #client = boto3.client('s3')
+        #client.delete_object(Bucket=self.bucket, Key=key)
+        redis_client = redis.Redis(host = base_redis_ip, port = 6379)
+        redis_client.delete(key)
 
     def __block_idx_to_real_idx__(self, block_idx):
         starts = []
@@ -541,18 +550,21 @@ class BigMatrix(object):
         del X
 
     def __write_header__(self):
-        print("[WARNING] __write_header__ called!!!")
-        print(traceback.print_stack())           
+        #print("[WARNING] __write_header__ called!!!")
+        #print(traceback.print_stack())           
         key = os.path.join(self.key_base, "header")
-        client = boto3.client('s3')
+        print("[REDIS] Writing header for key \"{}\".".format(key))
+        #client = boto3.client('s3')
         header = {}
         header['shape'] = self.shape
         header['shard_sizes'] = self.shard_sizes
         header['dtype'] = self.__encode_dtype__(self.dtype)
-        client.put_object(Key=key,
-                          Bucket=self.bucket,
-                          Body=json.dumps(header),
-                          ACL="bucket-owner-full-control")
+        #client.put_object(Key=key,
+        #                  Bucket=self.bucket,
+        #                  Body=json.dumps(header),
+        #                  ACL="bucket-owner-full-control")
+        redis_client = redis.Redis(host = base_redis_ip, port = 6379)
+        redis_client.set(key, json.dumps(header))
 
     def __encode_dtype__(self, dtype):
         dtype_pickle = pickle.dumps(dtype)

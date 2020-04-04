@@ -6,6 +6,7 @@ import time
 import traceback
 
 import aioredis 
+import redis
 import boto3
 import botocore
 import cloudpickle
@@ -18,7 +19,8 @@ import multiprocessing
 import pywren.wrenconfig as wc
 
 # Need to change in wrenhandler.py, wrenconfig.py, matrix.py, matrix_utils.py, jobrunner.py.
-redis_hostname = 'redis://ec2-3-87-92-30.compute-1.amazonaws.com'
+base_redis_ip = "ec2-3-87-92-30.compute-1.amazonaws.com"
+redis_hostname = 'redis://' + base_redis_ip
 cpu_count = multiprocessing.cpu_count()
 
 class MmapArray():
@@ -83,23 +85,35 @@ def generate_key_name_local_matrix(X_local):
 def load_mmap(mmap_loc, mmap_shape, mmap_dtype):
     return np.memmap(mmap_loc, dtype=mmap_dtype, mode='r+', shape=mmap_shape)
 
+def list_all_keys_redis(prefix):
+    redis_client = redis.Redis(host = base_redis_ip, port = 6379)
+    keys = []
+    cursor, data = redis_client.scan(cursor = 0, match = prefix + "*", count = 1000)
+    keys.extend([key.decode() for key in data])
+    while(cursor != 0):
+        cursor, data = redis_client.scan(cursor = 0, match = prefix + "*", count = 1000)
+        keys.extend([key.decode() for key in data])
+    return keys 
+
 def list_all_keys(bucket, prefix):
-    print("[WARNING] list_all_keys (S3) called!!! Prefix: {}, Bucket: {}".format(prefix, bucket))
-    print(traceback.print_stack())
-    client = boto3.client('s3')
-    objects = client.list_objects(Bucket=bucket, Prefix=prefix + "/", Delimiter=prefix)
-    if (objects.get('Contents') == None):
-        return []
-    keys = list(map(lambda x: x['Key'], objects.get('Contents', [] )))
-    truncated = objects['IsTruncated']
-    next_marker = objects.get('NextMarker')
-    while truncated:
-        objects = client.list_objects(Bucket=bucket, Prefix=prefix,
-                                      Delimiter=prefix, Marker=next_marker)
-        truncated = objects['IsTruncated']
-        next_marker = objects.get('NextMarker')
-        keys += list(map(lambda x: x['Key'], objects['Contents']))
-    return list(filter(lambda x: len(x) > 0, keys))
+    #print("[WARNING] list_all_keys (S3) called!!! Prefix: {}, Bucket: {}".format(prefix, bucket))
+    #print(traceback.print_stack())
+
+    return list_all_keys_redis(prefix)
+    # client = boto3.client('s3')
+    # objects = client.list_objects(Bucket=bucket, Prefix=prefix + "/", Delimiter=prefix)
+    # if (objects.get('Contents') == None):
+    #     return []
+    # keys = list(map(lambda x: x['Key'], objects.get('Contents', [] )))
+    # truncated = objects['IsTruncated']
+    # next_marker = objects.get('NextMarker')
+    # while truncated:
+    #     objects = client.list_objects(Bucket=bucket, Prefix=prefix,
+    #                                   Delimiter=prefix, Marker=next_marker)
+    #     truncated = objects['IsTruncated']
+    #     next_marker = objects.get('NextMarker')
+    #     keys += list(map(lambda x: x['Key'], objects['Contents']))
+    # return list(filter(lambda x: len(x) > 0, keys))
 
 def key_exists(bucket, key):
     '''Return true if a key exists in s3 bucket'''
