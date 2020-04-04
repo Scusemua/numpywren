@@ -11,7 +11,7 @@ import re
 import redis
 import time
 import yaml
-from numpywren.matrix_utils import key_exists, list_all_keys
+from numpywren.matrix_utils import key_exists, list_all_keys, list_all_keys_s3
 import boto3
 import click
 import concurrent.futures as fs
@@ -138,7 +138,7 @@ def list():
     rc = config["control_plane"]
     prefix = rc["control_plane_prefix"].strip("/")
     bucket = config["s3"]["bucket"]
-    keys = list_all_keys(prefix=prefix, bucket=bucket)
+    keys = list_all_keys_s3(prefix=prefix, bucket=bucket)
     dicts = []
     for i,key in enumerate(keys):
         dicts.append(json.loads(client.get_object(Key=key, Bucket=config["s3"]["bucket"])["Body"].read()))
@@ -158,7 +158,7 @@ def terminate(idx):
     rc = config["control_plane"]
     prefix = rc["control_plane_prefix"].strip("/")
     bucket = config["s3"]["bucket"]
-    keys = list_all_keys(prefix=prefix, bucket=bucket)
+    keys = list_all_keys_s3(prefix=prefix, bucket=bucket)
     if (idx >= len(keys)):
         click.echo("idx must be less that number of total control planes")
         return
@@ -181,7 +181,7 @@ def info(idx):
     port= rc["port"]
     prefix = rc["control_plane_prefix"].strip("/")
     bucket = config["s3"]["bucket"]
-    keys= list_all_keys(prefix=prefix, bucket=bucket)
+    keys= list_all_keys_s3(prefix=prefix, bucket=bucket)
     if (idx >= len(keys)):
         click.echo("idx must be less that number of total control planes")
         return
@@ -210,7 +210,7 @@ def ping(idx):
     port= rc["port"]
     prefix = rc["control_plane_prefix"].strip("/")
     bucket = config["s3"]["bucket"]
-    keys= list_all_keys(prefix=prefix, bucket=bucket)
+    keys= list_all_keys_s3(prefix=prefix, bucket=bucket)
     if (idx >= len(keys)):
         click.echo("idx must be less that number of total control planes")
         return

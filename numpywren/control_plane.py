@@ -6,7 +6,7 @@ import os
 import base64
 import boto3
 import time
-from numpywren.matrix_utils import key_exists, list_all_keys
+from numpywren.matrix_utils import key_exists, list_all_keys, list_all_keys_s3
 import json
 
 
@@ -224,7 +224,6 @@ def touch_control_plane(control_plane_id, config=None):
     # TODO use copy command?
 
     client = boto3.client('s3')
-    client = boto3.client('s3')
     if (config == None):
         config = npw.config.default()
     rc = config["control_plane"]
@@ -260,7 +259,8 @@ def get_control_plane_id(config=None):
     rc = config["control_plane"]
     prefix = rc["control_plane_prefix"].strip("/")
     bucket=config["s3"]["bucket"]
-    keys = list_all_keys(prefix=prefix, bucket=bucket)
+    #keys = list_all_keys(prefix=prefix, bucket=bucket)
+    keys = list_all_keys_s3(prefix=prefix, bucket=bucket)
     if (len(keys) == 0):
         return None
     else:

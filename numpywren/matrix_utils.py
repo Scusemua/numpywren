@@ -115,6 +115,22 @@ def list_all_keys(bucket, prefix):
     #     keys += list(map(lambda x: x['Key'], objects['Contents']))
     # return list(filter(lambda x: len(x) > 0, keys))
 
+def list_all_keys_s3(bucket, prefix):
+    client = boto3.client('s3')
+    objects = client.list_objects(Bucket=bucket, Prefix=prefix + "/", Delimiter=prefix)
+    if (objects.get('Contents') == None):
+        return []
+    keys = list(map(lambda x: x['Key'], objects.get('Contents', [] )))
+    truncated = objects['IsTruncated']
+    next_marker = objects.get('NextMarker')
+    while truncated:
+        objects = client.list_objects(Bucket=bucket, Prefix=prefix,
+                                      Delimiter=prefix, Marker=next_marker)
+        truncated = objects['IsTruncated']
+        next_marker = objects.get('NextMarker')
+        keys += list(map(lambda x: x['Key'], objects['Contents']))
+    return list(filter(lambda x: len(x) > 0, keys))
+
 def key_exists(bucket, key):
     '''Return true if a key exists in s3 bucket'''
     print("[WARNING] key_exists for S3 called!!! Key: {}, Bucket: {}".format(key, bucket))
