@@ -646,7 +646,7 @@ class LambdaPackProgram(object):
         print("len(program.starters): ", len(self.program.starters))
         chunked_starters = chunk(self.program.starters, 100)
         def start_chunk(c):
-          sqs = boto3.resource('sqs')
+          sqs = boto3.resource('sqs', region_name = "us-east-1")
           print("LambdaPack.Start() -- Creating local reference to SQS queue with URL \"{}\".".format(self.queue_urls[0]))
           queue = sqs.Queue(self.queue_urls[0])
           for x in c:

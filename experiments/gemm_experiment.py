@@ -159,7 +159,8 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     print("[{}] Starting program!".format(datetime.datetime.utcnow()))
     program.start(parallel=True)
     e = time.time()
-    print("[{}] Program start took {} seconds.".format(datetime.datetime.utcnow(), e - t))
+    time_to_start = e - t
+    print("[{}] Program start took {} seconds.".format(datetime.datetime.utcnow(), time_to_start))
     t = time.time()
     logger.info("[{}] Starting with {} cores".format(datetime.datetime.utcnow(), start_cores))
     invoker = fs.ThreadPoolExecutor(1)
@@ -172,7 +173,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     print(program.program_status())
     print("QUEUE URLS", len(program.queue_urls))
     total_lambda_epochs = start_cores
-    print("[{}] --- START".format(datetime.datetime.utcnow()))
+    print("[{}] --- START --- (start() took {} seconds)".format(datetime.datetime.utcnow(), time_to_start))
     times = [time.time()]
     exp["times"] = times
     try:
@@ -333,6 +334,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     print("Program Success: {0}".format((not exp["failed"])))
     print("Problem Size: {0}".format(exp["problem_size"]))
     print("Shard Size: {0}".format(exp["shard_size"]))
+    print("Time to Start: {0}".format(time_to_start))
     print("Total Execution time: {0}".format(times[-1] - times[0]))
     print("Average Flop Rate (GFlop/s): {0}".format(exp["flops"][-1]/(times[-1] - times[0])))
     with open("/tmp/last_run", "w+") as f:

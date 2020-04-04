@@ -165,7 +165,7 @@ def terminate(idx):
     key = keys[idx]
     info = json.loads(client.get_object(Key=key, Bucket=config["s3"]["bucket"])["Body"].read())
     instance_id = info['id']
-    ec2_client = boto3.client('ec2')
+    ec2_client = boto3.client('ec2', region_name = "us-east-1"))
     click.echo("terminating control plane {0}".format(idx))
     resp = ec2_client.terminate_instances(InstanceIds=[instance_id])
     client.delete_object(Key=key, Bucket=bucket)

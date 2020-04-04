@@ -183,7 +183,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
             waiting = 0
             running = 0
             for i, queue_url in enumerate(program.queue_urls):
-                client = boto3.client('sqs')
+                client = boto3.client('sqs',region_name = "us-east-1")
                 attrs = client.get_queue_attributes(QueueUrl=queue_url, AttributeNames=['ApproximateNumberOfMessages', 'ApproximateNumberOfMessagesNotVisible'])['Attributes']
                 waiting += int(attrs["ApproximateNumberOfMessages"])
                 running += int(attrs["ApproximateNumberOfMessagesNotVisible"])

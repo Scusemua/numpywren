@@ -224,7 +224,6 @@ def touch_control_plane(control_plane_id, config=None):
     # TODO use copy command?
 
     client = boto3.client('s3')
-    client = boto3.client('s3')
     if (config == None):
         config = npw.config.default()
     rc = config["control_plane"]
