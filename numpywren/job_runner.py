@@ -455,7 +455,7 @@ async def lambdapack_run_async(loop, program, computer, cache, shared_state, rea
             for queue_url in program.queue_urls[::-1]:
                 #print("Creating SQS client for region {}.".format(program.control_plane.region))
                 async with session.create_client('sqs', use_ssl=False,  region_name=program.control_plane.region) as sqs_client:
-                    print("Attempting to receive messages from SQS Queue with URL \"{}\".".format(queue_url))
+                    #print("Attempting to receive messages from SQS Queue with URL \"{}\".".format(queue_url))
                     messages = await sqs_client.receive_message(QueueUrl=queue_url, MaxNumberOfMessages=1, VisibilityTimeout=200)
                 if ("Messages" not in messages):
                     continue
