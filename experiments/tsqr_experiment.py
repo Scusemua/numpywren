@@ -74,13 +74,13 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
         pwex = pywren.default_executor(config=config)
 
     X = np.random.randn(problem_size, 1)
-    Y = np.random.randn(1, 4096)
+    Y = np.random.randn(1, 100)
     shard_sizes = [shard_size, 1]
     if (not matrix_exists):
         X_sharded = BigMatrix("tsqr_test_x_{0}_{1}".format(problem_size, shard_size), shape=X.shape, shard_sizes=shard_sizes, write_header=True, autosqueeze=False, bucket="ec2-user-pywren-899")
         shard_matrix(X_sharded, X)
         shard_sizes = [1, shard_size]
-        Y_sharded = BigMatrix("tsqr_test_y_{0}_{1}".format(1, 4096), shape=Y.shape, shard_sizes=(1, 4096), write_header=True, autosqueeze=False, bucket="ec2-user-pywren-899")
+        Y_sharded = BigMatrix("tsqr_test_y_{0}_{1}".format(1, 100), shape=Y.shape, shard_sizes=(1, 100), write_header=True, autosqueeze=False, bucket="ec2-user-pywren-899")
         shard_matrix(Y_sharded, Y)
         print("Generating input matrix...")
         t = time.time()
@@ -170,7 +170,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     logger.info("Starting with {0} cores".format(start_cores))
     invoker = fs.ThreadPoolExecutor(1)
     all_future_futures = invoker.submit(lambda: pwex.map(lambda x: job_runner.lambdapack_run(program, pipeline_width=pipeline_width, cache_size=cache_size, timeout=timeout), range(start_cores), extra_env=extra_env))
-    #print(all_future_futures.result())
+#print(all_future_futures.result())
     all_futures = [all_future_futures]
     # print([f.result() for f in all_futures])
     start_time = time.time()
@@ -187,7 +187,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
                 print("no progress...")
                 continue
             else:
-               p = int(p)
+                p = int(p)
             times.append(int(time.time()))
             max_pc = p
             waiting = 0
@@ -297,7 +297,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
                     new_future_futures = invoker.submit(lambda: pwex.map(lambda x: job_runner.lambdapack_run(program, pipeline_width=pipeline_width, cache_size=cache_size, timeout=timeout), range(cores_to_launch), extra_env=extra_env))
                     last_run_time = time.time()
                     # check if we OOM-erred
-                   # [x.result() for x in all_futures]
+                    # [x.result() for x in all_futures]
                     all_futures.extend(new_future_futures)
             elif (autoscale_policy == "constant_timeout"):
                 if (time_since_launch > (0.85*timeout)):
@@ -306,7 +306,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
                     new_future_futures = invoker.submit(lambda: pwex.map(lambda x: job_runner.lambdapack_run(program, pipeline_width=pipeline_width, cache_size=cache_size, timeout=timeout), range(cores_to_launch), extra_env=extra_env))
                     last_run_time = time.time()
                     # check if we OOM-erred
-                   # [x.result() for x in all_futures]
+                    # [x.result() for x in all_futures]
                     all_futures.append(new_future_futures)
             else:
                 raise Exception("unknown autoscale policy")
@@ -335,6 +335,9 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     print("Shard Size: {0}".format(exp["shard_size"]))
     print("Total Execution time: {0}".format(times[-1] - times[0]))
     print("Average Flop Rate (GFlop/s): {0}".format(exp["flops"][-1]/(times[-1] - times[0])))
+    return {
+        "time": times[-1] - times[0]
+    }
     with open("/tmp/last_run", "w+") as f:
         f.write(program.hash)
 
@@ -357,6 +360,7 @@ if __name__ == "__main__":
     parser.add_argument('--log_granularity', type=int, default=5)
     parser.add_argument('--launch_granularity', type=int, default=60)
     parser.add_argument('--trial', type=int, default=0)
+    parser.add_argument('--trials', type=int, default=1)
     parser.add_argument('--num_priorities', type=int, default=1) 
     parser.add_argument('--lru', action='store_true')
     parser.add_argument('--eager', action='store_true')
@@ -365,7 +369,13 @@ if __name__ == "__main__":
     parser.add_argument('--verify', action='store_true')
     parser.add_argument('--matrix_exists', action='store_true')
     args = parser.parse_args()
-    run_experiment(args.problem_size, args.shard_size, args.pipeline, args.num_priorities, args.lru, args.eager, args.truncate, args.max_cores, args.start_cores, args.trial, args.launch_granularity, args.timeout, args.log_granularity, args.autoscale_policy, args.standalone, args.warmup, args.verify, args.matrix_exists, args.write_limit, args.read_limit)
 
+    times = []
+    for i in range(0, trials):
+        res = run_experiment(args.problem_size, args.shard_size, args.pipeline, args.num_priorities, args.lru, args.eager, args.truncate, args.max_cores, args.start_cores, args.trial, args.launch_granularity, args.timeout, args.log_granularity, args.autoscale_policy, args.standalone, args.warmup, args.verify, args.matrix_exists, args.write_limit, args.read_limit)
+        times.append(res["time"])
+    
+    print("=== Results (# Trials = {}) ===".format(trials))
+    print("Average/Min/Max\n{}\n{}\n{}".format(sum(times)/len(times), min(times),max(times)))
 
 
