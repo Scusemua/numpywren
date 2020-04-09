@@ -77,10 +77,10 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     Y = np.random.randn(1, 4096)
     shard_sizes = [shard_size, 1]
     if (not matrix_exists):
-        X_sharded = BigMatrix("tsqr_test_x_{0}_{1}".format(problem_size, shard_size), shape=X.shape, shard_sizes=shard_sizes, write_header=True, autosqueeze=False, bucket="numpywrennsdi")
+        X_sharded = BigMatrix("tsqr_test_x_{0}_{1}".format(problem_size, shard_size), shape=X.shape, shard_sizes=shard_sizes, write_header=True, autosqueeze=False, bucket="ec2-user-pywren-899")
         shard_matrix(X_sharded, X)
         shard_sizes = [1, shard_size]
-        Y_sharded = BigMatrix("tsqr_test_y_{0}_{1}".format(1, 4096), shape=Y.shape, shard_sizes=(1, 4096), write_header=True, autosqueeze=False, bucket="numpywrennsdi")
+        Y_sharded = BigMatrix("tsqr_test_y_{0}_{1}".format(1, 4096), shape=Y.shape, shard_sizes=(1, 4096), write_header=True, autosqueeze=False, bucket="ec2-user-pywren-899")
         shard_matrix(Y_sharded, Y)
         print("Generating input matrix...")
         t = time.time()
@@ -91,10 +91,10 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
         print("A SHAPE", A.shape)
 
     else:
-        X_sharded = BigMatrix("tsqr_test_x_{0}_{1}".format(problem_size, shard_size), shape=X.shape, shard_sizes=shard_sizes, write_header=True, autosqueeze=False, bucket="numpywrennsdi")
-        Y_sharded = BigMatrix("tsqr_test_y_{0}_{1}".format(1, 4096), shape=Y.shape, shard_sizes=(1, 4096), write_header=True, autosqueeze=False, bucket="numpywrennsdi")
+        X_sharded = BigMatrix("tsqr_test_x_{0}_{1}".format(problem_size, shard_size), shape=X.shape, shard_sizes=shard_sizes, write_header=True, autosqueeze=False, bucket="ec2-user-pywren-899")
+        Y_sharded = BigMatrix("tsqr_test_y_{0}_{1}".format(1, 4096), shape=Y.shape, shard_sizes=(1, 4096), write_header=True, autosqueeze=False, bucket="ec2-user-pywren-899")
         key_name = binops.generate_key_name_binop(X_sharded, Y_sharded, "gemm")
-        A = BigMatrix(key_name,bucket="numpywrennsdi")
+        A = BigMatrix(key_name,bucket="ec2-user-pywren-899")
     A.lambdav = problem_size*10
     t = time.time()
     program, meta = tsqr(A)
