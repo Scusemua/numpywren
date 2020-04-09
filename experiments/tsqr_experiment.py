@@ -335,12 +335,11 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     print("Shard Size: {0}".format(exp["shard_size"]))
     print("Total Execution time: {0}".format(times[-1] - times[0]))
     print("Average Flop Rate (GFlop/s): {0}".format(exp["flops"][-1]/(times[-1] - times[0])))
+    with open("/tmp/last_run", "w+") as f:
+        f.write(program.hash)
     return {
         "time": times[-1] - times[0]
     }
-    with open("/tmp/last_run", "w+") as f:
-        f.write(program.hash)
-
 
 
 
@@ -371,11 +370,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     times = []
-    for i in range(0, trials):
+    for i in range(0, args.trials):
         res = run_experiment(args.problem_size, args.shard_size, args.pipeline, args.num_priorities, args.lru, args.eager, args.truncate, args.max_cores, args.start_cores, args.trial, args.launch_granularity, args.timeout, args.log_granularity, args.autoscale_policy, args.standalone, args.warmup, args.verify, args.matrix_exists, args.write_limit, args.read_limit)
         times.append(res["time"])
     
-    print("=== Results (# Trials = {}) ===".format(trials))
+    print("=== Results (# Trials = {}) ===".format(args.trials))
     print("Average/Min/Max\n{}\n{}\n{}".format(sum(times)/len(times), min(times),max(times)))
 
 

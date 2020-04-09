@@ -339,6 +339,10 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     print("Average Flop Rate (GFlop/s): {0}".format(exp["flops"][-1]/(times[-1] - times[0])))
     with open("/tmp/last_run", "w+") as f:
         f.write(program.hash)
+    
+    return {
+        "time": times[-1] - times[0]
+    }
 
 
 
@@ -360,6 +364,7 @@ if __name__ == "__main__":
     parser.add_argument('--log_granularity', type=int, default=5)
     parser.add_argument('--launch_granularity', type=int, default=60)
     parser.add_argument('--trial', type=int, default=0)
+    parser.add_argument('--trials', type=int, default=1)
     parser.add_argument('--num_priorities', type=int, default=1) 
     parser.add_argument('--lru', action='store_true')
     parser.add_argument('--eager', action='store_true')
@@ -368,7 +373,14 @@ if __name__ == "__main__":
     parser.add_argument('--verify', action='store_true')
     parser.add_argument('--matrix_exists', action='store_true')
     args = parser.parse_args()
-    run_experiment(args.problem_size, args.shard_size, args.pipeline, args.num_priorities, args.lru, args.eager, args.truncate, args.max_cores, args.start_cores, args.trial, args.launch_granularity, args.timeout, args.log_granularity, args.autoscale_policy, args.standalone, args.warmup, args.verify, args.matrix_exists, args.write_limit, args.read_limit, args.n_threads)
+    #run_experiment(args.problem_size, args.shard_size, args.pipeline, args.num_priorities, args.lru, args.eager, args.truncate, args.max_cores, args.start_cores, args.trial, args.launch_granularity, args.timeout, args.log_granularity, args.autoscale_policy, args.standalone, args.warmup, args.verify, args.matrix_exists, args.write_limit, args.read_limit, args.n_threads)
 
-
+    times = []
+    for i in range(0, args.trials):
+        print("----------- TRIAL #{} -----------".format(i))
+        res = run_experiment(args.problem_size, args.shard_size, args.pipeline, args.num_priorities, args.lru, args.eager, args.truncate, args.max_cores, args.start_cores, args.trial, args.launch_granularity, args.timeout, args.log_granularity, args.autoscale_policy, args.standalone, args.warmup, args.verify, args.matrix_exists, args.write_limit, args.read_limit)
+        times.append(res["time"])
+    
+    print("=== Results (# Trials = {}) ===".format(args.trials))
+    print("Average/Min/Max\n{}\n{}\n{}".format(sum(times)/len(times), min(times),max(times)))
 
