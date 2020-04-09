@@ -28,7 +28,7 @@ import hashlib
 REDIS_CLIENT = None
 logger = logging.getLogger(__name__)
 
-redis_host = wc.default['redis_host']
+redis_host = wc.default()['redis_host']
 data_redis_client = redis.Redis(host = redis_host, port = 6379)
 
 def mem():
