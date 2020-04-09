@@ -378,7 +378,7 @@ if __name__ == "__main__":
     times = []
     for i in range(0, args.trials):
         print("----------- TRIAL #{} -----------".format(i))
-        res = run_experiment(args.problem_size, args.shard_size, args.pipeline, args.num_priorities, args.lru, args.eager, args.truncate, args.max_cores, args.start_cores, args.trial, args.launch_granularity, args.timeout, args.log_granularity, args.autoscale_policy, args.standalone, args.warmup, args.verify, args.matrix_exists, args.write_limit, args.read_limit)
+        res = run_experiment(args.problem_size, args.shard_size, args.pipeline, args.num_priorities, args.lru, args.eager, args.truncate, args.max_cores, args.start_cores, args.trial, args.launch_granularity, args.timeout, args.log_granularity, args.autoscale_policy, args.standalone, args.warmup, args.verify, args.matrix_exists, args.write_limit, args.read_limit, args.n_threads)
         times.append(res["time"])
     
     print("=== Results (# Trials = {}) ===".format(args.trials))
