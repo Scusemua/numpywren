@@ -453,7 +453,7 @@ async def lambdapack_run_async(loop, program, computer, cache, shared_state, rea
             await asyncio.sleep(0)
             # go from high priority -> low priority
             for queue_url in program.queue_urls[::-1]:
-                print("Creating SQS client for region {}.".format(program.control_plane.region))
+                #print("Creating SQS client for region {}.".format(program.control_plane.region))
                 async with session.create_client('sqs', use_ssl=False,  region_name=program.control_plane.region) as sqs_client:
                     print("Attempting to receive messages from SQS Queue with URL \"{}\".".format(queue_url))
                     messages = await sqs_client.receive_message(QueueUrl=queue_url, MaxNumberOfMessages=1, VisibilityTimeout=200)
@@ -493,7 +493,7 @@ async def lambdapack_run_async(loop, program, computer, cache, shared_state, rea
                 program.set_node_status(*operator_ref, lp.NS.FINISHED)
                 all_operator_refs.append(operator_ref)
                 profiles[str(operator_ref)] = p_info
-            print("Creating SQS client for region {}.".format(program.control_plane.region))
+            #print("Creating SQS client for region {}.".format(program.control_plane.region))
             async with session.create_client('sqs', use_ssl=False,  region_name=program.control_plane.region) as sqs_client:
                 lock[0] = 0
                 print("Deleting message from SQS queue with URL \"{}\".".format(queue_url))
