@@ -39,11 +39,13 @@ if sys.version_info > (3, 0):
     from queue import Queue, Empty # pylint: disable=import-error
     from . import wrenutil # pylint: disable=relative-import
     from . import version  # pylint: disable=relative-import
+    from . import wrenconfig as wc
 
 else:
     from Queue import Queue, Empty # pylint: disable=import-error
     import wrenutil # pylint: disable=relative-import
     import version  # pylint: disable=relative-import
+    import wrenconfig as wc
 
 if os.name == 'nt':
     import msvcrt # pylint: disable=import-error
@@ -68,7 +70,8 @@ logger = logging.getLogger(__name__)
 PROCESS_STDOUT_SLEEP_SECS = 0.25
 CANCEL_CHECK_EVERY_SECS = 5.0
 
-redis_client = redis_alt.RedisAlt(host = "ec2-54-87-52-224.compute-1.amazonaws.com", port = 6379)
+redis_host = wc.defalt()["redis_host"] #"ec2-54-87-52-224.compute-1.amazonaws.com"
+redis_client = redis_alt.RedisAlt(host = redis_host, port = 6379)
 
 redis_client.set("test", "hello")
 test_redis_var = redis_client.get("test")
@@ -240,6 +243,8 @@ def generic_handler(event, context_dict, custom_handler_env=None):
     custom_handler_env are environment variables we should set
     based on the platform we are on.
     """
+    global redis_host
+    
     pid = os.getpid()
 
     s3_bucket = ""
@@ -349,7 +354,8 @@ def generic_handler(event, context_dict, custom_handler_env=None):
         jobrunner_stats_filename = JOBRUNNER_STATS_FILENAME.format(pid)
         python_module_path = PYTHON_MODULE_PATH.format(pid)
 
-        jobrunner_config = {'func_bucket' : s3_bucket,
+        jobrunner_config = {'redis_host': redis_host
+                            'func_bucket' : s3_bucket,
                             'func_key' : func_key,
                             'data_bucket' : s3_bucket,
                             'data_key' : data_key,

@@ -19,6 +19,7 @@ import numpy as np
 from numpywren import lambdapack as lp
 import pywren
 from pywren.serialize import serialize
+import pywren.wrenconfig as wc
 import redis
 import sympy
 import hashlib
@@ -27,7 +28,8 @@ import hashlib
 REDIS_CLIENT = None
 logger = logging.getLogger(__name__)
 
-data_redis_client = redis.Redis(host = "ec2-54-87-52-224.compute-1.amazonaws.com", port = 6379)
+redis_host = wc.default['redis_host']
+data_redis_client = redis.Redis(host = redis_host, port = 6379)
 
 def mem():
    mem_bytes = os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES')
