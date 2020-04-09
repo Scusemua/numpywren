@@ -27,7 +27,7 @@ import hashlib
 REDIS_CLIENT = None
 logger = logging.getLogger(__name__)
 
-data_redis_client = redis.Redis(host = "ec2-3-87-92-30.compute-1.amazonaws.com", port = 6379)
+data_redis_client = redis.Redis(host = "ec2-54-87-52-224.compute-1.amazonaws.com", port = 6379)
 
 def mem():
    mem_bytes = os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES')

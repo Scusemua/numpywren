@@ -7,7 +7,7 @@ s3:
     # how many days do you want object to stay alive
     lifespan: 1
 
-redis_host: ec2-54-208-187-69.compute-1.amazonaws.com
+redis_host: ec2-54-87-52-224.compute-1.amazonaws.com
 region: us-east-1
 
 runtime:

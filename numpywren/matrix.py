@@ -27,8 +27,8 @@ from . import matrix_utils
 from .matrix_utils import list_all_keys, block_key_to_block, get_local_matrix, key_exists_async_redis
 from . import utils
 
-# Need to change in wrenhandler.py, wrenconfig.py, matrix.py, matrix_utils.py, jobrunner.py.
-base_redis_ip = "ec2-3-87-92-30.compute-1.amazonaws.com"
+# Need to change in wrenhandler.py, wrenconfig.py, matrix.py, matrix_utils.py, jobrunner.py, job_runner.py.
+base_redis_ip = "ec2-54-87-52-224.compute-1.amazonaws.com"
 redis_hostname = 'redis://' + base_redis_ip
 cpu_count = multiprocessing.cpu_count()
 logger = logging.getLogger('numpywren')
