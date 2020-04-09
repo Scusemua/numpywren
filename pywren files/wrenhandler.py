@@ -68,7 +68,7 @@ logger = logging.getLogger(__name__)
 PROCESS_STDOUT_SLEEP_SECS = 0.25
 CANCEL_CHECK_EVERY_SECS = 5.0
 
-redis_client = redis_alt.RedisAlt(host = "ec2-54-87-52-224.compute-1.amazonaws.com", port = 6379)
+redis_client = redis_alt.RedisAlt(host = "ec2-18-234-174-104.compute-1.amazonaws.com", port = 6379)
 
 redis_client.set("test", "hello")
 test_redis_var = redis_client.get("test")

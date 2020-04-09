@@ -28,7 +28,7 @@ import hashlib
 REDIS_CLIENT = None
 logger = logging.getLogger(__name__)
 
-redis_host = "ec2-54-87-52-224.compute-1.amazonaws.com"
+redis_host = "ec2-18-234-174-104.compute-1.amazonaws.com"
 data_redis_client = redis.Redis(host = redis_host, port = 6379)
 
 def mem():
