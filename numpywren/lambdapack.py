@@ -41,6 +41,7 @@ except:
   DEFAULT_CONFIG = {}
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class RemoteInstructionOpCodes(Enum):

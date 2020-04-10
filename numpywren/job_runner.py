@@ -27,8 +27,9 @@ import hashlib
 
 REDIS_CLIENT = None
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
-redis_host = "ec2-18-234-174-104.compute-1.amazonaws.com"
+redis_host = "ec2-3-90-0-255.compute-1.amazonaws.com"
 data_redis_client = redis.Redis(host = redis_host, port = 6379)
 
 def mem():
@@ -89,7 +90,9 @@ class LambdaPackExecutor(object):
             try:
                t = time.time()
                node_status = self.program.get_node_status(expr_idx, var_values)
+               print("Node Status:", node_status)
                inst_block = self.program.program.eval_expr(expr_idx, var_values)
+               print("Instr Block:", inst_block)
                inst_block.start_time = time.time()
                print(f"Running JOB={(expr_idx, var_values)}")
                instrs = inst_block.instrs
@@ -115,6 +118,7 @@ class LambdaPackExecutor(object):
                         instr.run = False
                         instr.result = None
                     instr.post_op_start = time.time()
+                    print("Calling 'computer' function. expr_idx =", expr_idx)
                     next_operator, log_bytes = await self.loop.run_in_executor(computer, self.program.post_op, expr_idx, var_values, lp.PS.SUCCESS, inst_block)
                     #next_operator, log_bytes = self.program.post_op(expr_idx, var_values, lp.PS.SUCCESS, inst_block)
                     instr.post_op_end = time.time()
@@ -130,7 +134,7 @@ class LambdaPackExecutor(object):
                     if next_operator is not None:
                         operator_refs.append(next_operator)
                 elif (node_status == lp.NS.NOT_READY):
-                   program.not_ready_incr()
+                   self.program.not_ready_incr()
                    logger.warning("node: {0}:{1} not ready skipping...".format(expr_idx, var_values))
 
                    continue
@@ -447,7 +451,7 @@ async def lambdapack_run_async(loop, program, computer, cache, shared_state, rea
             s = program.program_status()
             if(s != lp.PS.RUNNING):
                   print("program status is ", s)
-                  print("program stopped returning now!")
+                  print("program stopped. returning now!")
                   loop.stop()
                   break
             await asyncio.sleep(0)
@@ -480,7 +484,6 @@ async def lambdapack_run_async(loop, program, computer, cache, shared_state, rea
             operator_ref = json.loads(msg["Body"])
             shared_state["tot_messages"].append(operator_ref)
             redis_client.set(msg["MessageId"], str(time.time()))
-            print("Creating lock")
             lock = [1]
             coro = reset_msg_visibility(msg, queue_url, loop, msg_vis_timeout, msg_vis_timeout_jitter, lock)
             loop.create_task(coro)
