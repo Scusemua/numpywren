@@ -370,7 +370,7 @@ if __name__ == "__main__":
     parser.add_argument('--n_threads', type=int, default=1)
     args = parser.parse_args()
 
-    times = time.time()
+    times = []
     redis_host = wc.default()["redis_host"]
     rc = redis.Redis(host = "redis_host", port = 6379)
 
