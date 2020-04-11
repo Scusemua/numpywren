@@ -32,8 +32,6 @@ def parse_int(x):
     if x is None: return 0
     return int(x)
 
-
-
 ''' NSDI tsqr effectiveness experiments '''
 
 def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eager, truncate, max_cores, start_cores, trial, launch_granularity, timeout, log_granularity, autoscale_policy, standalone, warmup, verify, matrix_exists, read_limit, write_limit):
@@ -73,31 +71,17 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
         print(config)
         pwex = pywren.default_executor(config=config)
 
-    X = np.random.randn(problem_size, 1)
-    Y = np.random.randn(1, 4096)
-    shard_sizes = [shard_size, 1]
-    if (not matrix_exists):
-        X_sharded = BigMatrix("tsqr_test_x_{0}_{1}".format(problem_size, shard_size), shape=X.shape, shard_sizes=shard_sizes, write_header=True, autosqueeze=False, bucket="ec2-user-pywren-899")
-        shard_matrix(X_sharded, X)
-        shard_sizes = [1, shard_size]
-        Y_sharded = BigMatrix("tsqr_test_y_{0}_{1}".format(1, 4096), shape=Y.shape, shard_sizes=(1, 4096), write_header=True, autosqueeze=False, bucket="ec2-user-pywren-899")
-        shard_matrix(Y_sharded, Y)
-        print("Generating input matrix...")
-        t = time.time()
-        print(X_sharded.shape)
-        A = binops.gemm(pwex, X_sharded, Y_sharded, overwrite=False)
-        e = time.time()
-        print("GEMM took {0}".format(e - t))
-        print("A SHAPE", A.shape)
+    X = np.random.randn(problem_size, 128) #shard_size)
+    shard_sizes = (shard_size, X.shape[1])
+    #shard_sizes = (10000, 100)
+    X_sharded = BigMatrix("tsqr_test_X", shape=X.shape, shard_sizes=shard_sizes, write_header=True)
+    shard_matrix(X_sharded, X)
 
-    else:
-        X_sharded = BigMatrix("tsqr_test_x_{0}_{1}".format(problem_size, shard_size), shape=X.shape, shard_sizes=shard_sizes, write_header=True, autosqueeze=False, bucket="ec2-user-pywren-899")
-        Y_sharded = BigMatrix("tsqr_test_y_{0}_{1}".format(1, 4096), shape=Y.shape, shard_sizes=(1, 4096), write_header=True, autosqueeze=False, bucket="ec2-user-pywren-899")
-        key_name = binops.generate_key_name_binop(X_sharded, Y_sharded, "gemm")
-        A = BigMatrix(key_name,bucket="ec2-user-pywren-899")
-    A.lambdav = problem_size*10
+    print("\n\nX.shape: {}".format(X.shape))
+    print("X_sharded.shard_sizes: {}".format(X_sharded.shard_sizes))
+
     t = time.time()
-    program, meta = tsqr(A)
+    program, meta = tsqr(X_sharded)
     pipeline_width = args.pipeline
     if (lru):
         cache_size = 5
@@ -170,7 +154,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     logger.info("Starting with {0} cores".format(start_cores))
     invoker = fs.ThreadPoolExecutor(1)
     all_future_futures = invoker.submit(lambda: pwex.map(lambda x: job_runner.lambdapack_run(program, pipeline_width=pipeline_width, cache_size=cache_size, timeout=timeout), range(start_cores), extra_env=extra_env))
-#print(all_future_futures.result())
+    #print(all_future_futures.result())
     all_futures = [all_future_futures]
     # print([f.result() for f in all_futures])
     start_time = time.time()
@@ -242,7 +226,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
             gflops_rate = flops[-1]/(times[-1] - times[0])
             greads_rate = reads[-1]/(times[-1] - times[0])
             gwrites_rate = writes[-1]/(times[-1] - times[0])
-            b = A.shard_sizes[0]
+            b = X_sharded.shard_sizes[0]
             current_objects_read = (current_gbytes_read*1e9)/(b*b*8)
             current_objects_write = (current_gbytes_write*1e9)/(b*b*8)
             read_objects.append(current_objects_read)
@@ -369,12 +353,18 @@ if __name__ == "__main__":
     parser.add_argument('--matrix_exists', action='store_true')
     args = parser.parse_args()
 
+    redis_host = wc.default()["redis_host"]
+    rc = redis.Redis(host = redis_host, port = 6379, db = 0)
     times = []
     for i in range(0, args.trials):
         res = run_experiment(args.problem_size, args.shard_size, args.pipeline, args.num_priorities, args.lru, args.eager, args.truncate, args.max_cores, args.start_cores, args.trial, args.launch_granularity, args.timeout, args.log_granularity, args.autoscale_policy, args.standalone, args.warmup, args.verify, args.matrix_exists, args.write_limit, args.read_limit)
         times.append(res["time"])
+        print("Calling .flushall() on Redis.")
+        rc.flushall(asynchronous = False)
     
     print("=== Results (# Trials = {}) ===".format(args.trials))
+    print("All Times: {}".format(times))
     print("Average/Min/Max\n{}\n{}\n{}".format(sum(times)/len(times), min(times),max(times)))
+
 
 
