@@ -78,7 +78,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
         np.random.seed(0)
         X = np.random.randn(problem_size, 1)
         shard_sizes = [shard_size, 1]
-        X_sharded = BigMatrix("sosp_cholesky_test_{0}_{1}".format(problem_size, shard_size), shape=X.shape, shard_sizes=shard_sizes, write_header=True, autosqueeze=False, bucket="numpywrentest", parent_fn=constant_zeros)
+        X_sharded = BigMatrix("sc_cholesky_test_{0}_{1}".format(problem_size, shard_size), shape=X.shape, shard_sizes=shard_sizes, write_header=True, autosqueeze=False, bucket="ec2-user-pywren-899", parent_fn=constant_zeros)
         shard_matrix(X_sharded, X)
         t = time.time()
         print(X_sharded.shape)
@@ -86,9 +86,9 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
         e = time.time()
         print("GEMM took {0}".format(e - t))
     else:
-        X_sharded = BigMatrix("sosp_cholesky_test_{0}_{1}".format(problem_size, shard_size), shape=X.shape, shard_sizes=shard_sizes, write_header=True, autosqueeze=False, bucket="numpywrentest", parent_fn=constant_zeros)
+        X_sharded = BigMatrix("sc_cholesky_test_{0}_{1}".format(problem_size, shard_size), shape=X.shape, shard_sizes=shard_sizes, write_header=True, autosqueeze=False, bucket="ec2-user-pywren-899", parent_fn=constant_zeros)
         key_name = binops.generate_key_name_binop(X_sharded, X_sharded.T, "gemm")
-        XXT_sharded = BigMatrix(key_name, hash_keys=False, bucket="numpywrentest")
+        XXT_sharded = BigMatrix(key_name, hash_keys=False, bucket="ec2-user-pywren-899")
     XXT_sharded.lambdav = problem_size*20e12
     if (verify):
         A = XXT_sharded.numpy()
@@ -296,7 +296,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
                     last_run_time = time.time()
                     # check if we OOM-erred
                    # [x.result() for x in all_futures]
-                    all_futures.extend(new_future_futures)
+                    all_futures.extend(new_futures)
             elif (autoscale_policy == "constant_timeout"):
                 if (time_since_launch > (0.85*timeout)):
                     cores_to_launch = max_cores
@@ -337,7 +337,9 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     print("Average Flop Rate (GFlop/s): {0}".format(exp["flops"][-1]/(times[-1] - times[0])))
     with open("/tmp/last_run", "w+") as f:
         f.write(program.hash)
-
+    return {
+        "time": times[-1] - times[0]
+    }
 
 
 
@@ -357,6 +359,7 @@ if __name__ == "__main__":
     parser.add_argument('--log_granularity', type=int, default=5)
     parser.add_argument('--launch_granularity', type=int, default=60)
     parser.add_argument('--trial', type=int, default=0)
+    parser.add_argument('--trials', type=int, default=1)
     parser.add_argument('--num_priorities', type=int, default=1)
     parser.add_argument('--lru', action='store_true')
     parser.add_argument('--eager', action='store_true')
@@ -366,7 +369,17 @@ if __name__ == "__main__":
     parser.add_argument('--matrix_exists', action='store_true')
     parser.add_argument('--n_threads', type=int, default=1)
     args = parser.parse_args()
-    run_experiment(args.problem_size, args.shard_size, args.pipeline, args.num_priorities, args.lru, args.eager, args.truncate, args.max_cores, args.start_cores, args.trial, args.launch_granularity, args.timeout, args.log_granularity, args.autoscale_policy, args.standalone, args.warmup, args.verify, args.matrix_exists, args.write_limit, args.read_limit, args.n_threads)
 
+    times = time.time()
+    redis_host = wc.default()["redis_host"]
+    rc = redis.Redis(host = "redis_host", port = 6379)
 
-
+    for i in range(0, args.trials):
+        res = run_experiment(args.problem_size, args.shard_size, args.pipeline, args.num_priorities, args.lru, args.eager, args.truncate, args.max_cores, args.start_cores, args.trial, args.launch_granularity, args.timeout, args.log_granularity, args.autoscale_policy, args.standalone, args.warmup, args.verify, args.matrix_exists, args.write_limit, args.read_limit, args.n_threads)
+        times.append(res['time'])
+        print("Calling .fluashall() on Redis.")
+        rc.flushall(asynchronous = False)
+    
+    print("=== Results (# Trials = {}) ===".format(args.trials))
+    print("All Times: {}".format(times))
+    print("Average/Min/Max\n{}\n{}\n{}".format(sum(times)/len(times), min(times),max(times)))    
