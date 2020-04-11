@@ -29,7 +29,7 @@ REDIS_CLIENT = None
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-redis_host = "ec2-3-90-0-255.compute-1.amazonaws.com"
+redis_host = "ec2-54-83-117-9.compute-1.amazonaws.com"
 data_redis_client = redis.Redis(host = redis_host, port = 6379)
 
 def mem():
