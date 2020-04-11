@@ -372,7 +372,7 @@ if __name__ == "__main__":
 
     times = []
     redis_host = wc.default()["redis_host"]
-    rc = redis.Redis(host = "redis_host", port = 6379)
+    rc = redis.Redis(host = redis_host, port = 6379)
 
     for i in range(0, args.trials):
         res = run_experiment(args.problem_size, args.shard_size, args.pipeline, args.num_priorities, args.lru, args.eager, args.truncate, args.max_cores, args.start_cores, args.trial, args.launch_granularity, args.timeout, args.log_granularity, args.autoscale_policy, args.standalone, args.warmup, args.verify, args.matrix_exists, args.write_limit, args.read_limit, args.n_threads)
