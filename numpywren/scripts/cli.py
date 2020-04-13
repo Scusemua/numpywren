@@ -11,6 +11,7 @@ import re
 import redis
 import time
 import yaml
+import datetime
 from numpywren.matrix_utils import key_exists, list_all_keys, list_all_keys_s3
 import boto3
 import click
@@ -107,6 +108,125 @@ def control_plane():
     control_plane subcommand
     """
     pass
+
+@click.group()
+def fargate():
+    pass 
+
+@click.command()
+@click.argument("numnodes", default = 25)
+def launch_fargate(numnodes):
+    t = time.time() 
+    click.echo("Launching Fargate cluster with {} nodes.".format(numnodes))
+    
+    FARGATE_TASK_TAG = "Wukong"
+    ECS_SERVICE_NAME = "NumpywrenStorageService"
+    ecs_cluster_name = "NumpywrenFargateStorage"
+    ecs_task_definition = "NumpywrenRedisNode:1"
+    ecs_client = boto3.client('ecs', region_name = "us-east-1")
+
+    ecs_network_configuration = {
+                            'awsvpcConfiguration': {
+                                'subnets': ['subnet-0df77d3c433e46fd0',
+                                            'subnet-0d169f20d4fdf90a7',
+                                            'subnet-075f20e7075f1be7d',
+                                            'subnet-033375027137f61bd',
+                                            'subnet-06cac58c4a8abdeec',
+                                            'subnet-04e6391f47afa1492',
+                                            'subnet-02e033f99a669e161',
+                                            'subnet-0cc89d0da8726e056',
+                                            'subnet-00789d1dc555dafa2'], 
+                                'securityGroups': [ 'sg-0f4ea153447b2c910' ], 
+                                'assignPublicIp': 'ENABLED' } }
+
+    describe_services_response = ecs_client.describe_services(
+            cluster = ecs_cluster_name,
+            services = [ECS_SERVICE_NAME]
+        )
+
+    services = describe_services_response['services']
+    
+    # Check if there already exists a service.
+    if len(services) == 0:
+        print("[FARGATE] No existing services. Creating new service {} with task definition {}, desired count {}, etc.".format(ECS_SERVICE_NAME, ecs_task_definition, numnodes))
+
+        # No existing service...
+        ecs_client.create_service(
+            cluster = ecs_cluster_name,
+            serviceName = ECS_SERVICE_NAME,
+            taskDefinition = ecs_task_definition,
+            desiredCount = numnodes,
+            platformVersion = 'LATEST',
+            networkConfiguration = ecs_network_configuration,
+            #loadBalancers = [None],
+            schedulingStrategy = 'REPLICA',
+            tags = [{
+                'key': FARGATE_TASK_TAG,
+                'value': FARGATE_TASK_TAG
+            }]
+        )                                      
+    else:
+        numpywren_service = services[0]
+        print("Existing service's status: {}".format(numpywren_service['status']))
+        # Make sure the existing service is active before attempting to use it/interact with it. 
+        if numpywren_service['status'] == 'INACTIVE':
+            print("[FARGATE] Existing service is 'INACTIVE.' Creating new service {} with task definition {}, desired count {}, etc.".format(ECS_SERVICE_NAME, ecs_task_definition, numnodes))
+
+
+            ecs_client.create_service(
+                cluster = ecs_cluster_name,
+                serviceName = ECS_SERVICE_NAME,
+                taskDefinition = ecs_task_definition,
+                desiredCount = numnodes,
+                platformVersion = 'LATEST',
+                networkConfiguration = ecs_network_configuration,
+                #loadBalancers = [None],
+                schedulingStrategy = 'REPLICA',
+                tags = [{
+                    'key': FARGATE_TASK_TAG,
+                    'value': FARGATE_TASK_TAG
+                }]
+            )        
+        else:
+            existing_service_desired_count = numpywren_service['desiredCount']
+
+            # Check if we need to update the existing service to match our desired number of tasks.
+            if existing_service_desired_count != numnodes:
+
+                print("[FARGATE] Updating existing service {} with new desired count of {}. (It was {})".format(ECS_SERVICE_NAME, numnodes, existing_service_desired_count))
+
+                ecs_client.update_service(
+                    cluster = ecs_cluster_name,
+                    service = ECS_SERVICE_NAME,
+                    desiredCount = numnodes
+                )    
+
+    print("Waiting for all nodes to start.")
+    num_running = -1
+
+    num_checks = 0
+    while num_running != numnodes:
+        describe_services_response = ecs_client.describe_services(
+            cluster = ecs_cluster_name,
+            services = [ECS_SERVICE_NAME])    
+        services = describe_services_response['services']
+        numpywren_service = services[0]
+        num_running = numpywren_service['runningCount']
+
+        # If we're growing the Fargate cluster, then we should pri.nt how many tasks have started running so far out of how
+        # many we asked for. If we're shrinking the Fargate cluster, then we should print how many tasks still need to stop.
+        if num_running < numnodes:
+            print("[FARGATE - {}] {}/{} have entered the 'RUNNING' state...".format(datetime.datetime.utcnow(), num_running, numnodes))
+        elif num_running < numnodes:
+            num_to_stop = numnodes - num_running
+            print("[FARGATE] Still waiting for another {} tasks to stop...".format(num_to_stop))
+        num_checks = num_checks + 1
+        
+        # Only sleep if this isn't our first check and the tasks haven't finished starting.
+        if num_checks != 1 and num_running != numnodes:
+            time.sleep(5)
+    
+    print("[FARGATE] All {} tasks have entered the 'RUNNING state. Collecting metadata now.".format(numnodes))
 
 
 @click.command()
