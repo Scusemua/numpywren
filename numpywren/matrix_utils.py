@@ -95,6 +95,8 @@ def list_all_keys_redis(prefix):
     while(cursor != 0):
         cursor, data = redis_client.scan(cursor = 0, match = prefix + "*", count = 1000)
         keys.extend([key.decode() for key in data])
+    
+    print("list_all_keys_redis({}) yielded result {}".format(prefix, keys))
     return keys 
 
 def list_all_keys(bucket, prefix):

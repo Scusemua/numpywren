@@ -116,6 +116,7 @@ class BigMatrix(object):
         self.autosqueeze = autosqueeze
         self.lambdav = lambdav
         self.region = region
+        self.redis_keys = list()
         self.use_fargate_cluster = use_fargate_cluster
         if use_fargate_cluster:
             _fargate_tasks = self.get_fargate_nodes()
@@ -642,6 +643,7 @@ class BigMatrix(object):
             await redis_client.set(out_key, outb.getvalue())
         else:
             self.redis_client.set(out_key, outb.getvalue())
+        self.redis_keys.append(out_key)
         del outb
         del X
 
@@ -664,6 +666,7 @@ class BigMatrix(object):
         else:
             redis_client = self.redis_client
         redis_client.set(key, json.dumps(header))
+        self.redis_keys.append(key)
 
     def __encode_dtype__(self, dtype):
         dtype_pickle = pickle.dumps(dtype)
