@@ -133,7 +133,7 @@ class BigMatrix(object):
                 self.servers_argument.append(entry)
 
             self.redis_client = RedisShardAPI(self.servers_argument, hash_method = 'md5')
-                    
+
         if (shape == None or shard_sizes == None):
             header = self.__read_header__()
         else:
@@ -184,11 +184,11 @@ class BigMatrix(object):
         for task_description in task_descriptions:
             if task_description['group'] == "service:NumpywrenStorageService":
                 taskArn = task_description['taskArn']
-                privateIP = task_description['containers'][0]['networkInterfaces'][0]["privateIP"]
+                privateIP = task_description['containers'][0]['networkInterfaces'][0]["privateIpv4Address"]
                 # Otherwise, collect the information and store it.
                 eniID = task_description['attachments'][0]['details'][1]['value']
                 network_interface_description = ec2_client.describe_network_interfaces(NetworkInterfaceIds = [eniID])
-                publicIP = network_interface_description['NetworkInterfaces'][0]['Association']['PublicIp']                    
+                publicIP = network_interface_description['NetworkInterfaces'][0]['Association']['publicIP']                    
                 fargate_node = {
                     "ARN": taskArn,
                     "ENI": eniID,

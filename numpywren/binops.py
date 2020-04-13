@@ -143,8 +143,8 @@ def gemm(pwex, X, Y, out_bucket=None, tasks_per_job=1, local=False, dtype=np.flo
     num_jobs = int(num_out_blocks/float(tasks_per_job))
 
     print("Out Shape:", XY.shape)
-    print("Total number of output blocks:", len(XY.block_idxs))
-    print("Total number of output blocks that exist:", len(XY.blocks_exist))
+    #print("Total number of output blocks:", len(XY.block_idxs))
+    #print("Total number of output blocks that exist:", len(XY.blocks_exist))
 
     if (overwrite):
         block_idxs_to_map = list(set(XY.block_idxs))
