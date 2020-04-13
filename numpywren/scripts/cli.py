@@ -109,6 +109,130 @@ def control_plane():
     """
     pass
 
+@click.command()
+def launch():
+    t = time.time()
+    click.echo("Launching instance...")
+    info = cp.launch_and_provision_redis()
+    ip = info["public_ip"]
+    click.echo("Waiting for redis")
+    config = npw.config.default()
+    rc = config["control_plane"]
+    password = rc["password"]
+    port= rc["port"]
+    redis_client = redis.StrictRedis(host=ip, port=port, password=password)
+    while (True):
+        try:
+            redis_client.ping()
+            break
+        except redis.exceptions.ConnectionError as e:
+            pass
+    e = time.time()
+    click.echo("redis launch took {0} seconds".format(e - t))
+    cp.set_control_plane(info, config=config)
+
+@click.command()
+def list():
+    config = npw.config.default()
+    client = boto3.client('s3')
+    rc = config["control_plane"]
+    prefix = rc["control_plane_prefix"].strip("/")
+    bucket = config["s3"]["bucket"]
+    keys = list_all_keys_s3(prefix=prefix, bucket=bucket)
+    dicts = []
+    for i,key in enumerate(keys):
+        dicts.append(json.loads(client.get_object(Key=key, Bucket=config["s3"]["bucket"])["Body"].read()))
+    if (len(dicts) > 0):
+        # maybe custom pretty printing here, but pandas does a god enough job
+        click.echo(pd.DataFrame(dicts))
+    else:
+        click.echo("No control planes found")
+
+
+
+@click.command()
+@click.argument('idx', default=0)
+def terminate(idx):
+    config = npw.config.default()
+    client = boto3.client('s3')
+    rc = config["control_plane"]
+    prefix = rc["control_plane_prefix"].strip("/")
+    bucket = config["s3"]["bucket"]
+    keys = list_all_keys_s3(prefix=prefix, bucket=bucket)
+    if (idx >= len(keys)):
+        click.echo("idx must be less that number of total control planes")
+        return
+    key = keys[idx]
+    info = json.loads(client.get_object(Key=key, Bucket=config["s3"]["bucket"])["Body"].read())
+    instance_id = info['id']
+    ec2_client = boto3.client('ec2', region_name = "us-east-1")
+    click.echo("terminating control plane {0}".format(idx))
+    resp = ec2_client.terminate_instances(InstanceIds=[instance_id])
+    client.delete_object(Key=key, Bucket=bucket)
+
+
+@click.command()
+@click.argument('idx', default=0)
+def info(idx):
+    config = npw.config.default()
+    client = boto3.client('s3')
+    rc = config["control_plane"]
+    password = rc["password"]
+    port= rc["port"]
+    prefix = rc["control_plane_prefix"].strip("/")
+    bucket = config["s3"]["bucket"]
+    keys= list_all_keys_s3(prefix=prefix, bucket=bucket)
+    if (idx >= len(keys)):
+        click.echo("idx must be less that number of total control planes")
+        return
+    key = keys[idx]
+    info = json.loads(client.get_object(Key=key, Bucket=config["s3"]["bucket"])["Body"].read())
+    host = info["public_ip"]
+    redis_client = redis.StrictRedis(host=host, port=port, password=password)
+    while (True):
+        try:
+            info =  redis_client.info()
+            for (k,v) in info.items():
+                print("{0}: {1}".format(k,v))
+            break
+        except redis.exceptions.ConnectionError as e:
+            click.echo("info failed.")
+            pass
+
+
+@click.command()
+@click.argument('idx', default=0)
+def ping(idx):
+    config = npw.config.default()
+    client = boto3.client('s3')
+    rc = config["control_plane"]
+    password = rc["password"]
+    port= rc["port"]
+    prefix = rc["control_plane_prefix"].strip("/")
+    bucket = config["s3"]["bucket"]
+    keys= list_all_keys_s3(prefix=prefix, bucket=bucket)
+    if (idx >= len(keys)):
+        click.echo("idx must be less that number of total control planes")
+        return
+    key = keys[idx]
+    info = json.loads(client.get_object(Key=key, Bucket=config["s3"]["bucket"])["Body"].read())
+    host = info["public_ip"]
+    redis_client = redis.StrictRedis(host=host, port=port, password=password)
+    while (True):
+        try:
+            redis_client.ping()
+            click.echo("successful ping!")
+            break
+        except redis.exceptions.ConnectionError as e:
+            click.echo("ping failed.")
+            pass
+
+control_plane.add_command(launch)
+control_plane.add_command(list)
+control_plane.add_command(ping)
+control_plane.add_command(info)
+control_plane.add_command(terminate)
+
 @click.group()
 def fargate():
     pass 
@@ -228,134 +352,7 @@ def launch_fargate(numnodes):
     
     print("[FARGATE] All {} tasks have entered the 'RUNNING state. Collecting metadata now.".format(numnodes))
 
-
-@click.command()
-def launch():
-    t = time.time()
-    click.echo("Launching instance...")
-    info = cp.launch_and_provision_redis()
-    ip = info["public_ip"]
-    click.echo("Waiting for redis")
-    config = npw.config.default()
-    rc = config["control_plane"]
-    password = rc["password"]
-    port= rc["port"]
-    redis_client = redis.StrictRedis(host=ip, port=port, password=password)
-    while (True):
-        try:
-            redis_client.ping()
-            break
-        except redis.exceptions.ConnectionError as e:
-            pass
-    e = time.time()
-    click.echo("redis launch took {0} seconds".format(e - t))
-    cp.set_control_plane(info, config=config)
-
-@click.command()
-def list():
-    config = npw.config.default()
-    client = boto3.client('s3')
-    rc = config["control_plane"]
-    prefix = rc["control_plane_prefix"].strip("/")
-    bucket = config["s3"]["bucket"]
-    keys = list_all_keys_s3(prefix=prefix, bucket=bucket)
-    dicts = []
-    for i,key in enumerate(keys):
-        dicts.append(json.loads(client.get_object(Key=key, Bucket=config["s3"]["bucket"])["Body"].read()))
-    if (len(dicts) > 0):
-        # maybe custom pretty printing here, but pandas does a god enough job
-        click.echo(pd.DataFrame(dicts))
-    else:
-        click.echo("No control planes found")
-
-
-
-@click.command()
-@click.argument('idx', default=0)
-def terminate(idx):
-    config = npw.config.default()
-    client = boto3.client('s3')
-    rc = config["control_plane"]
-    prefix = rc["control_plane_prefix"].strip("/")
-    bucket = config["s3"]["bucket"]
-    keys = list_all_keys_s3(prefix=prefix, bucket=bucket)
-    if (idx >= len(keys)):
-        click.echo("idx must be less that number of total control planes")
-        return
-    key = keys[idx]
-    info = json.loads(client.get_object(Key=key, Bucket=config["s3"]["bucket"])["Body"].read())
-    instance_id = info['id']
-    ec2_client = boto3.client('ec2', region_name = "us-east-1")
-    click.echo("terminating control plane {0}".format(idx))
-    resp = ec2_client.terminate_instances(InstanceIds=[instance_id])
-    client.delete_object(Key=key, Bucket=bucket)
-
-
-@click.command()
-@click.argument('idx', default=0)
-def info(idx):
-    config = npw.config.default()
-    client = boto3.client('s3')
-    rc = config["control_plane"]
-    password = rc["password"]
-    port= rc["port"]
-    prefix = rc["control_plane_prefix"].strip("/")
-    bucket = config["s3"]["bucket"]
-    keys= list_all_keys_s3(prefix=prefix, bucket=bucket)
-    if (idx >= len(keys)):
-        click.echo("idx must be less that number of total control planes")
-        return
-    key = keys[idx]
-    info = json.loads(client.get_object(Key=key, Bucket=config["s3"]["bucket"])["Body"].read())
-    host = info["public_ip"]
-    redis_client = redis.StrictRedis(host=host, port=port, password=password)
-    while (True):
-        try:
-            info =  redis_client.info()
-            for (k,v) in info.items():
-                print("{0}: {1}".format(k,v))
-            break
-        except redis.exceptions.ConnectionError as e:
-            click.echo("info failed.")
-            pass
-
-
-@click.command()
-@click.argument('idx', default=0)
-def ping(idx):
-    config = npw.config.default()
-    client = boto3.client('s3')
-    rc = config["control_plane"]
-    password = rc["password"]
-    port= rc["port"]
-    prefix = rc["control_plane_prefix"].strip("/")
-    bucket = config["s3"]["bucket"]
-    keys= list_all_keys_s3(prefix=prefix, bucket=bucket)
-    if (idx >= len(keys)):
-        click.echo("idx must be less that number of total control planes")
-        return
-    key = keys[idx]
-    info = json.loads(client.get_object(Key=key, Bucket=config["s3"]["bucket"])["Body"].read())
-    host = info["public_ip"]
-    redis_client = redis.StrictRedis(host=host, port=port, password=password)
-    while (True):
-        try:
-            redis_client.ping()
-            click.echo("successful ping!")
-            break
-        except redis.exceptions.ConnectionError as e:
-            click.echo("ping failed.")
-            pass
-
-
-
-
-
-control_plane.add_command(launch)
-control_plane.add_command(list)
-control_plane.add_command(ping)
-control_plane.add_command(info)
-control_plane.add_command(terminate)
+fargate.add_command(launch_fargate)
 
 @click.command()
 @click.pass_context
@@ -532,8 +529,6 @@ LAPACK_URL = f"http://www.netlib.org/lapack/lapack-{LAPACK_VERSION}.tar.gz"
 def lapack():
     pass
 
-
-
 @click.command()
 @click.option('--force', is_flag=True)
 def download_runtime(force):
@@ -600,14 +595,11 @@ lapack.add_command(download_runtime)
 lapack.add_command(download_lapack)
 lapack.add_command(export_function)
 
-
-
-
 cli.add_command(control_plane)
 cli.add_command(test)
 cli.add_command(setup)
 cli.add_command(lapack)
-
+cli.add_command(fargate)
 
 def main():
     return cli() # pylint: disable=no-value-for-parameter
