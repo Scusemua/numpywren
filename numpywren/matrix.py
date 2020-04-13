@@ -957,7 +957,7 @@ class RowPivotedBigMatrix(BigMatrix):
                 #resp = await client.get_object(Bucket=self.bucket, Key=key, Range=row_range_query)
                 print("[REDIS] Getting value from Redis at key \"{}\".".format(key))
                 if not self.use_fargate_cluster:
-                    resp = await redis_client.get(key)
+                    resp = await aioredisclient.get(key)
                 else:
                     resp = self.redis_client.get(key)
                 resp = resp[query_start:query_end]
