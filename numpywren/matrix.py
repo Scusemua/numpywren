@@ -24,8 +24,51 @@ import redis
 from collections import defaultdict
 
 from . import matrix_utils
-from .matrix_utils import list_all_keys, block_key_to_block, get_local_matrix, key_exists_async_redis
+from .matrix_utils import list_all_keys, block_key_to_block, get_local_matrix
 from . import utils
+
+ecs_client = boto3.client("ecs", region_name = "us-east-1")
+ec2_client = boto3.client('ec2', region_name = "us-east-1")
+
+fargate_tasks = list()
+task_arn_lists = list()
+
+print("Getting Fargate task info.")
+
+# List the tasks.
+list_tasks_response = ecs_client.list_tasks(cluster = "NumpywrenFargateStorage")
+taskArns = list_tasks_response['taskArns']
+task_arn_lists.append(taskArns)
+while 'nextToken' in list_tasks_response:
+    nextToken =list_tasks_response['nextToken']
+    list_tasks_response = ecs_client.list_tasks(cluster = "NumpywrenFargateStorage", nextToken = nextToken)
+    taskArns = list_tasks_response['taskArns']
+    task_arn_lists.append(taskArns)  
+task_descriptions = list() 
+for task_arn_list in task_arn_lists:
+    descriptions = ecs_client.describe_tasks(cluster = "NumpywrenFargateStorage", tasks = task_arn_list)['tasks']
+    task_descriptions.extend(descriptions)
+
+# Iterate over all of the running tasks...
+for task_description in task_descriptions:
+    if task_description['group'] == "service:NumpywrenStorageService":
+        taskArn = task_description['taskArn']
+        privateIP = task_description['containers'][0]['networkInterfaces'][0]["privateIP"]
+        # Otherwise, collect the information and store it.
+        eniID = task_description['attachments'][0]['details'][1]['value']
+        network_interface_description = ec2_client.describe_network_interfaces(NetworkInterfaceIds = [eniID])
+        publicIP = network_interface_description['NetworkInterfaces'][0]['Association']['PublicIp']                    
+        fargate_node = {
+            "ARN": taskArn,
+            "ENI": eniID,
+            "publicIP": publicIP,
+            "privateIP": privateIP
+        }
+        # We may already have this task in our collection, in which case just ignore it.
+        if not fargate_node in fargate_tasks:
+            fargate_tasks.append(fargate_node)
+
+print("Finished getting Fargate task info.")
 
 # Need to change in wrenhandler.py, wrenconfig.py, matrix.py, matrix_utils.py, jobrunner.py, job_runner.py.
 base_redis_ip = "ec2-54-83-117-9.compute-1.amazonaws.com"
@@ -279,6 +322,16 @@ class BigMatrix(object):
         res = loop.run_until_complete(asyncio.ensure_future(get_block_async_coro, loop=loop))
         return res
 
+    async def key_exists_async_redis(self, key, loop = None):
+        exists = False 
+        try:
+            redis_client = await aioredis.create_redis_pool(redis_hostname)
+            exists = await redis_client.exists(key)
+        except Exception:
+            raise 
+        
+        return exists
+
     async def get_block_async(self, loop, *block_idx):
         """
         Given a block index, get the contents of the block.
@@ -302,7 +355,7 @@ class BigMatrix(object):
         print("Getting contents of block(s) for block index(es) {}.".format(block_idx))
         key = self.__shard_idx_to_key__(block_idx)
         print("Block key (for Redis): {}".format(key))
-        exists = await key_exists_async_redis(key, loop = loop)
+        exists = await self.key_exists_async_redis(key, loop = loop)
         if (not exists and dill.loads(self.parent_fn) == None):
             logger.warning(self.bucket)
             logger.warning(key)
@@ -354,7 +407,7 @@ class BigMatrix(object):
         key = self.__shard_idx_to_key__(block_idx)
         print("[REDIS] PutBlock into Redis for key \"{}\"".format(key))
         if (no_overwrite):
-            exists = await key_exists_async_redis(key, loop)
+            exists = await self.key_exists_async_redis(key, loop)
             if (exists):
                 old_block = await self.get_block_async(loop, *block_idx)
                 assert(np.allclose(old_block, block))
