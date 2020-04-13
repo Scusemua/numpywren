@@ -17,9 +17,6 @@
 import os
 import copy
 
-# Need to change in wrenhandler.py, wrenconfig.py, matrix.py, matrix_utils.py, jobrunner.py, job_runner.py.
-redis_hostname = "ec2-54-83-117-9.compute-1.amazonaws.com"
-
 GENERIC_HANDLER_NAME = "wrenhandler.generic_handler"
 AWS_LAMBDA_HANDLER_NAME = "wrenhandler.aws_lambda_handler"
 
@@ -48,9 +45,6 @@ default_runtime = {'2.7' : "pywren.runtimes/default_2.7.meta.json",
                    '3.5' : "pywren.runtimes/default_3.5.meta.json",
                    '3.6' : "pywren.runtimes/default_3.6.meta.json",
                    '3.7' : "pywren.runtimes/default_3.7.meta.json"}
-
-def get_redis_host():
-    return redis_hostname
 
 def load(config_filename):
     import yaml

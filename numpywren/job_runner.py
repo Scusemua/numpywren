@@ -29,9 +29,6 @@ REDIS_CLIENT = None
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-redis_host = "ec2-54-83-117-9.compute-1.amazonaws.com"
-data_redis_client = redis.Redis(host = redis_host, port = 6379)
-
 def mem():
    mem_bytes = os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES')
    return mem_bytes/(1024.**3)

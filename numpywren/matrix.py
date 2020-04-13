@@ -30,46 +30,6 @@ from . import utils
 ecs_client = boto3.client("ecs", region_name = "us-east-1")
 ec2_client = boto3.client('ec2', region_name = "us-east-1")
 
-fargate_tasks = list()
-task_arn_lists = list()
-
-print("Getting Fargate task info.")
-
-# List the tasks.
-list_tasks_response = ecs_client.list_tasks(cluster = "NumpywrenFargateStorage")
-taskArns = list_tasks_response['taskArns']
-task_arn_lists.append(taskArns)
-while 'nextToken' in list_tasks_response:
-    nextToken =list_tasks_response['nextToken']
-    list_tasks_response = ecs_client.list_tasks(cluster = "NumpywrenFargateStorage", nextToken = nextToken)
-    taskArns = list_tasks_response['taskArns']
-    task_arn_lists.append(taskArns)  
-task_descriptions = list() 
-for task_arn_list in task_arn_lists:
-    descriptions = ecs_client.describe_tasks(cluster = "NumpywrenFargateStorage", tasks = task_arn_list)['tasks']
-    task_descriptions.extend(descriptions)
-
-# Iterate over all of the running tasks...
-for task_description in task_descriptions:
-    if task_description['group'] == "service:NumpywrenStorageService":
-        taskArn = task_description['taskArn']
-        privateIP = task_description['containers'][0]['networkInterfaces'][0]["privateIP"]
-        # Otherwise, collect the information and store it.
-        eniID = task_description['attachments'][0]['details'][1]['value']
-        network_interface_description = ec2_client.describe_network_interfaces(NetworkInterfaceIds = [eniID])
-        publicIP = network_interface_description['NetworkInterfaces'][0]['Association']['PublicIp']                    
-        fargate_node = {
-            "ARN": taskArn,
-            "ENI": eniID,
-            "publicIP": publicIP,
-            "privateIP": privateIP
-        }
-        # We may already have this task in our collection, in which case just ignore it.
-        if not fargate_node in fargate_tasks:
-            fargate_tasks.append(fargate_node)
-
-print("Finished getting Fargate task info.")
-
 # Need to change in wrenhandler.py, wrenconfig.py, matrix.py, matrix_utils.py, jobrunner.py, job_runner.py.
 base_redis_ip = "ec2-54-83-117-9.compute-1.amazonaws.com"
 redis_hostname = 'redis://' + base_redis_ip
@@ -136,6 +96,7 @@ class BigMatrix(object):
                  autosqueeze=True,
                  lambdav=0.0,
                  region=DEFAULT_REGION,
+                 use_fargate_cluster=False,
                  safe=True):
         if bucket is None:
             bucket = os.environ.get('PYWREN_LINALG_BUCKET')
@@ -178,7 +139,52 @@ class BigMatrix(object):
             self.__write_header__()
         if (self.lambdav != 0 and (len(self.shape) < 2 or len(set(self.shape)) != 1)):
             raise Exception("Lambda can only be prescribed for square matrices/tensors")
+        
+        if use_fargate_cluster:
+            self.fargate_tasks = self.get_fargate_nodes()
+    
+    def get_fargate_nodes(self):
+        fargate_tasks = list()
+        task_arn_lists = list()
 
+        print("Getting Fargate task info.")
+
+        # List the tasks.
+        list_tasks_response = ecs_client.list_tasks(cluster = "NumpywrenFargateStorage")
+        taskArns = list_tasks_response['taskArns']
+        task_arn_lists.append(taskArns)
+        while 'nextToken' in list_tasks_response:
+            nextToken =list_tasks_response['nextToken']
+            list_tasks_response = ecs_client.list_tasks(cluster = "NumpywrenFargateStorage", nextToken = nextToken)
+            taskArns = list_tasks_response['taskArns']
+            task_arn_lists.append(taskArns)  
+        task_descriptions = list() 
+        for task_arn_list in task_arn_lists:
+            descriptions = ecs_client.describe_tasks(cluster = "NumpywrenFargateStorage", tasks = task_arn_list)['tasks']
+            task_descriptions.extend(descriptions)
+
+        # Iterate over all of the running tasks...
+        for task_description in task_descriptions:
+            if task_description['group'] == "service:NumpywrenStorageService":
+                taskArn = task_description['taskArn']
+                privateIP = task_description['containers'][0]['networkInterfaces'][0]["privateIP"]
+                # Otherwise, collect the information and store it.
+                eniID = task_description['attachments'][0]['details'][1]['value']
+                network_interface_description = ec2_client.describe_network_interfaces(NetworkInterfaceIds = [eniID])
+                publicIP = network_interface_description['NetworkInterfaces'][0]['Association']['PublicIp']                    
+                fargate_node = {
+                    "ARN": taskArn,
+                    "ENI": eniID,
+                    "publicIP": publicIP,
+                    "privateIP": privateIP
+                }
+                # We may already have this task in our collection, in which case just ignore it.
+                if not fargate_node in fargate_tasks:
+                    fargate_tasks.append(fargate_node)
+
+        print("Finished getting Fargate task info.")   
+
+        return fargate_tasks     
 
     def submatrix(self, *block_slices):
         """

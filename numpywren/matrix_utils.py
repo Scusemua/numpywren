@@ -18,9 +18,6 @@ import inspect
 import multiprocessing
 import pywren.wrenconfig as wc
 
-# Need to change in wrenhandler.py, wrenconfig.py, matrix.py, matrix_utils.py, jobrunner.py, job_runner.py.
-base_redis_ip = "ec2-54-83-117-9.compute-1.amazonaws.com"
-redis_hostname = 'redis://' + base_redis_ip
 cpu_count = multiprocessing.cpu_count()
 
 class MmapArray():
@@ -143,16 +140,6 @@ def key_exists(bucket, key):
         if exc.response['Error']['Code'] != '404':
             raise
         return False
-
-async def key_exists_async_redis(key, loop = None):
-    exists = False 
-    try:
-        redis_client = await aioredis.create_redis_pool(redis_hostname)
-        exists = await redis_client.exists(key)
-    except Exception:
-        raise 
-    
-    return exists
 
 def block_key_to_block(key):
     try:
