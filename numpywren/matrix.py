@@ -116,6 +116,24 @@ class BigMatrix(object):
         self.autosqueeze = autosqueeze
         self.lambdav = lambdav
         self.region = region
+        self.use_fargate_cluster = use_fargate_cluster
+        if use_fargate_cluster:
+            _fargate_tasks = self.get_fargate_nodes()
+            self.fargate_tasks = sorted(_fargate_tasks, key = lambda k: k['ARN'])
+
+            self.servers_argument = list()
+            for ft in self.fargate_tasks:
+                entry = {
+                    "name": ft["ARN"],
+                    "host": ft["privateIP"],
+                    "port": 6379,
+                    "db": 0
+                }
+
+                self.servers_argument.append(entry)
+
+            self.redis_client = RedisShardAPI(self.servers_argument, hash_method = 'md5')
+                    
         if (shape == None or shard_sizes == None):
             header = self.__read_header__()
         else:
@@ -140,25 +158,7 @@ class BigMatrix(object):
             # Write a header if you want to load this value later.
             self.__write_header__()
         if (self.lambdav != 0 and (len(self.shape) < 2 or len(set(self.shape)) != 1)):
-            raise Exception("Lambda can only be prescribed for square matrices/tensors")
-        
-        self.use_fargate_cluster = use_fargate_cluster
-        if use_fargate_cluster:
-            _fargate_tasks = self.get_fargate_nodes()
-            self.fargate_tasks = sorted(_fargate_tasks, key = lambda k: k['ARN'])
-
-            self.servers_argument = list()
-            for ft in self.fargate_tasks:
-                entry = {
-                    "name": ft["ARN"],
-                    "host": ft["privateIP"],
-                    "port": 6379,
-                    "db": 0
-                }
-
-                self.servers_argument.append(entry)
-
-            self.redis_client = RedisShardAPI(self.servers_argument, hash_method = 'md5') 
+            raise Exception("Lambda can only be prescribed for square matrices/tensors") 
     
     def get_fargate_nodes(self):
         fargate_tasks = list()
