@@ -8,8 +8,8 @@ s3:
     lifespan: 1
 
 runtime:
-    bucket: numpywrenpublic
-    s3_key: pywren.runtime/pywren_runtime-3.6-numpywren.tar.gz
+    bucket: wukong-dependencies
+    s3_key: pywren_runtime-3.6-numpywren-mod.tar.gz
 
 control_plane:
     ec2_instance_type: m4.4xlarge

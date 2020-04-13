@@ -11,8 +11,10 @@ redis_host: ec2-54-227-67-171.compute-1.amazonaws.com
 region: us-east-1
 
 runtime:
-    bucket: numpywrenpublic
-    s3_key: pywren.runtime/pywren_runtime-3.6-numpywren.tar.gz
+    bucket: wukong-dependencies
+    s3_key: pywren_runtime-3.6-numpywren-mod.tar.gz
+    #bucket: numpywrenpublic
+    #s3_key: pywren.runtime/pywren_runtime-3.6-numpywren.tar.gz
 
 control_plane:
     ec2_instance_type: m4.4xlarge
