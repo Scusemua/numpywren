@@ -11,6 +11,7 @@ import time
 import struct
 import traceback
 
+from redis_shard.shard import RedisShardAPI
 import aioredis
 import asyncio
 import boto3
@@ -141,8 +142,23 @@ class BigMatrix(object):
         if (self.lambdav != 0 and (len(self.shape) < 2 or len(set(self.shape)) != 1)):
             raise Exception("Lambda can only be prescribed for square matrices/tensors")
         
+        self.use_fargate_cluster = use_fargate_cluster
         if use_fargate_cluster:
-            self.fargate_tasks = self.get_fargate_nodes()
+            _fargate_tasks = self.get_fargate_nodes()
+            self.fargate_tasks = sorted(_fargate_tasks, key = lambda k: k['ARN'])
+
+            self.servers_argument = list()
+            for ft in self.fargate_tasks:
+                entry = {
+                    "name": ft["ARN"],
+                    "host": ft["privateIP"],
+                    "port": 6379,
+                    "db": 0
+                }
+
+                self.servers_argument.append(entry)
+
+            self.redis_client = RedisShardAPI(self.servers_argument, hash_method = 'md5') 
     
     def get_fargate_nodes(self):
         fargate_tasks = list()
@@ -332,8 +348,11 @@ class BigMatrix(object):
     async def key_exists_async_redis(self, key, loop = None):
         exists = False 
         try:
-            redis_client = await aioredis.create_redis_pool(redis_hostname)
-            exists = await redis_client.exists(key)
+            if not self.use_fargate_cluster:
+                redis_client = await aioredis.create_redis_pool(redis_hostname)
+                exists = await redis_client.exists(key)
+            else:
+                exists = self.redis_client.exists(key)
         except Exception:
             raise 
         
@@ -466,8 +485,12 @@ class BigMatrix(object):
         print("[REDIS] Deleting block(s) at index(es) {}".format(block_idx))
         key = self.__shard_idx_to_key__(block_idx)
         print("\t\t[REDIS] Block-to-delete key: {}".format(key))
-        redis_client = await aioredis.create_redis()
-        resp = await redis_client.delete(key)
+
+        if not self.use_fargate_cluster:
+            redis_client = await aioredis.create_redis()
+            resp = await redis_client.delete(key)
+        else:
+            resp = self.redis_client.delete(key)
         return resp
 
     def free(self):
@@ -542,7 +565,10 @@ class BigMatrix(object):
         #print("[WARNING] __read_header__ called!!!")
         #print(traceback.print_stack())
         #client = boto3.client('s3')
-        redis_client = redis.Redis(host = base_redis_ip, port = 6379)
+        if not self.use_fargate_cluster:
+            redis_client = redis.Redis(host = base_redis_ip, port = 6379)
+        else:
+            redis_client = self.redis_client
         try:
             key = os.path.join(self.key_base, "header")
             print("[REDIS] Reading header for key \"{}\".".format(key))
@@ -561,7 +587,10 @@ class BigMatrix(object):
         print("[REDIS] Deleting header for key \"{}\".".format(key))
         #client = boto3.client('s3')
         #client.delete_object(Bucket=self.bucket, Key=key)
-        redis_client = redis.Redis(host = base_redis_ip, port = 6379)
+        if not self.use_fargate_cluster:
+            redis_client = redis.Redis(host = base_redis_ip, port = 6379)
+        else:
+            redis_client = self.redis_client
         redis_client.delete(key)
 
     def __block_idx_to_real_idx__(self, block_idx):
@@ -586,9 +615,12 @@ class BigMatrix(object):
         bio = None
         while bio is None and n_tries <= max_n_tries:
             try:
-                redis_client = await aioredis.create_redis_pool(redis_hostname)
                 print("[REDIS] Retrieving data from Redis at key \"{}\".".format(key))
-                matrix_bytes = await redis_client.get(key) 
+                if not self.use_fargate_cluster:
+                    redis_client = await aioredis.create_redis_pool(redis_hostname)
+                    matrix_bytes = await redis_client.get(key) 
+                else:
+                    matrix_bytes = self.redis_client.get(key) 
                 #async with resp as stream:
                 #    matrix_bytes = await stream.read()
                 bio = io.BytesIO(matrix_bytes)
@@ -600,12 +632,16 @@ class BigMatrix(object):
         return bio
 
     async def __save_matrix_to_redis__(self, X, out_key):
-        redis_client = await aioredis.create_redis_pool(redis_hostname)
         outb = io.BytesIO()
         np.save(outb, X)
 
         print("[REDIS] Storing matrix with key {} in Redis.".format(out_key))
-        await redis_client.set(out_key, outb.getvalue())
+
+        if not self.use_fargate_cluster:
+            redis_client = await aioredis.create_redis_pool(redis_hostname)
+            await redis_client.set(out_key, outb.getvalue())
+        else:
+            self.redis_client.set(out_key, outb.getvalue())
         del outb
         del X
 
@@ -623,7 +659,10 @@ class BigMatrix(object):
         #                  Bucket=self.bucket,
         #                  Body=json.dumps(header),
         #                  ACL="bucket-owner-full-control")
-        redis_client = redis.Redis(host = base_redis_ip, port = 6379)
+        if not self.use_fargate_cluster:
+            redis_client = redis.Redis(host = base_redis_ip, port = 6379)
+        else:
+            redis_client = self.redis_client
         redis_client.set(key, json.dumps(header))
 
     def __encode_dtype__(self, dtype):
@@ -887,7 +926,9 @@ class RowPivotedBigMatrix(BigMatrix):
         if (loop == None):
             loop = asyncio.get_event_loop()
         
-        redis_client = await aioredis.create_redis_pool(redis_hostname)
+        aioredisclient = None
+        if not self.use_fargate_cluster:
+            aioredisclient = await aioredis.create_redis_pool(redis_hostname)
 
         n_tries = 0
         max_n_tries = 5
@@ -896,7 +937,11 @@ class RowPivotedBigMatrix(BigMatrix):
             try:
                 header_range_query = 'bytes={0}-{1}'.format(HEADER_LEN_START, HEADER_LEN_END)
                 print("[REDIS] Getting row(?) from Redis at key \"{}\".".format(key))
-                header_resp = await redis_client.get(key)
+                
+                if not self.use_fargate_cluster:
+                    header_resp = await aioredisclient.get(key)
+                else:
+                    header_resp = self.redis_client.get(key)
                 #header_resp = await client.get_object(Bucket=self.bucket, Key=key, Range=header_range_query)["Body"]
                 
                 header_resp = header_resp[HEADER_LEN_START:HEADER_LEN_END]
@@ -911,7 +956,10 @@ class RowPivotedBigMatrix(BigMatrix):
                 row_range_query = 'bytes={0}-{1}'.format(query_start, query_end)
                 #resp = await client.get_object(Bucket=self.bucket, Key=key, Range=row_range_query)
                 print("[REDIS] Getting value from Redis at key \"{}\".".format(key))
-                resp = await redis_client.get(key)
+                if not self.use_fargate_cluster:
+                    resp = await redis_client.get(key)
+                else:
+                    resp = self.redis_client.get(key)
                 resp = resp[query_start:query_end]
                 async with resp['Body'] as stream:
                     matrix_bytes = await stream.read()
