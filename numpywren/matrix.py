@@ -188,7 +188,7 @@ class BigMatrix(object):
                 # Otherwise, collect the information and store it.
                 eniID = task_description['attachments'][0]['details'][1]['value']
                 network_interface_description = ec2_client.describe_network_interfaces(NetworkInterfaceIds = [eniID])
-                publicIP = network_interface_description['NetworkInterfaces'][0]['Association']['publicIP']                    
+                publicIP = network_interface_description['NetworkInterfaces'][0]['Association']['PublicIp']                    
                 fargate_node = {
                     "ARN": taskArn,
                     "ENI": eniID,
