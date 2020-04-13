@@ -21,7 +21,7 @@ import pywren.wrenconfig as wc
 # TODO: Fix list_all_keys and whatnot.
 
 # Need to change in wrenhandler.py, wrenconfig.py, matrix.py, matrix_utils.py, jobrunner.py, job_runner.py.
-base_redis_ip = "ec2-54-83-117-9.compute-1.amazonaws.com"
+base_redis_ip = "ec2-54-227-67-171.compute-1.amazonaws.com"
 redis_hostname = 'redis://' + base_redis_ip
 cpu_count = multiprocessing.cpu_count()
 
@@ -96,7 +96,7 @@ def list_all_keys_redis(prefix):
         cursor, data = redis_client.scan(cursor = 0, match = prefix + "*", count = 1000)
         keys.extend([key.decode() for key in data])
     
-    print("list_all_keys_redis({}) yielded result {}".format(prefix, keys))
+    print("list_all_keys_redis for prefix \"{}\" yielded result:\n{}\n".format(prefix, keys))
     return keys 
 
 def list_all_keys(bucket, prefix):
