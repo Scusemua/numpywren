@@ -282,7 +282,7 @@ def launch_fargate(numnodes):
             desiredCount = numnodes,
             platformVersion = 'LATEST',
             networkConfiguration = ecs_network_configuration,
-            #loadBalancers = [None],
+            launchType = "FARGATE",
             schedulingStrategy = 'REPLICA',
             tags = [{
                 'key': FARGATE_TASK_TAG,
@@ -304,7 +304,7 @@ def launch_fargate(numnodes):
                 desiredCount = numnodes,
                 platformVersion = 'LATEST',
                 networkConfiguration = ecs_network_configuration,
-                #loadBalancers = [None],
+                launchType = "FARGATE",
                 schedulingStrategy = 'REPLICA',
                 tags = [{
                     'key': FARGATE_TASK_TAG,
