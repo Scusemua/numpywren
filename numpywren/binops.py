@@ -15,6 +15,57 @@ import time
 from . import lambdapack as lp
 from . import job_runner 
 
+def no_op(arguments):
+    """
+    Sleep for the parameterized number of seconds.
+
+    Parameters:
+    -----------
+        arguments (Tuple of the form (int, int)): 
+            First element: number of seconds to sleep.
+            Second element: number of times to execute sleep function.
+
+    Returns:
+    --------
+        int: The number of seconds slept.
+    """
+    # Unpack the arguments.
+    sleep_amount, n = arguments
+
+    # Execute the sleep function 'n' times.
+    for _ in range(0, n):
+        time.sleep(sleep_amount)
+
+    # Return how long we slept.
+    return sleep_amount
+
+def scalability_test(num_tasks, sleep_amount, pwex = None):
+    """
+    Perform scalability tests (strong scaling).
+
+    Arguments:
+    ----------
+        num_tasks (int): Number of tasks to execute in total.
+        sleep_amount (int): Time to sleep (in seconds).
+        pwex (Exector): The executor to use for executing the tasks.
+    """
+    print("===== Scalability Tests =====")
+    print("Number of tasks: {}\nSleep amount: {} seconds".format(num_tasks, sleep_amount))
+
+    if pwex is None:
+        pwex = pywren.default_executor()
+    
+    arguments = [(sleep_amount, 1)] * num_tasks
+
+    print("Mapping futures now...")
+
+    futures = pwex.map(no_op, arguments)
+
+    print("Number of futures: {}".format(len(futures)))
+    
+    print("Waiting for scalability_test() futures to finish...")
+    pywren.wait(futures)
+    [f.result() for f in futures]
 
 def _gemm_remote_0(block_pairs, XY, X, Y, reduce_idxs=[0], dtype=np.float64, **kwargs):
     print(reduce_idxs)
@@ -102,7 +153,6 @@ def gemm_with_prefetch(X, Y, bidx0, bidx1, block_chunk_size=16):
     e = time.time()
     print("Block Matmul took effectively {0}".format(e  - t))
     return result
-
 
 def gemm(pwex, X, Y, out_bucket=None, tasks_per_job=1, local=False, dtype=np.float64, overwrite=True, gemm_impl=0, gemm_chunk_size=16):
 

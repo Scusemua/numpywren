@@ -320,8 +320,8 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
         program.stop()
         raise
         pass
-    print(program.program_status())
-    print([f.result() for f in all_futures])
+    #print(program.program_status())
+    #print([f.result() for f in all_futures])
     exp["all_futures"] = all_futures
     exp_bytes = dill.dumps(exp)
     client = boto3.client('s3')
