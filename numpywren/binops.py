@@ -21,7 +21,7 @@ def no_op(arguments):
 
     Parameters:
     -----------
-        arguments (Tuple of the form (int, int)): 
+        arguments (Tuple of the form (float, int)): 
             First element: number of seconds to sleep.
             Second element: number of times to execute sleep function.
 
@@ -31,11 +31,11 @@ def no_op(arguments):
     """
     # Unpack the arguments.
     sleep_amount, n = arguments
-
+    
     # Execute the sleep function 'n' times.
     for _ in range(0, n):
         time.sleep(sleep_amount)
-
+    
     # Return how long we slept.
     return sleep_amount
 
@@ -46,21 +46,21 @@ def scalability_test(num_tasks, sleep_amount, pwex = None):
     Arguments:
     ----------
         num_tasks (int): Number of tasks to execute in total.
-        sleep_amount (int): Time to sleep (in seconds).
+        sleep_amount (float): Time to sleep (in seconds).
         pwex (Exector): The executor to use for executing the tasks.
     """
     print("===== Scalability Tests =====")
     print("Number of tasks: {}\nSleep amount: {} seconds".format(num_tasks, sleep_amount))
-
+    
     if pwex is None:
         pwex = pywren.default_executor()
     
     arguments = [(sleep_amount, 1)] * num_tasks
-
+    
     print("Mapping futures now...")
-
+    
     futures = pwex.map(no_op, arguments)
-
+    
     print("Number of futures: {}".format(len(futures)))
     
     print("Waiting for scalability_test() futures to finish...")
