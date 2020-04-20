@@ -32,7 +32,7 @@ ecs_client = boto3.client("ecs", region_name = "us-east-1")
 ec2_client = boto3.client('ec2', region_name = "us-east-1")
 
 # Need to change in wrenhandler.py, wrenconfig.py, matrix.py, matrix_utils.py, jobrunner.py, job_runner.py.
-base_redis_ip = "ec2-3-87-96-115.compute-1.amazonaws.com"
+base_redis_ip = "ec2-54-242-180-123.compute-1.amazonaws.com"
 redis_hostname = 'redis://' + base_redis_ip
 cpu_count = multiprocessing.cpu_count()
 logger = logging.getLogger('numpywren')

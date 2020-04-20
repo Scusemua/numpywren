@@ -21,7 +21,7 @@ def no_op(arguments):
 
     Parameters:
     -----------
-        arguments (Tuple of the form (float, int)): 
+        arguments (Tuple of the form (int, int)): 
             First element: number of seconds to sleep.
             Second element: number of times to execute sleep function.
 
