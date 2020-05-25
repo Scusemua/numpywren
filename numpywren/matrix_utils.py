@@ -21,7 +21,7 @@ import pywren.wrenconfig as wc
 # TODO: Fix list_all_keys and whatnot.
 
 # Need to change in wrenhandler.py, wrenconfig.py, matrix.py, matrix_utils.py, jobrunner.py, job_runner.py.
-base_redis_ip = "ec2-54-226-55-21.compute-1.amazonaws.com"
+base_redis_ip = "ec2-54-208-187-56.compute-1.amazonaws.com"
 redis_hostname = 'redis://' + base_redis_ip
 cpu_count = multiprocessing.cpu_count()
 
