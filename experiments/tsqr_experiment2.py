@@ -306,6 +306,19 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
         raise
         pass
     print(program.program_status())
+
+    current_gbytes_read = program.get_read()
+    if (current_gbytes_read is None):
+        current_gbytes_read = 0
+    else:
+        current_gbytes_read = int(current_gbytes_read) / 1e9
+
+    current_gbytes_write = program.get_write()
+    if (current_gbytes_write is None):
+        current_gbytes_write = 0
+    else:
+        current_gbytes_write = int(current_gbytes_write) / 1e9
+
     exp["all_futures"] = all_futures
     exp_bytes = dill.dumps(exp)
     client = boto3.client('s3')
@@ -322,7 +335,9 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     with open("/tmp/last_run", "w+") as f:
         f.write(program.hash)
     return {
-        "time": times[-1] - times[0]
+        "time": times[-1] - times[0],
+        "gb_read": current_gbytes_read,
+        "gb_write": current_gbytes_write
     }
 
 
@@ -356,15 +371,29 @@ if __name__ == "__main__":
     redis_host = wc.default()["redis_host"]
     rc = redis.Redis(host = redis_host, port = 6379, db = 0)
     times = []
+    io_stats = []
     for i in range(0, args.trials):
         res = run_experiment(args.problem_size, args.shard_size, args.pipeline, args.num_priorities, args.lru, args.eager, args.truncate, args.max_cores, args.start_cores, args.trial, args.launch_granularity, args.timeout, args.log_granularity, args.autoscale_policy, args.standalone, args.warmup, args.verify, args.matrix_exists, args.write_limit, args.read_limit)
         times.append(res["time"])
+        io_stats.append((res["gb_read"], res["gb_write"]))
         print("Calling .flushall() on Redis.")
         rc.flushall(asynchronous = False)
     
     print("=== Results (# Trials = {}) ===".format(args.trials))
     print("All Times: {}".format(times))
     print("Average/Min/Max\n{}\n{}\n{}".format(sum(times)/len(times), min(times),max(times)))
+
+    sum_r = 0
+    sum_w = 0
+    for io in io_stats:
+        r,w = io 
+        sum_r += r
+        sum_w += w 
+    
+    avg_r = sum_r / len(io_stats)
+    avg_w = sum_w / len(io_stats)
+
+    print("Average GB Read // Average GB Written\n{}\n{}".format(avg_r, avg_w))
 
 
 

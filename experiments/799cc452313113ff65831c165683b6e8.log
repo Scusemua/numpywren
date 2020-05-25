@@ -1,0 +1,2081 @@
+2020-04-09 20:37:52,628 - root - INFO - [2020-04-09 20:37:52.628351] Logging to 799cc452313113ff65831c165683b6e8.log.
+2020-04-09 20:37:59,744 - root - DEBUG - Python AST:
+FunctionDef(name='GEMM',
+    args=arguments(
+        args=[arg(arg='A', annotation=Name(id='BigMatrix')),
+            arg(arg='B', annotation=Name(id='BigMatrix')),
+            arg(arg='M', annotation=Name(id='int')),
+            arg(arg='N', annotation=Name(id='int')),
+            arg(arg='K', annotation=Name(id='int')),
+            arg(arg='Temp', annotation=Name(id='BigMatrix')),
+            arg(arg='Out', annotation=Name(id='BigMatrix'))],
+        vararg=None,
+        kwonlyargs=[],
+        kw_defaults=[],
+        kwarg=None,
+        defaults=[]),
+    body=[
+        Assign(targets=[Name(id='tree_depth')],
+            value=Call(func=Name(id='ceiling'),
+                args=[
+                    BinOp(left=Call(func=Name(id='log'), args=[Name(id='K')], keywords=[]),
+                        op=Div,
+                        right=Call(func=Name(id='log'), args=[Num(n=4)], keywords=[]))],
+                keywords=[])),
+        For(target=Name(id='i'),
+            iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='M')], keywords=[]),
+            body=[
+                For(target=Name(id='j'),
+                    iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='N')], keywords=[]),
+                    body=[
+                        For(target=Name(id='k'),
+                            iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='K')], keywords=[]),
+                            body=[
+                                Assign(
+                                    targets=[
+                                        Subscript(value=Name(id='Temp'),
+                                            slice=Index(
+                                                value=Tuple(elts=[Name(id='i'), Name(id='j'), Name(id='k'), Num(n=0)])))],
+                                    value=Call(func=Name(id='gemm'),
+                                        args=[
+                                            Subscript(value=Name(id='A'),
+                                                slice=Index(value=Tuple(elts=[Name(id='i'), Name(id='k')]))),
+                                            Subscript(value=Name(id='B'),
+                                                slice=Index(value=Tuple(elts=[Name(id='k'), Name(id='j')])))],
+                                        keywords=[]))],
+                            orelse=[])],
+                    orelse=[])],
+            orelse=[]),
+        For(target=Name(id='i'),
+            iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='M')], keywords=[]),
+            body=[
+                For(target=Name(id='j'),
+                    iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='N')], keywords=[]),
+                    body=[
+                        For(target=Name(id='level'),
+                            iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='tree_depth')], keywords=[]),
+                            body=[
+                                For(target=Name(id='k'),
+                                    iter=Call(func=Name(id='range'),
+                                        args=[Num(n=0),
+                                            Name(id='K'),
+                                            BinOp(left=Num(n=4),
+                                                op=Pow,
+                                                right=BinOp(left=Name(id='level'), op=Add, right=Num(n=1)))],
+                                        keywords=[]),
+                                    body=[
+                                        Assign(
+                                            targets=[
+                                                Subscript(value=Name(id='Temp'),
+                                                    slice=Index(
+                                                        value=Tuple(
+                                                            elts=[Name(id='i'),
+                                                                Name(id='j'),
+                                                                Name(id='k'),
+                                                                BinOp(left=Name(id='level'), op=Add, right=Num(n=1))])))],
+                                            value=Call(func=Name(id='add_matrices'),
+                                                args=[
+                                                    Subscript(value=Name(id='Temp'),
+                                                        slice=Index(
+                                                            value=Tuple(
+                                                                elts=[Name(id='i'),
+                                                                    Name(id='j'),
+                                                                    Name(id='k'),
+                                                                    Name(id='level')]))),
+                                                    Subscript(value=Name(id='Temp'),
+                                                        slice=Index(
+                                                            value=Tuple(
+                                                                elts=[Name(id='i'),
+                                                                    Name(id='j'),
+                                                                    BinOp(left=Name(id='k'),
+                                                                        op=Add,
+                                                                        right=BinOp(left=Num(n=4),
+                                                                            op=Pow,
+                                                                            right=Name(id='level'))),
+                                                                    Name(id='level')]))),
+                                                    Subscript(value=Name(id='Temp'),
+                                                        slice=Index(
+                                                            value=Tuple(
+                                                                elts=[Name(id='i'),
+                                                                    Name(id='j'),
+                                                                    BinOp(left=Name(id='k'),
+                                                                        op=Add,
+                                                                        right=BinOp(left=Num(n=2),
+                                                                            op=Mult,
+                                                                            right=BinOp(left=Num(n=4),
+                                                                                op=Pow,
+                                                                                right=Name(id='level')))),
+                                                                    Name(id='level')]))),
+                                                    Subscript(value=Name(id='Temp'),
+                                                        slice=Index(
+                                                            value=Tuple(
+                                                                elts=[Name(id='i'),
+                                                                    Name(id='j'),
+                                                                    BinOp(left=Name(id='k'),
+                                                                        op=Add,
+                                                                        right=BinOp(left=Num(n=3),
+                                                                            op=Mult,
+                                                                            right=BinOp(left=Num(n=4),
+                                                                                op=Pow,
+                                                                                right=Name(id='level')))),
+                                                                    Name(id='level')])))],
+                                                keywords=[]))],
+                                    orelse=[])],
+                            orelse=[])],
+                    orelse=[])],
+            orelse=[]),
+        For(target=Name(id='i'),
+            iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='M')], keywords=[]),
+            body=[
+                For(target=Name(id='j'),
+                    iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='N')], keywords=[]),
+                    body=[
+                        Assign(
+                            targets=[
+                                Subscript(value=Name(id='Out'),
+                                    slice=Index(value=Tuple(elts=[Name(id='i'), Name(id='j')])))],
+                            value=Call(func=Name(id='identity'),
+                                args=[
+                                    Subscript(value=Name(id='Temp'),
+                                        slice=Index(
+                                            value=Tuple(elts=[Name(id='i'), Name(id='j'), Num(n=0), Name(id='tree_depth')],
+                                                )))],
+                                keywords=[]))],
+                    orelse=[])],
+            orelse=[])],
+    decorator_list=[],
+    returns=None)
+
+2020-04-09 20:37:59,746 - root - DEBUG - IR AST:
+FuncDef(name='GEMM',
+    args=['A', 'B', 'M', 'N', 'K', 'Temp', 'Out'],
+    body=[
+        Assign(lhs=Ref(name='tree_depth', type=None),
+            rhs=Mfunc(op='ceiling',
+                e=BinOp(op='Div',
+                    left=Mfunc(op='log', e=Ref(name='K', type=None), type=None),
+                    right=Mfunc(op='log', e=IntConst(val=4, type=None), type=None),
+                    type=None),
+                type=None)),
+        For(var='i',
+            min=IntConst(val=0, type=None),
+            max=Ref(name='M', type=None),
+            step=IntConst(val=1, type=None),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=None),
+                    max=Ref(name='N', type=None),
+                    step=IntConst(val=1, type=None),
+                    body=[
+                        For(var='k',
+                            min=IntConst(val=0, type=None),
+                            max=Ref(name='K', type=None),
+                            step=IntConst(val=1, type=None),
+                            body=[
+                                RemoteCallAbstract(compute=<function gemm at 0x7f5b6a1c27b8>,
+                                    output=IndexExpr(matrix_name='Temp',
+                                        indices=[Ref(name='i', type=None),
+                                            Ref(name='j', type=None),
+                                            Ref(name='k', type=None),
+                                            IntConst(val=0, type=None)]),
+                                    args=[
+                                        IndexExpr(matrix_name='A',
+                                            indices=[Ref(name='i', type=None), Ref(name='k', type=None)]),
+                                        IndexExpr(matrix_name='B',
+                                            indices=[Ref(name='k', type=None), Ref(name='j', type=None)])],
+                                    kwargs=None,
+                                    type=None)])])]),
+        For(var='i',
+            min=IntConst(val=0, type=None),
+            max=Ref(name='M', type=None),
+            step=IntConst(val=1, type=None),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=None),
+                    max=Ref(name='N', type=None),
+                    step=IntConst(val=1, type=None),
+                    body=[
+                        For(var='level',
+                            min=IntConst(val=0, type=None),
+                            max=Ref(name='tree_depth', type=None),
+                            step=IntConst(val=1, type=None),
+                            body=[
+                                For(var='k',
+                                    min=IntConst(val=0, type=None),
+                                    max=Ref(name='K', type=None),
+                                    step=BinOp(op='Pow',
+                                        left=IntConst(val=4, type=None),
+                                        right=BinOp(op='Add',
+                                            left=Ref(name='level', type=None),
+                                            right=IntConst(val=1, type=None),
+                                            type=None),
+                                        type=None),
+                                    body=[
+                                        RemoteCallAbstract(compute=<function add_matrices at 0x7f5b6a1c20d0>,
+                                            output=IndexExpr(matrix_name='Temp',
+                                                indices=[Ref(name='i', type=None),
+                                                    Ref(name='j', type=None),
+                                                    Ref(name='k', type=None),
+                                                    BinOp(op='Add',
+                                                        left=Ref(name='level', type=None),
+                                                        right=IntConst(val=1, type=None),
+                                                        type=None)]),
+                                            args=[
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=None),
+                                                        Ref(name='j', type=None),
+                                                        Ref(name='k', type=None),
+                                                        Ref(name='level', type=None)]),
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=None),
+                                                        Ref(name='j', type=None),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='k', type=None),
+                                                            right=BinOp(op='Pow',
+                                                                left=IntConst(val=4, type=None),
+                                                                right=Ref(name='level', type=None),
+                                                                type=None),
+                                                            type=None),
+                                                        Ref(name='level', type=None)]),
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=None),
+                                                        Ref(name='j', type=None),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='k', type=None),
+                                                            right=BinOp(op='Mult',
+                                                                left=IntConst(val=2, type=None),
+                                                                right=BinOp(op='Pow',
+                                                                    left=IntConst(val=4, type=None),
+                                                                    right=Ref(name='level', type=None),
+                                                                    type=None),
+                                                                type=None),
+                                                            type=None),
+                                                        Ref(name='level', type=None)]),
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=None),
+                                                        Ref(name='j', type=None),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='k', type=None),
+                                                            right=BinOp(op='Mult',
+                                                                left=IntConst(val=3, type=None),
+                                                                right=BinOp(op='Pow',
+                                                                    left=IntConst(val=4, type=None),
+                                                                    right=Ref(name='level', type=None),
+                                                                    type=None),
+                                                                type=None),
+                                                            type=None),
+                                                        Ref(name='level', type=None)])],
+                                            kwargs=None,
+                                            type=None)])])])]),
+        For(var='i',
+            min=IntConst(val=0, type=None),
+            max=Ref(name='M', type=None),
+            step=IntConst(val=1, type=None),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=None),
+                    max=Ref(name='N', type=None),
+                    step=IntConst(val=1, type=None),
+                    body=[
+                        RemoteCallAbstract(compute=<function identity at 0x7f5b6a1c2d08>,
+                            output=IndexExpr(matrix_name='Out',
+                                indices=[Ref(name='i', type=None), Ref(name='j', type=None)]),
+                            args=[
+                                IndexExpr(matrix_name='Temp',
+                                    indices=[Ref(name='i', type=None),
+                                        Ref(name='j', type=None),
+                                        IntConst(val=0, type=None),
+                                        Ref(name='tree_depth', type=None)])],
+                            kwargs=None,
+                            type=None)])])],
+    arg_types=[<class 'numpywren.matrix.BigMatrix'>,
+        <class 'numpywren.matrix.BigMatrix'>,
+        <class 'int'>,
+        <class 'int'>,
+        <class 'int'>,
+        <class 'numpywren.matrix.BigMatrix'>,
+        <class 'numpywren.matrix.BigMatrix'>])
+
+2020-04-09 20:37:59,747 - root - DEBUG - typed IR AST:
+FuncDef(name='GEMM',
+    args=['A', 'B', 'M', 'N', 'K', 'Temp', 'Out'],
+    body=[
+        Assign(
+            lhs=Ref(name='tree_depth', type=<class 'numpywren.frontend.ConstIntType'>),
+            rhs=Mfunc(op='ceiling',
+                e=BinOp(op='Div',
+                    left=Mfunc(op='log',
+                        e=Ref(name='K', type=<class 'numpywren.frontend.ConstIntType'>),
+                        type=<class 'numpywren.frontend.ConstFloatType'>),
+                    right=Mfunc(op='log',
+                        e=IntConst(val=4, type=<class 'numpywren.frontend.ConstIntType'>),
+                        type=<class 'numpywren.frontend.ConstFloatType'>),
+                    type=<class 'numpywren.frontend.ConstFloatType'>),
+                type=<class 'numpywren.frontend.ConstIntType'>)),
+        For(var='i',
+            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+            max=Ref(name='M', type=<class 'numpywren.frontend.ConstIntType'>),
+            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                    max=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+                    step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                    body=[
+                        For(var='k',
+                            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                            max=Ref(name='K', type=<class 'numpywren.frontend.ConstIntType'>),
+                            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                            body=[
+                                RemoteCallAbstract(compute=<function gemm at 0x7f5b6a1c27b8>,
+                                    output=[
+                                        IndexExpr(matrix_name='Temp',
+                                            indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                Ref(name='k', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>)])],
+                                    args=[
+                                        IndexExpr(matrix_name='A',
+                                            indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                Ref(name='k', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                        IndexExpr(matrix_name='B',
+                                            indices=[Ref(name='k', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)])],
+                                    kwargs=None,
+                                    type=<class 'type'>)])])]),
+        For(var='i',
+            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+            max=Ref(name='M', type=<class 'numpywren.frontend.ConstIntType'>),
+            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                    max=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+                    step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                    body=[
+                        For(var='level',
+                            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                            max=Ref(name='tree_depth', type=<class 'numpywren.frontend.ConstIntType'>),
+                            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                            body=[
+                                For(var='k',
+                                    min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                                    max=Ref(name='K', type=<class 'numpywren.frontend.ConstIntType'>),
+                                    step=BinOp(op='Pow',
+                                        left=IntConst(val=4, type=<class 'numpywren.frontend.ConstIntType'>),
+                                        right=BinOp(op='Add',
+                                            left=Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                            right=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                                            type=<class 'numpywren.frontend.LinearIntType'>),
+                                        type=<class 'numpywren.frontend.IntType'>),
+                                    body=[
+                                        RemoteCallAbstract(compute=<function add_matrices at 0x7f5b6a1c20d0>,
+                                            output=[
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='k', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='level',
+                                                                type=<class 'numpywren.frontend.LinearIntType'>),
+                                                            right=IntConst(val=1,
+                                                                type=<class 'numpywren.frontend.ConstIntType'>),
+                                                            type=<class 'numpywren.frontend.LinearIntType'>)])],
+                                            args=[
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='k', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='level',
+                                                            type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='k',
+                                                                type=<class 'numpywren.frontend.LinearIntType'>),
+                                                            right=BinOp(op='Pow',
+                                                                left=IntConst(val=4,
+                                                                    type=<class 'numpywren.frontend.ConstIntType'>),
+                                                                right=Ref(name='level',
+                                                                    type=<class 'numpywren.frontend.LinearIntType'>),
+                                                                type=<class 'numpywren.frontend.IntType'>),
+                                                            type=<class 'numpywren.frontend.IntType'>),
+                                                        Ref(name='level',
+                                                            type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='k',
+                                                                type=<class 'numpywren.frontend.LinearIntType'>),
+                                                            right=BinOp(op='Mult',
+                                                                left=IntConst(val=2,
+                                                                    type=<class 'numpywren.frontend.ConstIntType'>),
+                                                                right=BinOp(op='Pow',
+                                                                    left=IntConst(val=4,
+                                                                        type=<class 'numpywren.frontend.ConstIntType'>),
+                                                                    right=Ref(name='level',
+                                                                        type=<class 'numpywren.frontend.LinearIntType'>),
+                                                                    type=<class 'numpywren.frontend.IntType'>),
+                                                                type=<class 'numpywren.frontend.IntType'>),
+                                                            type=<class 'numpywren.frontend.IntType'>),
+                                                        Ref(name='level',
+                                                            type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='k',
+                                                                type=<class 'numpywren.frontend.LinearIntType'>),
+                                                            right=BinOp(op='Mult',
+                                                                left=IntConst(val=3,
+                                                                    type=<class 'numpywren.frontend.ConstIntType'>),
+                                                                right=BinOp(op='Pow',
+                                                                    left=IntConst(val=4,
+                                                                        type=<class 'numpywren.frontend.ConstIntType'>),
+                                                                    right=Ref(name='level',
+                                                                        type=<class 'numpywren.frontend.LinearIntType'>),
+                                                                    type=<class 'numpywren.frontend.IntType'>),
+                                                                type=<class 'numpywren.frontend.IntType'>),
+                                                            type=<class 'numpywren.frontend.IntType'>),
+                                                        Ref(name='level',
+                                                            type=<class 'numpywren.frontend.LinearIntType'>)])],
+                                            kwargs=None,
+                                            type=<class 'type'>)])])])]),
+        For(var='i',
+            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+            max=Ref(name='M', type=<class 'numpywren.frontend.ConstIntType'>),
+            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                    max=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+                    step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                    body=[
+                        RemoteCallAbstract(compute=<function identity at 0x7f5b6a1c2d08>,
+                            output=[
+                                IndexExpr(matrix_name='Out',
+                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)])],
+                            args=[
+                                IndexExpr(matrix_name='Temp',
+                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                        IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                                        Ref(name='tree_depth', type=<class 'numpywren.frontend.ConstIntType'>)])],
+                            kwargs=None,
+                            type=<class 'type'>)])])],
+    arg_types=[<class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.ConstIntType'>,
+        <class 'numpywren.frontend.ConstIntType'>,
+        <class 'numpywren.frontend.ConstIntType'>,
+        <class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.BigMatrixType'>])
+
+2020-04-09 20:38:06,636 - root - INFO - [2020-04-09 20:38:06.636628] Starting with 32 cores
+2020-04-09 20:38:12,106 - root - DEBUG - 5: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:38:12,106 - root - INFO - Waiting: 479, Currently Processing: 32
+2020-04-09 20:38:12,106 - root - INFO - 5: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:38:17,196 - root - DEBUG - 10: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:38:17,196 - root - INFO - Waiting: 437, Currently Processing: 32
+2020-04-09 20:38:17,196 - root - INFO - 10: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:38:22,277 - root - DEBUG - 15: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:38:22,277 - root - INFO - Waiting: 390, Currently Processing: 32
+2020-04-09 20:38:22,277 - root - INFO - 15: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:38:27,349 - root - DEBUG - 20: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:38:27,349 - root - INFO - Waiting: 349, Currently Processing: 32
+2020-04-09 20:38:27,349 - root - INFO - 20: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:38:32,429 - root - DEBUG - 25: Up Workers: 32, Busy Workers: 31
+2020-04-09 20:38:32,430 - root - INFO - Waiting: 349, Currently Processing: 32
+2020-04-09 20:38:32,430 - root - INFO - 25: Up Workers: 32, Busy Workers: 31
+2020-04-09 20:38:37,535 - root - DEBUG - 30: Up Workers: 32, Busy Workers: 31
+2020-04-09 20:38:37,536 - root - INFO - Waiting: 311, Currently Processing: 31
+2020-04-09 20:38:37,536 - root - INFO - 30: Up Workers: 32, Busy Workers: 31
+2020-04-09 20:38:42,613 - root - DEBUG - 35: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:38:42,613 - root - INFO - Waiting: 262, Currently Processing: 32
+2020-04-09 20:38:42,613 - root - INFO - 35: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:38:47,692 - root - DEBUG - 40: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:38:47,692 - root - INFO - Waiting: 191, Currently Processing: 32
+2020-04-09 20:38:47,692 - root - INFO - 40: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:38:52,762 - root - DEBUG - 45: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:38:52,762 - root - INFO - Waiting: 155, Currently Processing: 32
+2020-04-09 20:38:52,762 - root - INFO - 45: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:38:57,900 - root - DEBUG - 50: Up Workers: 32, Busy Workers: 31
+2020-04-09 20:38:57,900 - root - INFO - Waiting: 117, Currently Processing: 31
+2020-04-09 20:38:57,900 - root - INFO - 50: Up Workers: 32, Busy Workers: 31
+2020-04-09 20:39:03,008 - root - DEBUG - 55: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:39:03,008 - root - INFO - Waiting: 117, Currently Processing: 31
+2020-04-09 20:39:03,008 - root - INFO - 55: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:39:08,157 - root - DEBUG - 60: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:39:08,157 - root - INFO - Waiting: 73, Currently Processing: 32
+2020-04-09 20:39:08,157 - root - INFO - 60: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:39:13,290 - root - DEBUG - 66: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:39:18,399 - root - DEBUG - 71: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:39:23,482 - root - DEBUG - 76: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:39:28,566 - root - DEBUG - 81: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:39:33,654 - root - DEBUG - 86: Up Workers: 32, Busy Workers: 3
+2020-04-09 20:39:38,703 - root - DEBUG - 91: Up Workers: 0, Busy Workers: 0
+2020-04-09 20:39:55,906 - root - INFO - [2020-04-09 20:39:55.906935] Logging to 799cc452313113ff65831c165683b6e8.log.
+2020-04-09 20:40:25,933 - root - INFO - [2020-04-09 20:40:25.933098] Logging to 799cc452313113ff65831c165683b6e8.log.
+2020-04-09 20:42:05,218 - root - DEBUG - Python AST:
+FunctionDef(name='GEMM',
+    args=arguments(
+        args=[arg(arg='A', annotation=Name(id='BigMatrix')),
+            arg(arg='B', annotation=Name(id='BigMatrix')),
+            arg(arg='M', annotation=Name(id='int')),
+            arg(arg='N', annotation=Name(id='int')),
+            arg(arg='K', annotation=Name(id='int')),
+            arg(arg='Temp', annotation=Name(id='BigMatrix')),
+            arg(arg='Out', annotation=Name(id='BigMatrix'))],
+        vararg=None,
+        kwonlyargs=[],
+        kw_defaults=[],
+        kwarg=None,
+        defaults=[]),
+    body=[
+        Assign(targets=[Name(id='tree_depth')],
+            value=Call(func=Name(id='ceiling'),
+                args=[
+                    BinOp(left=Call(func=Name(id='log'), args=[Name(id='K')], keywords=[]),
+                        op=Div,
+                        right=Call(func=Name(id='log'), args=[Num(n=4)], keywords=[]))],
+                keywords=[])),
+        For(target=Name(id='i'),
+            iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='M')], keywords=[]),
+            body=[
+                For(target=Name(id='j'),
+                    iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='N')], keywords=[]),
+                    body=[
+                        For(target=Name(id='k'),
+                            iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='K')], keywords=[]),
+                            body=[
+                                Assign(
+                                    targets=[
+                                        Subscript(value=Name(id='Temp'),
+                                            slice=Index(
+                                                value=Tuple(elts=[Name(id='i'), Name(id='j'), Name(id='k'), Num(n=0)])))],
+                                    value=Call(func=Name(id='gemm'),
+                                        args=[
+                                            Subscript(value=Name(id='A'),
+                                                slice=Index(value=Tuple(elts=[Name(id='i'), Name(id='k')]))),
+                                            Subscript(value=Name(id='B'),
+                                                slice=Index(value=Tuple(elts=[Name(id='k'), Name(id='j')])))],
+                                        keywords=[]))],
+                            orelse=[])],
+                    orelse=[])],
+            orelse=[]),
+        For(target=Name(id='i'),
+            iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='M')], keywords=[]),
+            body=[
+                For(target=Name(id='j'),
+                    iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='N')], keywords=[]),
+                    body=[
+                        For(target=Name(id='level'),
+                            iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='tree_depth')], keywords=[]),
+                            body=[
+                                For(target=Name(id='k'),
+                                    iter=Call(func=Name(id='range'),
+                                        args=[Num(n=0),
+                                            Name(id='K'),
+                                            BinOp(left=Num(n=4),
+                                                op=Pow,
+                                                right=BinOp(left=Name(id='level'), op=Add, right=Num(n=1)))],
+                                        keywords=[]),
+                                    body=[
+                                        Assign(
+                                            targets=[
+                                                Subscript(value=Name(id='Temp'),
+                                                    slice=Index(
+                                                        value=Tuple(
+                                                            elts=[Name(id='i'),
+                                                                Name(id='j'),
+                                                                Name(id='k'),
+                                                                BinOp(left=Name(id='level'), op=Add, right=Num(n=1))])))],
+                                            value=Call(func=Name(id='add_matrices'),
+                                                args=[
+                                                    Subscript(value=Name(id='Temp'),
+                                                        slice=Index(
+                                                            value=Tuple(
+                                                                elts=[Name(id='i'),
+                                                                    Name(id='j'),
+                                                                    Name(id='k'),
+                                                                    Name(id='level')]))),
+                                                    Subscript(value=Name(id='Temp'),
+                                                        slice=Index(
+                                                            value=Tuple(
+                                                                elts=[Name(id='i'),
+                                                                    Name(id='j'),
+                                                                    BinOp(left=Name(id='k'),
+                                                                        op=Add,
+                                                                        right=BinOp(left=Num(n=4),
+                                                                            op=Pow,
+                                                                            right=Name(id='level'))),
+                                                                    Name(id='level')]))),
+                                                    Subscript(value=Name(id='Temp'),
+                                                        slice=Index(
+                                                            value=Tuple(
+                                                                elts=[Name(id='i'),
+                                                                    Name(id='j'),
+                                                                    BinOp(left=Name(id='k'),
+                                                                        op=Add,
+                                                                        right=BinOp(left=Num(n=2),
+                                                                            op=Mult,
+                                                                            right=BinOp(left=Num(n=4),
+                                                                                op=Pow,
+                                                                                right=Name(id='level')))),
+                                                                    Name(id='level')]))),
+                                                    Subscript(value=Name(id='Temp'),
+                                                        slice=Index(
+                                                            value=Tuple(
+                                                                elts=[Name(id='i'),
+                                                                    Name(id='j'),
+                                                                    BinOp(left=Name(id='k'),
+                                                                        op=Add,
+                                                                        right=BinOp(left=Num(n=3),
+                                                                            op=Mult,
+                                                                            right=BinOp(left=Num(n=4),
+                                                                                op=Pow,
+                                                                                right=Name(id='level')))),
+                                                                    Name(id='level')])))],
+                                                keywords=[]))],
+                                    orelse=[])],
+                            orelse=[])],
+                    orelse=[])],
+            orelse=[]),
+        For(target=Name(id='i'),
+            iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='M')], keywords=[]),
+            body=[
+                For(target=Name(id='j'),
+                    iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='N')], keywords=[]),
+                    body=[
+                        Assign(
+                            targets=[
+                                Subscript(value=Name(id='Out'),
+                                    slice=Index(value=Tuple(elts=[Name(id='i'), Name(id='j')])))],
+                            value=Call(func=Name(id='identity'),
+                                args=[
+                                    Subscript(value=Name(id='Temp'),
+                                        slice=Index(
+                                            value=Tuple(elts=[Name(id='i'), Name(id='j'), Num(n=0), Name(id='tree_depth')],
+                                                )))],
+                                keywords=[]))],
+                    orelse=[])],
+            orelse=[])],
+    decorator_list=[],
+    returns=None)
+
+2020-04-09 20:42:05,219 - root - DEBUG - IR AST:
+FuncDef(name='GEMM',
+    args=['A', 'B', 'M', 'N', 'K', 'Temp', 'Out'],
+    body=[
+        Assign(lhs=Ref(name='tree_depth', type=None),
+            rhs=Mfunc(op='ceiling',
+                e=BinOp(op='Div',
+                    left=Mfunc(op='log', e=Ref(name='K', type=None), type=None),
+                    right=Mfunc(op='log', e=IntConst(val=4, type=None), type=None),
+                    type=None),
+                type=None)),
+        For(var='i',
+            min=IntConst(val=0, type=None),
+            max=Ref(name='M', type=None),
+            step=IntConst(val=1, type=None),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=None),
+                    max=Ref(name='N', type=None),
+                    step=IntConst(val=1, type=None),
+                    body=[
+                        For(var='k',
+                            min=IntConst(val=0, type=None),
+                            max=Ref(name='K', type=None),
+                            step=IntConst(val=1, type=None),
+                            body=[
+                                RemoteCallAbstract(compute=<function gemm at 0x7f768011e7b8>,
+                                    output=IndexExpr(matrix_name='Temp',
+                                        indices=[Ref(name='i', type=None),
+                                            Ref(name='j', type=None),
+                                            Ref(name='k', type=None),
+                                            IntConst(val=0, type=None)]),
+                                    args=[
+                                        IndexExpr(matrix_name='A',
+                                            indices=[Ref(name='i', type=None), Ref(name='k', type=None)]),
+                                        IndexExpr(matrix_name='B',
+                                            indices=[Ref(name='k', type=None), Ref(name='j', type=None)])],
+                                    kwargs=None,
+                                    type=None)])])]),
+        For(var='i',
+            min=IntConst(val=0, type=None),
+            max=Ref(name='M', type=None),
+            step=IntConst(val=1, type=None),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=None),
+                    max=Ref(name='N', type=None),
+                    step=IntConst(val=1, type=None),
+                    body=[
+                        For(var='level',
+                            min=IntConst(val=0, type=None),
+                            max=Ref(name='tree_depth', type=None),
+                            step=IntConst(val=1, type=None),
+                            body=[
+                                For(var='k',
+                                    min=IntConst(val=0, type=None),
+                                    max=Ref(name='K', type=None),
+                                    step=BinOp(op='Pow',
+                                        left=IntConst(val=4, type=None),
+                                        right=BinOp(op='Add',
+                                            left=Ref(name='level', type=None),
+                                            right=IntConst(val=1, type=None),
+                                            type=None),
+                                        type=None),
+                                    body=[
+                                        RemoteCallAbstract(compute=<function add_matrices at 0x7f768011e0d0>,
+                                            output=IndexExpr(matrix_name='Temp',
+                                                indices=[Ref(name='i', type=None),
+                                                    Ref(name='j', type=None),
+                                                    Ref(name='k', type=None),
+                                                    BinOp(op='Add',
+                                                        left=Ref(name='level', type=None),
+                                                        right=IntConst(val=1, type=None),
+                                                        type=None)]),
+                                            args=[
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=None),
+                                                        Ref(name='j', type=None),
+                                                        Ref(name='k', type=None),
+                                                        Ref(name='level', type=None)]),
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=None),
+                                                        Ref(name='j', type=None),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='k', type=None),
+                                                            right=BinOp(op='Pow',
+                                                                left=IntConst(val=4, type=None),
+                                                                right=Ref(name='level', type=None),
+                                                                type=None),
+                                                            type=None),
+                                                        Ref(name='level', type=None)]),
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=None),
+                                                        Ref(name='j', type=None),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='k', type=None),
+                                                            right=BinOp(op='Mult',
+                                                                left=IntConst(val=2, type=None),
+                                                                right=BinOp(op='Pow',
+                                                                    left=IntConst(val=4, type=None),
+                                                                    right=Ref(name='level', type=None),
+                                                                    type=None),
+                                                                type=None),
+                                                            type=None),
+                                                        Ref(name='level', type=None)]),
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=None),
+                                                        Ref(name='j', type=None),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='k', type=None),
+                                                            right=BinOp(op='Mult',
+                                                                left=IntConst(val=3, type=None),
+                                                                right=BinOp(op='Pow',
+                                                                    left=IntConst(val=4, type=None),
+                                                                    right=Ref(name='level', type=None),
+                                                                    type=None),
+                                                                type=None),
+                                                            type=None),
+                                                        Ref(name='level', type=None)])],
+                                            kwargs=None,
+                                            type=None)])])])]),
+        For(var='i',
+            min=IntConst(val=0, type=None),
+            max=Ref(name='M', type=None),
+            step=IntConst(val=1, type=None),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=None),
+                    max=Ref(name='N', type=None),
+                    step=IntConst(val=1, type=None),
+                    body=[
+                        RemoteCallAbstract(compute=<function identity at 0x7f768011ed08>,
+                            output=IndexExpr(matrix_name='Out',
+                                indices=[Ref(name='i', type=None), Ref(name='j', type=None)]),
+                            args=[
+                                IndexExpr(matrix_name='Temp',
+                                    indices=[Ref(name='i', type=None),
+                                        Ref(name='j', type=None),
+                                        IntConst(val=0, type=None),
+                                        Ref(name='tree_depth', type=None)])],
+                            kwargs=None,
+                            type=None)])])],
+    arg_types=[<class 'numpywren.matrix.BigMatrix'>,
+        <class 'numpywren.matrix.BigMatrix'>,
+        <class 'int'>,
+        <class 'int'>,
+        <class 'int'>,
+        <class 'numpywren.matrix.BigMatrix'>,
+        <class 'numpywren.matrix.BigMatrix'>])
+
+2020-04-09 20:42:05,221 - root - DEBUG - typed IR AST:
+FuncDef(name='GEMM',
+    args=['A', 'B', 'M', 'N', 'K', 'Temp', 'Out'],
+    body=[
+        Assign(
+            lhs=Ref(name='tree_depth', type=<class 'numpywren.frontend.ConstIntType'>),
+            rhs=Mfunc(op='ceiling',
+                e=BinOp(op='Div',
+                    left=Mfunc(op='log',
+                        e=Ref(name='K', type=<class 'numpywren.frontend.ConstIntType'>),
+                        type=<class 'numpywren.frontend.ConstFloatType'>),
+                    right=Mfunc(op='log',
+                        e=IntConst(val=4, type=<class 'numpywren.frontend.ConstIntType'>),
+                        type=<class 'numpywren.frontend.ConstFloatType'>),
+                    type=<class 'numpywren.frontend.ConstFloatType'>),
+                type=<class 'numpywren.frontend.ConstIntType'>)),
+        For(var='i',
+            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+            max=Ref(name='M', type=<class 'numpywren.frontend.ConstIntType'>),
+            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                    max=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+                    step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                    body=[
+                        For(var='k',
+                            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                            max=Ref(name='K', type=<class 'numpywren.frontend.ConstIntType'>),
+                            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                            body=[
+                                RemoteCallAbstract(compute=<function gemm at 0x7f768011e7b8>,
+                                    output=[
+                                        IndexExpr(matrix_name='Temp',
+                                            indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                Ref(name='k', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>)])],
+                                    args=[
+                                        IndexExpr(matrix_name='A',
+                                            indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                Ref(name='k', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                        IndexExpr(matrix_name='B',
+                                            indices=[Ref(name='k', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)])],
+                                    kwargs=None,
+                                    type=<class 'type'>)])])]),
+        For(var='i',
+            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+            max=Ref(name='M', type=<class 'numpywren.frontend.ConstIntType'>),
+            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                    max=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+                    step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                    body=[
+                        For(var='level',
+                            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                            max=Ref(name='tree_depth', type=<class 'numpywren.frontend.ConstIntType'>),
+                            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                            body=[
+                                For(var='k',
+                                    min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                                    max=Ref(name='K', type=<class 'numpywren.frontend.ConstIntType'>),
+                                    step=BinOp(op='Pow',
+                                        left=IntConst(val=4, type=<class 'numpywren.frontend.ConstIntType'>),
+                                        right=BinOp(op='Add',
+                                            left=Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                            right=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                                            type=<class 'numpywren.frontend.LinearIntType'>),
+                                        type=<class 'numpywren.frontend.IntType'>),
+                                    body=[
+                                        RemoteCallAbstract(compute=<function add_matrices at 0x7f768011e0d0>,
+                                            output=[
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='k', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='level',
+                                                                type=<class 'numpywren.frontend.LinearIntType'>),
+                                                            right=IntConst(val=1,
+                                                                type=<class 'numpywren.frontend.ConstIntType'>),
+                                                            type=<class 'numpywren.frontend.LinearIntType'>)])],
+                                            args=[
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='k', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='level',
+                                                            type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='k',
+                                                                type=<class 'numpywren.frontend.LinearIntType'>),
+                                                            right=BinOp(op='Pow',
+                                                                left=IntConst(val=4,
+                                                                    type=<class 'numpywren.frontend.ConstIntType'>),
+                                                                right=Ref(name='level',
+                                                                    type=<class 'numpywren.frontend.LinearIntType'>),
+                                                                type=<class 'numpywren.frontend.IntType'>),
+                                                            type=<class 'numpywren.frontend.IntType'>),
+                                                        Ref(name='level',
+                                                            type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='k',
+                                                                type=<class 'numpywren.frontend.LinearIntType'>),
+                                                            right=BinOp(op='Mult',
+                                                                left=IntConst(val=2,
+                                                                    type=<class 'numpywren.frontend.ConstIntType'>),
+                                                                right=BinOp(op='Pow',
+                                                                    left=IntConst(val=4,
+                                                                        type=<class 'numpywren.frontend.ConstIntType'>),
+                                                                    right=Ref(name='level',
+                                                                        type=<class 'numpywren.frontend.LinearIntType'>),
+                                                                    type=<class 'numpywren.frontend.IntType'>),
+                                                                type=<class 'numpywren.frontend.IntType'>),
+                                                            type=<class 'numpywren.frontend.IntType'>),
+                                                        Ref(name='level',
+                                                            type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='k',
+                                                                type=<class 'numpywren.frontend.LinearIntType'>),
+                                                            right=BinOp(op='Mult',
+                                                                left=IntConst(val=3,
+                                                                    type=<class 'numpywren.frontend.ConstIntType'>),
+                                                                right=BinOp(op='Pow',
+                                                                    left=IntConst(val=4,
+                                                                        type=<class 'numpywren.frontend.ConstIntType'>),
+                                                                    right=Ref(name='level',
+                                                                        type=<class 'numpywren.frontend.LinearIntType'>),
+                                                                    type=<class 'numpywren.frontend.IntType'>),
+                                                                type=<class 'numpywren.frontend.IntType'>),
+                                                            type=<class 'numpywren.frontend.IntType'>),
+                                                        Ref(name='level',
+                                                            type=<class 'numpywren.frontend.LinearIntType'>)])],
+                                            kwargs=None,
+                                            type=<class 'type'>)])])])]),
+        For(var='i',
+            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+            max=Ref(name='M', type=<class 'numpywren.frontend.ConstIntType'>),
+            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                    max=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+                    step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                    body=[
+                        RemoteCallAbstract(compute=<function identity at 0x7f768011ed08>,
+                            output=[
+                                IndexExpr(matrix_name='Out',
+                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)])],
+                            args=[
+                                IndexExpr(matrix_name='Temp',
+                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                        IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                                        Ref(name='tree_depth', type=<class 'numpywren.frontend.ConstIntType'>)])],
+                            kwargs=None,
+                            type=<class 'type'>)])])],
+    arg_types=[<class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.ConstIntType'>,
+        <class 'numpywren.frontend.ConstIntType'>,
+        <class 'numpywren.frontend.ConstIntType'>,
+        <class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.BigMatrixType'>])
+
+2020-04-09 20:42:17,247 - root - INFO - [2020-04-09 20:42:17.247344] Starting with 32 cores
+2020-04-09 20:42:22,718 - root - DEBUG - 5: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:42:22,718 - root - INFO - Waiting: 474, Currently Processing: 32
+2020-04-09 20:42:22,719 - root - INFO - 5: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:42:27,790 - root - DEBUG - 10: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:42:27,791 - root - INFO - Waiting: 474, Currently Processing: 32
+2020-04-09 20:42:27,791 - root - INFO - 10: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:42:32,899 - root - DEBUG - 15: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:42:32,899 - root - INFO - Waiting: 384, Currently Processing: 32
+2020-04-09 20:42:32,900 - root - INFO - 15: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:42:37,958 - root - DEBUG - 20: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:42:37,959 - root - INFO - Waiting: 345, Currently Processing: 32
+2020-04-09 20:42:37,959 - root - INFO - 20: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:42:43,031 - root - DEBUG - 25: Up Workers: 32, Busy Workers: 31
+2020-04-09 20:42:43,032 - root - INFO - Waiting: 345, Currently Processing: 32
+2020-04-09 20:42:43,032 - root - INFO - 25: Up Workers: 32, Busy Workers: 31
+2020-04-09 20:42:48,112 - root - DEBUG - 30: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:42:48,112 - root - INFO - Waiting: 268, Currently Processing: 32
+2020-04-09 20:42:48,112 - root - INFO - 30: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:42:53,199 - root - DEBUG - 35: Up Workers: 32, Busy Workers: 29
+2020-04-09 20:42:53,199 - root - INFO - Waiting: 232, Currently Processing: 29
+2020-04-09 20:42:53,199 - root - INFO - 35: Up Workers: 32, Busy Workers: 29
+2020-04-09 20:42:58,286 - root - DEBUG - 40: Up Workers: 32, Busy Workers: 31
+2020-04-09 20:42:58,287 - root - INFO - Waiting: 199, Currently Processing: 31
+2020-04-09 20:42:58,287 - root - INFO - 40: Up Workers: 32, Busy Workers: 31
+2020-04-09 20:43:03,379 - root - DEBUG - 45: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:43:03,379 - root - INFO - Waiting: 157, Currently Processing: 32
+2020-04-09 20:43:03,379 - root - INFO - 45: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:43:08,463 - root - DEBUG - 50: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:43:08,463 - root - INFO - Waiting: 157, Currently Processing: 32
+2020-04-09 20:43:08,463 - root - INFO - 50: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:43:13,542 - root - DEBUG - 55: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:43:13,542 - root - INFO - Waiting: 92, Currently Processing: 32
+2020-04-09 20:43:13,542 - root - INFO - 55: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:43:18,618 - root - DEBUG - 60: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:43:18,618 - root - INFO - Waiting: 72, Currently Processing: 32
+2020-04-09 20:43:18,618 - root - INFO - 60: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:43:23,731 - root - DEBUG - 65: Up Workers: 32, Busy Workers: 31
+2020-04-09 20:43:23,731 - root - INFO - Waiting: 56, Currently Processing: 32
+2020-04-09 20:43:23,731 - root - INFO - 65: Up Workers: 32, Busy Workers: 31
+2020-04-09 20:43:28,820 - root - DEBUG - 71: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:43:33,902 - root - DEBUG - 76: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:43:39,023 - root - DEBUG - 81: Up Workers: 32, Busy Workers: 31
+2020-04-09 20:43:44,083 - root - DEBUG - 86: Up Workers: 32, Busy Workers: 3
+2020-04-09 20:43:49,236 - root - DEBUG - 91: Up Workers: 0, Busy Workers: 0
+2020-04-09 20:44:02,950 - root - INFO - [2020-04-09 20:44:02.950203] Logging to 799cc452313113ff65831c165683b6e8.log.
+2020-04-09 20:45:00,962 - root - INFO - [2020-04-09 20:45:00.962535] Logging to 799cc452313113ff65831c165683b6e8.log.
+2020-04-09 20:45:22,878 - root - DEBUG - Python AST:
+FunctionDef(name='GEMM',
+    args=arguments(
+        args=[arg(arg='A', annotation=Name(id='BigMatrix')),
+            arg(arg='B', annotation=Name(id='BigMatrix')),
+            arg(arg='M', annotation=Name(id='int')),
+            arg(arg='N', annotation=Name(id='int')),
+            arg(arg='K', annotation=Name(id='int')),
+            arg(arg='Temp', annotation=Name(id='BigMatrix')),
+            arg(arg='Out', annotation=Name(id='BigMatrix'))],
+        vararg=None,
+        kwonlyargs=[],
+        kw_defaults=[],
+        kwarg=None,
+        defaults=[]),
+    body=[
+        Assign(targets=[Name(id='tree_depth')],
+            value=Call(func=Name(id='ceiling'),
+                args=[
+                    BinOp(left=Call(func=Name(id='log'), args=[Name(id='K')], keywords=[]),
+                        op=Div,
+                        right=Call(func=Name(id='log'), args=[Num(n=4)], keywords=[]))],
+                keywords=[])),
+        For(target=Name(id='i'),
+            iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='M')], keywords=[]),
+            body=[
+                For(target=Name(id='j'),
+                    iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='N')], keywords=[]),
+                    body=[
+                        For(target=Name(id='k'),
+                            iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='K')], keywords=[]),
+                            body=[
+                                Assign(
+                                    targets=[
+                                        Subscript(value=Name(id='Temp'),
+                                            slice=Index(
+                                                value=Tuple(elts=[Name(id='i'), Name(id='j'), Name(id='k'), Num(n=0)])))],
+                                    value=Call(func=Name(id='gemm'),
+                                        args=[
+                                            Subscript(value=Name(id='A'),
+                                                slice=Index(value=Tuple(elts=[Name(id='i'), Name(id='k')]))),
+                                            Subscript(value=Name(id='B'),
+                                                slice=Index(value=Tuple(elts=[Name(id='k'), Name(id='j')])))],
+                                        keywords=[]))],
+                            orelse=[])],
+                    orelse=[])],
+            orelse=[]),
+        For(target=Name(id='i'),
+            iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='M')], keywords=[]),
+            body=[
+                For(target=Name(id='j'),
+                    iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='N')], keywords=[]),
+                    body=[
+                        For(target=Name(id='level'),
+                            iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='tree_depth')], keywords=[]),
+                            body=[
+                                For(target=Name(id='k'),
+                                    iter=Call(func=Name(id='range'),
+                                        args=[Num(n=0),
+                                            Name(id='K'),
+                                            BinOp(left=Num(n=4),
+                                                op=Pow,
+                                                right=BinOp(left=Name(id='level'), op=Add, right=Num(n=1)))],
+                                        keywords=[]),
+                                    body=[
+                                        Assign(
+                                            targets=[
+                                                Subscript(value=Name(id='Temp'),
+                                                    slice=Index(
+                                                        value=Tuple(
+                                                            elts=[Name(id='i'),
+                                                                Name(id='j'),
+                                                                Name(id='k'),
+                                                                BinOp(left=Name(id='level'), op=Add, right=Num(n=1))])))],
+                                            value=Call(func=Name(id='add_matrices'),
+                                                args=[
+                                                    Subscript(value=Name(id='Temp'),
+                                                        slice=Index(
+                                                            value=Tuple(
+                                                                elts=[Name(id='i'),
+                                                                    Name(id='j'),
+                                                                    Name(id='k'),
+                                                                    Name(id='level')]))),
+                                                    Subscript(value=Name(id='Temp'),
+                                                        slice=Index(
+                                                            value=Tuple(
+                                                                elts=[Name(id='i'),
+                                                                    Name(id='j'),
+                                                                    BinOp(left=Name(id='k'),
+                                                                        op=Add,
+                                                                        right=BinOp(left=Num(n=4),
+                                                                            op=Pow,
+                                                                            right=Name(id='level'))),
+                                                                    Name(id='level')]))),
+                                                    Subscript(value=Name(id='Temp'),
+                                                        slice=Index(
+                                                            value=Tuple(
+                                                                elts=[Name(id='i'),
+                                                                    Name(id='j'),
+                                                                    BinOp(left=Name(id='k'),
+                                                                        op=Add,
+                                                                        right=BinOp(left=Num(n=2),
+                                                                            op=Mult,
+                                                                            right=BinOp(left=Num(n=4),
+                                                                                op=Pow,
+                                                                                right=Name(id='level')))),
+                                                                    Name(id='level')]))),
+                                                    Subscript(value=Name(id='Temp'),
+                                                        slice=Index(
+                                                            value=Tuple(
+                                                                elts=[Name(id='i'),
+                                                                    Name(id='j'),
+                                                                    BinOp(left=Name(id='k'),
+                                                                        op=Add,
+                                                                        right=BinOp(left=Num(n=3),
+                                                                            op=Mult,
+                                                                            right=BinOp(left=Num(n=4),
+                                                                                op=Pow,
+                                                                                right=Name(id='level')))),
+                                                                    Name(id='level')])))],
+                                                keywords=[]))],
+                                    orelse=[])],
+                            orelse=[])],
+                    orelse=[])],
+            orelse=[]),
+        For(target=Name(id='i'),
+            iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='M')], keywords=[]),
+            body=[
+                For(target=Name(id='j'),
+                    iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='N')], keywords=[]),
+                    body=[
+                        Assign(
+                            targets=[
+                                Subscript(value=Name(id='Out'),
+                                    slice=Index(value=Tuple(elts=[Name(id='i'), Name(id='j')])))],
+                            value=Call(func=Name(id='identity'),
+                                args=[
+                                    Subscript(value=Name(id='Temp'),
+                                        slice=Index(
+                                            value=Tuple(elts=[Name(id='i'), Name(id='j'), Num(n=0), Name(id='tree_depth')],
+                                                )))],
+                                keywords=[]))],
+                    orelse=[])],
+            orelse=[])],
+    decorator_list=[],
+    returns=None)
+
+2020-04-09 20:45:22,879 - root - DEBUG - IR AST:
+FuncDef(name='GEMM',
+    args=['A', 'B', 'M', 'N', 'K', 'Temp', 'Out'],
+    body=[
+        Assign(lhs=Ref(name='tree_depth', type=None),
+            rhs=Mfunc(op='ceiling',
+                e=BinOp(op='Div',
+                    left=Mfunc(op='log', e=Ref(name='K', type=None), type=None),
+                    right=Mfunc(op='log', e=IntConst(val=4, type=None), type=None),
+                    type=None),
+                type=None)),
+        For(var='i',
+            min=IntConst(val=0, type=None),
+            max=Ref(name='M', type=None),
+            step=IntConst(val=1, type=None),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=None),
+                    max=Ref(name='N', type=None),
+                    step=IntConst(val=1, type=None),
+                    body=[
+                        For(var='k',
+                            min=IntConst(val=0, type=None),
+                            max=Ref(name='K', type=None),
+                            step=IntConst(val=1, type=None),
+                            body=[
+                                RemoteCallAbstract(compute=<function gemm at 0x7ff7fcb637b8>,
+                                    output=IndexExpr(matrix_name='Temp',
+                                        indices=[Ref(name='i', type=None),
+                                            Ref(name='j', type=None),
+                                            Ref(name='k', type=None),
+                                            IntConst(val=0, type=None)]),
+                                    args=[
+                                        IndexExpr(matrix_name='A',
+                                            indices=[Ref(name='i', type=None), Ref(name='k', type=None)]),
+                                        IndexExpr(matrix_name='B',
+                                            indices=[Ref(name='k', type=None), Ref(name='j', type=None)])],
+                                    kwargs=None,
+                                    type=None)])])]),
+        For(var='i',
+            min=IntConst(val=0, type=None),
+            max=Ref(name='M', type=None),
+            step=IntConst(val=1, type=None),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=None),
+                    max=Ref(name='N', type=None),
+                    step=IntConst(val=1, type=None),
+                    body=[
+                        For(var='level',
+                            min=IntConst(val=0, type=None),
+                            max=Ref(name='tree_depth', type=None),
+                            step=IntConst(val=1, type=None),
+                            body=[
+                                For(var='k',
+                                    min=IntConst(val=0, type=None),
+                                    max=Ref(name='K', type=None),
+                                    step=BinOp(op='Pow',
+                                        left=IntConst(val=4, type=None),
+                                        right=BinOp(op='Add',
+                                            left=Ref(name='level', type=None),
+                                            right=IntConst(val=1, type=None),
+                                            type=None),
+                                        type=None),
+                                    body=[
+                                        RemoteCallAbstract(compute=<function add_matrices at 0x7ff7fcb630d0>,
+                                            output=IndexExpr(matrix_name='Temp',
+                                                indices=[Ref(name='i', type=None),
+                                                    Ref(name='j', type=None),
+                                                    Ref(name='k', type=None),
+                                                    BinOp(op='Add',
+                                                        left=Ref(name='level', type=None),
+                                                        right=IntConst(val=1, type=None),
+                                                        type=None)]),
+                                            args=[
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=None),
+                                                        Ref(name='j', type=None),
+                                                        Ref(name='k', type=None),
+                                                        Ref(name='level', type=None)]),
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=None),
+                                                        Ref(name='j', type=None),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='k', type=None),
+                                                            right=BinOp(op='Pow',
+                                                                left=IntConst(val=4, type=None),
+                                                                right=Ref(name='level', type=None),
+                                                                type=None),
+                                                            type=None),
+                                                        Ref(name='level', type=None)]),
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=None),
+                                                        Ref(name='j', type=None),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='k', type=None),
+                                                            right=BinOp(op='Mult',
+                                                                left=IntConst(val=2, type=None),
+                                                                right=BinOp(op='Pow',
+                                                                    left=IntConst(val=4, type=None),
+                                                                    right=Ref(name='level', type=None),
+                                                                    type=None),
+                                                                type=None),
+                                                            type=None),
+                                                        Ref(name='level', type=None)]),
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=None),
+                                                        Ref(name='j', type=None),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='k', type=None),
+                                                            right=BinOp(op='Mult',
+                                                                left=IntConst(val=3, type=None),
+                                                                right=BinOp(op='Pow',
+                                                                    left=IntConst(val=4, type=None),
+                                                                    right=Ref(name='level', type=None),
+                                                                    type=None),
+                                                                type=None),
+                                                            type=None),
+                                                        Ref(name='level', type=None)])],
+                                            kwargs=None,
+                                            type=None)])])])]),
+        For(var='i',
+            min=IntConst(val=0, type=None),
+            max=Ref(name='M', type=None),
+            step=IntConst(val=1, type=None),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=None),
+                    max=Ref(name='N', type=None),
+                    step=IntConst(val=1, type=None),
+                    body=[
+                        RemoteCallAbstract(compute=<function identity at 0x7ff7fcb63d08>,
+                            output=IndexExpr(matrix_name='Out',
+                                indices=[Ref(name='i', type=None), Ref(name='j', type=None)]),
+                            args=[
+                                IndexExpr(matrix_name='Temp',
+                                    indices=[Ref(name='i', type=None),
+                                        Ref(name='j', type=None),
+                                        IntConst(val=0, type=None),
+                                        Ref(name='tree_depth', type=None)])],
+                            kwargs=None,
+                            type=None)])])],
+    arg_types=[<class 'numpywren.matrix.BigMatrix'>,
+        <class 'numpywren.matrix.BigMatrix'>,
+        <class 'int'>,
+        <class 'int'>,
+        <class 'int'>,
+        <class 'numpywren.matrix.BigMatrix'>,
+        <class 'numpywren.matrix.BigMatrix'>])
+
+2020-04-09 20:45:22,881 - root - DEBUG - typed IR AST:
+FuncDef(name='GEMM',
+    args=['A', 'B', 'M', 'N', 'K', 'Temp', 'Out'],
+    body=[
+        Assign(
+            lhs=Ref(name='tree_depth', type=<class 'numpywren.frontend.ConstIntType'>),
+            rhs=Mfunc(op='ceiling',
+                e=BinOp(op='Div',
+                    left=Mfunc(op='log',
+                        e=Ref(name='K', type=<class 'numpywren.frontend.ConstIntType'>),
+                        type=<class 'numpywren.frontend.ConstFloatType'>),
+                    right=Mfunc(op='log',
+                        e=IntConst(val=4, type=<class 'numpywren.frontend.ConstIntType'>),
+                        type=<class 'numpywren.frontend.ConstFloatType'>),
+                    type=<class 'numpywren.frontend.ConstFloatType'>),
+                type=<class 'numpywren.frontend.ConstIntType'>)),
+        For(var='i',
+            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+            max=Ref(name='M', type=<class 'numpywren.frontend.ConstIntType'>),
+            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                    max=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+                    step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                    body=[
+                        For(var='k',
+                            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                            max=Ref(name='K', type=<class 'numpywren.frontend.ConstIntType'>),
+                            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                            body=[
+                                RemoteCallAbstract(compute=<function gemm at 0x7ff7fcb637b8>,
+                                    output=[
+                                        IndexExpr(matrix_name='Temp',
+                                            indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                Ref(name='k', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>)])],
+                                    args=[
+                                        IndexExpr(matrix_name='A',
+                                            indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                Ref(name='k', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                        IndexExpr(matrix_name='B',
+                                            indices=[Ref(name='k', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)])],
+                                    kwargs=None,
+                                    type=<class 'type'>)])])]),
+        For(var='i',
+            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+            max=Ref(name='M', type=<class 'numpywren.frontend.ConstIntType'>),
+            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                    max=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+                    step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                    body=[
+                        For(var='level',
+                            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                            max=Ref(name='tree_depth', type=<class 'numpywren.frontend.ConstIntType'>),
+                            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                            body=[
+                                For(var='k',
+                                    min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                                    max=Ref(name='K', type=<class 'numpywren.frontend.ConstIntType'>),
+                                    step=BinOp(op='Pow',
+                                        left=IntConst(val=4, type=<class 'numpywren.frontend.ConstIntType'>),
+                                        right=BinOp(op='Add',
+                                            left=Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                            right=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                                            type=<class 'numpywren.frontend.LinearIntType'>),
+                                        type=<class 'numpywren.frontend.IntType'>),
+                                    body=[
+                                        RemoteCallAbstract(compute=<function add_matrices at 0x7ff7fcb630d0>,
+                                            output=[
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='k', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='level',
+                                                                type=<class 'numpywren.frontend.LinearIntType'>),
+                                                            right=IntConst(val=1,
+                                                                type=<class 'numpywren.frontend.ConstIntType'>),
+                                                            type=<class 'numpywren.frontend.LinearIntType'>)])],
+                                            args=[
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='k', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='level',
+                                                            type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='k',
+                                                                type=<class 'numpywren.frontend.LinearIntType'>),
+                                                            right=BinOp(op='Pow',
+                                                                left=IntConst(val=4,
+                                                                    type=<class 'numpywren.frontend.ConstIntType'>),
+                                                                right=Ref(name='level',
+                                                                    type=<class 'numpywren.frontend.LinearIntType'>),
+                                                                type=<class 'numpywren.frontend.IntType'>),
+                                                            type=<class 'numpywren.frontend.IntType'>),
+                                                        Ref(name='level',
+                                                            type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='k',
+                                                                type=<class 'numpywren.frontend.LinearIntType'>),
+                                                            right=BinOp(op='Mult',
+                                                                left=IntConst(val=2,
+                                                                    type=<class 'numpywren.frontend.ConstIntType'>),
+                                                                right=BinOp(op='Pow',
+                                                                    left=IntConst(val=4,
+                                                                        type=<class 'numpywren.frontend.ConstIntType'>),
+                                                                    right=Ref(name='level',
+                                                                        type=<class 'numpywren.frontend.LinearIntType'>),
+                                                                    type=<class 'numpywren.frontend.IntType'>),
+                                                                type=<class 'numpywren.frontend.IntType'>),
+                                                            type=<class 'numpywren.frontend.IntType'>),
+                                                        Ref(name='level',
+                                                            type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='k',
+                                                                type=<class 'numpywren.frontend.LinearIntType'>),
+                                                            right=BinOp(op='Mult',
+                                                                left=IntConst(val=3,
+                                                                    type=<class 'numpywren.frontend.ConstIntType'>),
+                                                                right=BinOp(op='Pow',
+                                                                    left=IntConst(val=4,
+                                                                        type=<class 'numpywren.frontend.ConstIntType'>),
+                                                                    right=Ref(name='level',
+                                                                        type=<class 'numpywren.frontend.LinearIntType'>),
+                                                                    type=<class 'numpywren.frontend.IntType'>),
+                                                                type=<class 'numpywren.frontend.IntType'>),
+                                                            type=<class 'numpywren.frontend.IntType'>),
+                                                        Ref(name='level',
+                                                            type=<class 'numpywren.frontend.LinearIntType'>)])],
+                                            kwargs=None,
+                                            type=<class 'type'>)])])])]),
+        For(var='i',
+            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+            max=Ref(name='M', type=<class 'numpywren.frontend.ConstIntType'>),
+            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                    max=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+                    step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                    body=[
+                        RemoteCallAbstract(compute=<function identity at 0x7ff7fcb63d08>,
+                            output=[
+                                IndexExpr(matrix_name='Out',
+                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)])],
+                            args=[
+                                IndexExpr(matrix_name='Temp',
+                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                        IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                                        Ref(name='tree_depth', type=<class 'numpywren.frontend.ConstIntType'>)])],
+                            kwargs=None,
+                            type=<class 'type'>)])])],
+    arg_types=[<class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.ConstIntType'>,
+        <class 'numpywren.frontend.ConstIntType'>,
+        <class 'numpywren.frontend.ConstIntType'>,
+        <class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.BigMatrixType'>])
+
+2020-04-09 20:45:29,674 - root - INFO - [2020-04-09 20:45:29.674778] Starting with 32 cores
+2020-04-09 20:45:35,150 - root - DEBUG - 5: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:45:35,150 - root - INFO - Waiting: 476, Currently Processing: 32
+2020-04-09 20:45:35,150 - root - INFO - 5: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:45:40,225 - root - DEBUG - 10: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:45:40,225 - root - INFO - Waiting: 431, Currently Processing: 32
+2020-04-09 20:45:40,225 - root - INFO - 10: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:45:45,289 - root - DEBUG - 15: Up Workers: 32, Busy Workers: 31
+2020-04-09 20:45:45,289 - root - INFO - Waiting: 392, Currently Processing: 31
+2020-04-09 20:45:45,290 - root - INFO - 15: Up Workers: 32, Busy Workers: 31
+2020-04-09 20:45:50,355 - root - DEBUG - 20: Up Workers: 32, Busy Workers: 30
+2020-04-09 20:45:50,355 - root - INFO - Waiting: 352, Currently Processing: 30
+2020-04-09 20:45:50,355 - root - INFO - 20: Up Workers: 32, Busy Workers: 30
+2020-04-09 20:45:55,410 - root - DEBUG - 25: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:45:55,410 - root - INFO - Waiting: 313, Currently Processing: 32
+2020-04-09 20:45:55,410 - root - INFO - 25: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:46:00,497 - root - DEBUG - 30: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:46:00,497 - root - INFO - Waiting: 268, Currently Processing: 32
+2020-04-09 20:46:00,497 - root - INFO - 30: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:46:05,589 - root - DEBUG - 35: Up Workers: 32, Busy Workers: 30
+2020-04-09 20:46:05,589 - root - INFO - Waiting: 226, Currently Processing: 30
+2020-04-09 20:46:05,589 - root - INFO - 35: Up Workers: 32, Busy Workers: 30
+2020-04-09 20:46:10,684 - root - DEBUG - 40: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:46:10,684 - root - INFO - Waiting: 190, Currently Processing: 32
+2020-04-09 20:46:10,684 - root - INFO - 40: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:46:15,760 - root - DEBUG - 45: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:46:15,760 - root - INFO - Waiting: 154, Currently Processing: 32
+2020-04-09 20:46:15,760 - root - INFO - 45: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:46:20,858 - root - DEBUG - 50: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:46:20,858 - root - INFO - Waiting: 122, Currently Processing: 32
+2020-04-09 20:46:20,858 - root - INFO - 50: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:46:26,023 - root - DEBUG - 55: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:46:26,023 - root - INFO - Waiting: 93, Currently Processing: 32
+2020-04-09 20:46:26,023 - root - INFO - 55: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:46:31,117 - root - DEBUG - 60: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:46:31,117 - root - INFO - Waiting: 74, Currently Processing: 32
+2020-04-09 20:46:31,117 - root - INFO - 60: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:46:36,182 - root - DEBUG - 66: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:46:41,314 - root - DEBUG - 71: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:46:46,416 - root - DEBUG - 76: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:46:51,507 - root - DEBUG - 81: Up Workers: 32, Busy Workers: 31
+2020-04-09 20:46:56,557 - root - DEBUG - 86: Up Workers: 32, Busy Workers: 2
+2020-04-09 20:47:01,609 - root - DEBUG - 91: Up Workers: 0, Busy Workers: 0
+2020-04-09 20:47:17,276 - root - INFO - [2020-04-09 20:47:17.275983] Logging to 799cc452313113ff65831c165683b6e8.log.
+2020-04-09 20:47:29,611 - root - INFO - [2020-04-09 20:47:29.611538] Logging to 799cc452313113ff65831c165683b6e8.log.
+2020-04-09 20:47:51,632 - root - DEBUG - Python AST:
+FunctionDef(name='GEMM',
+    args=arguments(
+        args=[arg(arg='A', annotation=Name(id='BigMatrix')),
+            arg(arg='B', annotation=Name(id='BigMatrix')),
+            arg(arg='M', annotation=Name(id='int')),
+            arg(arg='N', annotation=Name(id='int')),
+            arg(arg='K', annotation=Name(id='int')),
+            arg(arg='Temp', annotation=Name(id='BigMatrix')),
+            arg(arg='Out', annotation=Name(id='BigMatrix'))],
+        vararg=None,
+        kwonlyargs=[],
+        kw_defaults=[],
+        kwarg=None,
+        defaults=[]),
+    body=[
+        Assign(targets=[Name(id='tree_depth')],
+            value=Call(func=Name(id='ceiling'),
+                args=[
+                    BinOp(left=Call(func=Name(id='log'), args=[Name(id='K')], keywords=[]),
+                        op=Div,
+                        right=Call(func=Name(id='log'), args=[Num(n=4)], keywords=[]))],
+                keywords=[])),
+        For(target=Name(id='i'),
+            iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='M')], keywords=[]),
+            body=[
+                For(target=Name(id='j'),
+                    iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='N')], keywords=[]),
+                    body=[
+                        For(target=Name(id='k'),
+                            iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='K')], keywords=[]),
+                            body=[
+                                Assign(
+                                    targets=[
+                                        Subscript(value=Name(id='Temp'),
+                                            slice=Index(
+                                                value=Tuple(elts=[Name(id='i'), Name(id='j'), Name(id='k'), Num(n=0)])))],
+                                    value=Call(func=Name(id='gemm'),
+                                        args=[
+                                            Subscript(value=Name(id='A'),
+                                                slice=Index(value=Tuple(elts=[Name(id='i'), Name(id='k')]))),
+                                            Subscript(value=Name(id='B'),
+                                                slice=Index(value=Tuple(elts=[Name(id='k'), Name(id='j')])))],
+                                        keywords=[]))],
+                            orelse=[])],
+                    orelse=[])],
+            orelse=[]),
+        For(target=Name(id='i'),
+            iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='M')], keywords=[]),
+            body=[
+                For(target=Name(id='j'),
+                    iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='N')], keywords=[]),
+                    body=[
+                        For(target=Name(id='level'),
+                            iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='tree_depth')], keywords=[]),
+                            body=[
+                                For(target=Name(id='k'),
+                                    iter=Call(func=Name(id='range'),
+                                        args=[Num(n=0),
+                                            Name(id='K'),
+                                            BinOp(left=Num(n=4),
+                                                op=Pow,
+                                                right=BinOp(left=Name(id='level'), op=Add, right=Num(n=1)))],
+                                        keywords=[]),
+                                    body=[
+                                        Assign(
+                                            targets=[
+                                                Subscript(value=Name(id='Temp'),
+                                                    slice=Index(
+                                                        value=Tuple(
+                                                            elts=[Name(id='i'),
+                                                                Name(id='j'),
+                                                                Name(id='k'),
+                                                                BinOp(left=Name(id='level'), op=Add, right=Num(n=1))])))],
+                                            value=Call(func=Name(id='add_matrices'),
+                                                args=[
+                                                    Subscript(value=Name(id='Temp'),
+                                                        slice=Index(
+                                                            value=Tuple(
+                                                                elts=[Name(id='i'),
+                                                                    Name(id='j'),
+                                                                    Name(id='k'),
+                                                                    Name(id='level')]))),
+                                                    Subscript(value=Name(id='Temp'),
+                                                        slice=Index(
+                                                            value=Tuple(
+                                                                elts=[Name(id='i'),
+                                                                    Name(id='j'),
+                                                                    BinOp(left=Name(id='k'),
+                                                                        op=Add,
+                                                                        right=BinOp(left=Num(n=4),
+                                                                            op=Pow,
+                                                                            right=Name(id='level'))),
+                                                                    Name(id='level')]))),
+                                                    Subscript(value=Name(id='Temp'),
+                                                        slice=Index(
+                                                            value=Tuple(
+                                                                elts=[Name(id='i'),
+                                                                    Name(id='j'),
+                                                                    BinOp(left=Name(id='k'),
+                                                                        op=Add,
+                                                                        right=BinOp(left=Num(n=2),
+                                                                            op=Mult,
+                                                                            right=BinOp(left=Num(n=4),
+                                                                                op=Pow,
+                                                                                right=Name(id='level')))),
+                                                                    Name(id='level')]))),
+                                                    Subscript(value=Name(id='Temp'),
+                                                        slice=Index(
+                                                            value=Tuple(
+                                                                elts=[Name(id='i'),
+                                                                    Name(id='j'),
+                                                                    BinOp(left=Name(id='k'),
+                                                                        op=Add,
+                                                                        right=BinOp(left=Num(n=3),
+                                                                            op=Mult,
+                                                                            right=BinOp(left=Num(n=4),
+                                                                                op=Pow,
+                                                                                right=Name(id='level')))),
+                                                                    Name(id='level')])))],
+                                                keywords=[]))],
+                                    orelse=[])],
+                            orelse=[])],
+                    orelse=[])],
+            orelse=[]),
+        For(target=Name(id='i'),
+            iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='M')], keywords=[]),
+            body=[
+                For(target=Name(id='j'),
+                    iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='N')], keywords=[]),
+                    body=[
+                        Assign(
+                            targets=[
+                                Subscript(value=Name(id='Out'),
+                                    slice=Index(value=Tuple(elts=[Name(id='i'), Name(id='j')])))],
+                            value=Call(func=Name(id='identity'),
+                                args=[
+                                    Subscript(value=Name(id='Temp'),
+                                        slice=Index(
+                                            value=Tuple(elts=[Name(id='i'), Name(id='j'), Num(n=0), Name(id='tree_depth')],
+                                                )))],
+                                keywords=[]))],
+                    orelse=[])],
+            orelse=[])],
+    decorator_list=[],
+    returns=None)
+
+2020-04-09 20:47:51,634 - root - DEBUG - IR AST:
+FuncDef(name='GEMM',
+    args=['A', 'B', 'M', 'N', 'K', 'Temp', 'Out'],
+    body=[
+        Assign(lhs=Ref(name='tree_depth', type=None),
+            rhs=Mfunc(op='ceiling',
+                e=BinOp(op='Div',
+                    left=Mfunc(op='log', e=Ref(name='K', type=None), type=None),
+                    right=Mfunc(op='log', e=IntConst(val=4, type=None), type=None),
+                    type=None),
+                type=None)),
+        For(var='i',
+            min=IntConst(val=0, type=None),
+            max=Ref(name='M', type=None),
+            step=IntConst(val=1, type=None),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=None),
+                    max=Ref(name='N', type=None),
+                    step=IntConst(val=1, type=None),
+                    body=[
+                        For(var='k',
+                            min=IntConst(val=0, type=None),
+                            max=Ref(name='K', type=None),
+                            step=IntConst(val=1, type=None),
+                            body=[
+                                RemoteCallAbstract(compute=<function gemm at 0x7fa414cbe7b8>,
+                                    output=IndexExpr(matrix_name='Temp',
+                                        indices=[Ref(name='i', type=None),
+                                            Ref(name='j', type=None),
+                                            Ref(name='k', type=None),
+                                            IntConst(val=0, type=None)]),
+                                    args=[
+                                        IndexExpr(matrix_name='A',
+                                            indices=[Ref(name='i', type=None), Ref(name='k', type=None)]),
+                                        IndexExpr(matrix_name='B',
+                                            indices=[Ref(name='k', type=None), Ref(name='j', type=None)])],
+                                    kwargs=None,
+                                    type=None)])])]),
+        For(var='i',
+            min=IntConst(val=0, type=None),
+            max=Ref(name='M', type=None),
+            step=IntConst(val=1, type=None),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=None),
+                    max=Ref(name='N', type=None),
+                    step=IntConst(val=1, type=None),
+                    body=[
+                        For(var='level',
+                            min=IntConst(val=0, type=None),
+                            max=Ref(name='tree_depth', type=None),
+                            step=IntConst(val=1, type=None),
+                            body=[
+                                For(var='k',
+                                    min=IntConst(val=0, type=None),
+                                    max=Ref(name='K', type=None),
+                                    step=BinOp(op='Pow',
+                                        left=IntConst(val=4, type=None),
+                                        right=BinOp(op='Add',
+                                            left=Ref(name='level', type=None),
+                                            right=IntConst(val=1, type=None),
+                                            type=None),
+                                        type=None),
+                                    body=[
+                                        RemoteCallAbstract(compute=<function add_matrices at 0x7fa414cbe0d0>,
+                                            output=IndexExpr(matrix_name='Temp',
+                                                indices=[Ref(name='i', type=None),
+                                                    Ref(name='j', type=None),
+                                                    Ref(name='k', type=None),
+                                                    BinOp(op='Add',
+                                                        left=Ref(name='level', type=None),
+                                                        right=IntConst(val=1, type=None),
+                                                        type=None)]),
+                                            args=[
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=None),
+                                                        Ref(name='j', type=None),
+                                                        Ref(name='k', type=None),
+                                                        Ref(name='level', type=None)]),
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=None),
+                                                        Ref(name='j', type=None),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='k', type=None),
+                                                            right=BinOp(op='Pow',
+                                                                left=IntConst(val=4, type=None),
+                                                                right=Ref(name='level', type=None),
+                                                                type=None),
+                                                            type=None),
+                                                        Ref(name='level', type=None)]),
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=None),
+                                                        Ref(name='j', type=None),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='k', type=None),
+                                                            right=BinOp(op='Mult',
+                                                                left=IntConst(val=2, type=None),
+                                                                right=BinOp(op='Pow',
+                                                                    left=IntConst(val=4, type=None),
+                                                                    right=Ref(name='level', type=None),
+                                                                    type=None),
+                                                                type=None),
+                                                            type=None),
+                                                        Ref(name='level', type=None)]),
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=None),
+                                                        Ref(name='j', type=None),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='k', type=None),
+                                                            right=BinOp(op='Mult',
+                                                                left=IntConst(val=3, type=None),
+                                                                right=BinOp(op='Pow',
+                                                                    left=IntConst(val=4, type=None),
+                                                                    right=Ref(name='level', type=None),
+                                                                    type=None),
+                                                                type=None),
+                                                            type=None),
+                                                        Ref(name='level', type=None)])],
+                                            kwargs=None,
+                                            type=None)])])])]),
+        For(var='i',
+            min=IntConst(val=0, type=None),
+            max=Ref(name='M', type=None),
+            step=IntConst(val=1, type=None),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=None),
+                    max=Ref(name='N', type=None),
+                    step=IntConst(val=1, type=None),
+                    body=[
+                        RemoteCallAbstract(compute=<function identity at 0x7fa414cbed08>,
+                            output=IndexExpr(matrix_name='Out',
+                                indices=[Ref(name='i', type=None), Ref(name='j', type=None)]),
+                            args=[
+                                IndexExpr(matrix_name='Temp',
+                                    indices=[Ref(name='i', type=None),
+                                        Ref(name='j', type=None),
+                                        IntConst(val=0, type=None),
+                                        Ref(name='tree_depth', type=None)])],
+                            kwargs=None,
+                            type=None)])])],
+    arg_types=[<class 'numpywren.matrix.BigMatrix'>,
+        <class 'numpywren.matrix.BigMatrix'>,
+        <class 'int'>,
+        <class 'int'>,
+        <class 'int'>,
+        <class 'numpywren.matrix.BigMatrix'>,
+        <class 'numpywren.matrix.BigMatrix'>])
+
+2020-04-09 20:47:51,635 - root - DEBUG - typed IR AST:
+FuncDef(name='GEMM',
+    args=['A', 'B', 'M', 'N', 'K', 'Temp', 'Out'],
+    body=[
+        Assign(
+            lhs=Ref(name='tree_depth', type=<class 'numpywren.frontend.ConstIntType'>),
+            rhs=Mfunc(op='ceiling',
+                e=BinOp(op='Div',
+                    left=Mfunc(op='log',
+                        e=Ref(name='K', type=<class 'numpywren.frontend.ConstIntType'>),
+                        type=<class 'numpywren.frontend.ConstFloatType'>),
+                    right=Mfunc(op='log',
+                        e=IntConst(val=4, type=<class 'numpywren.frontend.ConstIntType'>),
+                        type=<class 'numpywren.frontend.ConstFloatType'>),
+                    type=<class 'numpywren.frontend.ConstFloatType'>),
+                type=<class 'numpywren.frontend.ConstIntType'>)),
+        For(var='i',
+            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+            max=Ref(name='M', type=<class 'numpywren.frontend.ConstIntType'>),
+            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                    max=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+                    step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                    body=[
+                        For(var='k',
+                            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                            max=Ref(name='K', type=<class 'numpywren.frontend.ConstIntType'>),
+                            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                            body=[
+                                RemoteCallAbstract(compute=<function gemm at 0x7fa414cbe7b8>,
+                                    output=[
+                                        IndexExpr(matrix_name='Temp',
+                                            indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                Ref(name='k', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>)])],
+                                    args=[
+                                        IndexExpr(matrix_name='A',
+                                            indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                Ref(name='k', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                        IndexExpr(matrix_name='B',
+                                            indices=[Ref(name='k', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)])],
+                                    kwargs=None,
+                                    type=<class 'type'>)])])]),
+        For(var='i',
+            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+            max=Ref(name='M', type=<class 'numpywren.frontend.ConstIntType'>),
+            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                    max=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+                    step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                    body=[
+                        For(var='level',
+                            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                            max=Ref(name='tree_depth', type=<class 'numpywren.frontend.ConstIntType'>),
+                            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                            body=[
+                                For(var='k',
+                                    min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                                    max=Ref(name='K', type=<class 'numpywren.frontend.ConstIntType'>),
+                                    step=BinOp(op='Pow',
+                                        left=IntConst(val=4, type=<class 'numpywren.frontend.ConstIntType'>),
+                                        right=BinOp(op='Add',
+                                            left=Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                            right=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                                            type=<class 'numpywren.frontend.LinearIntType'>),
+                                        type=<class 'numpywren.frontend.IntType'>),
+                                    body=[
+                                        RemoteCallAbstract(compute=<function add_matrices at 0x7fa414cbe0d0>,
+                                            output=[
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='k', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='level',
+                                                                type=<class 'numpywren.frontend.LinearIntType'>),
+                                                            right=IntConst(val=1,
+                                                                type=<class 'numpywren.frontend.ConstIntType'>),
+                                                            type=<class 'numpywren.frontend.LinearIntType'>)])],
+                                            args=[
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='k', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='level',
+                                                            type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='k',
+                                                                type=<class 'numpywren.frontend.LinearIntType'>),
+                                                            right=BinOp(op='Pow',
+                                                                left=IntConst(val=4,
+                                                                    type=<class 'numpywren.frontend.ConstIntType'>),
+                                                                right=Ref(name='level',
+                                                                    type=<class 'numpywren.frontend.LinearIntType'>),
+                                                                type=<class 'numpywren.frontend.IntType'>),
+                                                            type=<class 'numpywren.frontend.IntType'>),
+                                                        Ref(name='level',
+                                                            type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='k',
+                                                                type=<class 'numpywren.frontend.LinearIntType'>),
+                                                            right=BinOp(op='Mult',
+                                                                left=IntConst(val=2,
+                                                                    type=<class 'numpywren.frontend.ConstIntType'>),
+                                                                right=BinOp(op='Pow',
+                                                                    left=IntConst(val=4,
+                                                                        type=<class 'numpywren.frontend.ConstIntType'>),
+                                                                    right=Ref(name='level',
+                                                                        type=<class 'numpywren.frontend.LinearIntType'>),
+                                                                    type=<class 'numpywren.frontend.IntType'>),
+                                                                type=<class 'numpywren.frontend.IntType'>),
+                                                            type=<class 'numpywren.frontend.IntType'>),
+                                                        Ref(name='level',
+                                                            type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                                IndexExpr(matrix_name='Temp',
+                                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                                        BinOp(op='Add',
+                                                            left=Ref(name='k',
+                                                                type=<class 'numpywren.frontend.LinearIntType'>),
+                                                            right=BinOp(op='Mult',
+                                                                left=IntConst(val=3,
+                                                                    type=<class 'numpywren.frontend.ConstIntType'>),
+                                                                right=BinOp(op='Pow',
+                                                                    left=IntConst(val=4,
+                                                                        type=<class 'numpywren.frontend.ConstIntType'>),
+                                                                    right=Ref(name='level',
+                                                                        type=<class 'numpywren.frontend.LinearIntType'>),
+                                                                    type=<class 'numpywren.frontend.IntType'>),
+                                                                type=<class 'numpywren.frontend.IntType'>),
+                                                            type=<class 'numpywren.frontend.IntType'>),
+                                                        Ref(name='level',
+                                                            type=<class 'numpywren.frontend.LinearIntType'>)])],
+                                            kwargs=None,
+                                            type=<class 'type'>)])])])]),
+        For(var='i',
+            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+            max=Ref(name='M', type=<class 'numpywren.frontend.ConstIntType'>),
+            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                    max=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+                    step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                    body=[
+                        RemoteCallAbstract(compute=<function identity at 0x7fa414cbed08>,
+                            output=[
+                                IndexExpr(matrix_name='Out',
+                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)])],
+                            args=[
+                                IndexExpr(matrix_name='Temp',
+                                    indices=[Ref(name='i', type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                        IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                                        Ref(name='tree_depth', type=<class 'numpywren.frontend.ConstIntType'>)])],
+                            kwargs=None,
+                            type=<class 'type'>)])])],
+    arg_types=[<class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.ConstIntType'>,
+        <class 'numpywren.frontend.ConstIntType'>,
+        <class 'numpywren.frontend.ConstIntType'>,
+        <class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.BigMatrixType'>])
+
+2020-04-09 20:47:58,614 - root - INFO - [2020-04-09 20:47:58.614823] Starting with 32 cores
+2020-04-09 20:48:04,216 - root - DEBUG - 5: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:48:04,217 - root - INFO - Waiting: 475, Currently Processing: 32
+2020-04-09 20:48:04,217 - root - INFO - 5: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:48:09,304 - root - DEBUG - 10: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:48:09,304 - root - INFO - Waiting: 435, Currently Processing: 32
+2020-04-09 20:48:09,304 - root - INFO - 10: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:48:14,375 - root - DEBUG - 15: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:48:14,376 - root - INFO - Waiting: 397, Currently Processing: 32
+2020-04-09 20:48:14,376 - root - INFO - 15: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:48:19,438 - root - DEBUG - 20: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:48:19,438 - root - INFO - Waiting: 397, Currently Processing: 32
+2020-04-09 20:48:19,438 - root - INFO - 20: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:48:24,488 - root - DEBUG - 25: Up Workers: 32, Busy Workers: 31
+2020-04-09 20:48:24,488 - root - INFO - Waiting: 308, Currently Processing: 30
+2020-04-09 20:48:24,488 - root - INFO - 25: Up Workers: 32, Busy Workers: 31
+2020-04-09 20:48:29,578 - root - DEBUG - 30: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:48:29,579 - root - INFO - Waiting: 308, Currently Processing: 30
+2020-04-09 20:48:29,579 - root - INFO - 30: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:48:34,674 - root - DEBUG - 35: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:48:34,675 - root - INFO - Waiting: 218, Currently Processing: 32
+2020-04-09 20:48:34,675 - root - INFO - 35: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:48:39,735 - root - DEBUG - 40: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:48:39,735 - root - INFO - Waiting: 185, Currently Processing: 32
+2020-04-09 20:48:39,735 - root - INFO - 40: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:48:44,801 - root - DEBUG - 45: Up Workers: 32, Busy Workers: 31
+2020-04-09 20:48:44,801 - root - INFO - Waiting: 143, Currently Processing: 31
+2020-04-09 20:48:44,801 - root - INFO - 45: Up Workers: 32, Busy Workers: 31
+2020-04-09 20:48:49,905 - root - DEBUG - 50: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:48:49,905 - root - INFO - Waiting: 115, Currently Processing: 32
+2020-04-09 20:48:49,905 - root - INFO - 50: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:48:54,992 - root - DEBUG - 55: Up Workers: 32, Busy Workers: 31
+2020-04-09 20:48:54,992 - root - INFO - Waiting: 91, Currently Processing: 31
+2020-04-09 20:48:54,992 - root - INFO - 55: Up Workers: 32, Busy Workers: 31
+2020-04-09 20:49:00,097 - root - DEBUG - 60: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:49:00,097 - root - INFO - Waiting: 69, Currently Processing: 32
+2020-04-09 20:49:00,097 - root - INFO - 60: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:49:05,231 - root - DEBUG - 66: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:49:10,351 - root - DEBUG - 71: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:49:15,422 - root - DEBUG - 76: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:49:20,494 - root - DEBUG - 81: Up Workers: 32, Busy Workers: 32
+2020-04-09 20:49:25,550 - root - DEBUG - 86: Up Workers: 32, Busy Workers: 3
+2020-04-09 20:49:30,596 - root - DEBUG - 91: Up Workers: 0, Busy Workers: 0

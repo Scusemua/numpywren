@@ -1,0 +1,895 @@
+2020-04-09 22:57:21,080 - root - INFO - Logging to 245782916cdb4f9a63075cc7e9a01b2e.log
+2020-04-09 22:57:43,018 - root - INFO - Logging to 245782916cdb4f9a63075cc7e9a01b2e.log
+2020-04-09 22:57:49,360 - root - DEBUG - Python AST:
+FunctionDef(name='TSQR',
+    args=arguments(
+        args=[arg(arg='A', annotation=Name(id='BigMatrix')),
+            arg(arg='Vs', annotation=Name(id='BigMatrix')),
+            arg(arg='Ts', annotation=Name(id='BigMatrix')),
+            arg(arg='Rs', annotation=Name(id='BigMatrix')),
+            arg(arg='N', annotation=Name(id='int'))],
+        vararg=None,
+        kwonlyargs=[],
+        kw_defaults=[],
+        kwarg=None,
+        defaults=[]),
+    body=[
+        For(target=Name(id='j'),
+            iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='N')], keywords=[]),
+            body=[
+                Assign(
+                    targets=[
+                        Tuple(
+                            elts=[
+                                Subscript(value=Name(id='Vs'), slice=Index(value=Tuple(elts=[Num(n=0), Name(id='j')]))),
+                                Subscript(value=Name(id='Ts'), slice=Index(value=Tuple(elts=[Num(n=0), Name(id='j')]))),
+                                Subscript(value=Name(id='Rs'), slice=Index(value=Tuple(elts=[Num(n=0), Name(id='j')])))])],
+                    value=Call(func=Name(id='qr_factor'),
+                        args=[Subscript(value=Name(id='A'), slice=Index(value=Tuple(elts=[Name(id='j'), Num(n=0)])))],
+                        keywords=[]))],
+            orelse=[]),
+        For(target=Name(id='level'),
+            iter=Call(func=Name(id='range'),
+                args=[Num(n=0),
+                    Call(func=Name(id='ceiling'),
+                        args=[
+                            BinOp(left=Call(func=Name(id='log'), args=[Name(id='N')], keywords=[]),
+                                op=Div,
+                                right=Call(func=Name(id='log'), args=[Num(n=2)], keywords=[]))],
+                        keywords=[])],
+                keywords=[]),
+            body=[
+                For(target=Name(id='j'),
+                    iter=Call(func=Name(id='range'),
+                        args=[Num(n=0),
+                            Name(id='N'),
+                            BinOp(left=Num(n=2), op=Pow, right=BinOp(left=Name(id='level'), op=Add, right=Num(n=1)))],
+                        keywords=[]),
+                    body=[
+                        Assign(
+                            targets=[
+                                Tuple(
+                                    elts=[
+                                        Subscript(value=Name(id='Vs'),
+                                            slice=Index(
+                                                value=Tuple(
+                                                    elts=[BinOp(left=Name(id='level'), op=Add, right=Num(n=1)),
+                                                        Name(id='j')]))),
+                                        Subscript(value=Name(id='Ts'),
+                                            slice=Index(
+                                                value=Tuple(
+                                                    elts=[BinOp(left=Name(id='level'), op=Add, right=Num(n=1)),
+                                                        Name(id='j')]))),
+                                        Subscript(value=Name(id='Rs'),
+                                            slice=Index(
+                                                value=Tuple(
+                                                    elts=[BinOp(left=Name(id='level'), op=Add, right=Num(n=1)),
+                                                        Name(id='j')])))])],
+                            value=Call(func=Name(id='qr_factor'),
+                                args=[
+                                    Subscript(value=Name(id='Rs'),
+                                        slice=Index(value=Tuple(elts=[Name(id='level'), Name(id='j')]))),
+                                    Subscript(value=Name(id='Rs'),
+                                        slice=Index(
+                                            value=Tuple(
+                                                elts=[Name(id='level'),
+                                                    BinOp(left=Name(id='j'),
+                                                        op=Add,
+                                                        right=BinOp(left=Num(n=2), op=Pow, right=Name(id='level')))])))],
+                                keywords=[]))],
+                    orelse=[])],
+            orelse=[])],
+    decorator_list=[],
+    returns=None)
+
+2020-04-09 22:57:49,361 - root - DEBUG - IR AST:
+FuncDef(name='TSQR',
+    args=['A', 'Vs', 'Ts', 'Rs', 'N'],
+    body=[
+        For(var='j',
+            min=IntConst(val=0, type=None),
+            max=Ref(name='N', type=None),
+            step=IntConst(val=1, type=None),
+            body=[
+                RemoteCallAbstract(compute=<function qr_factor at 0x7f71ce656400>,
+                    output=[
+                        IndexExpr(matrix_name='Vs', indices=[IntConst(val=0, type=None), Ref(name='j', type=None)]),
+                        IndexExpr(matrix_name='Ts', indices=[IntConst(val=0, type=None), Ref(name='j', type=None)]),
+                        IndexExpr(matrix_name='Rs', indices=[IntConst(val=0, type=None), Ref(name='j', type=None)])],
+                    args=[IndexExpr(matrix_name='A', indices=[Ref(name='j', type=None), IntConst(val=0, type=None)])],
+                    kwargs=None,
+                    type=None)]),
+        For(var='level',
+            min=IntConst(val=0, type=None),
+            max=Mfunc(op='ceiling',
+                e=BinOp(op='Div',
+                    left=Mfunc(op='log', e=Ref(name='N', type=None), type=None),
+                    right=Mfunc(op='log', e=IntConst(val=2, type=None), type=None),
+                    type=None),
+                type=None),
+            step=IntConst(val=1, type=None),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=None),
+                    max=Ref(name='N', type=None),
+                    step=BinOp(op='Pow',
+                        left=IntConst(val=2, type=None),
+                        right=BinOp(op='Add',
+                            left=Ref(name='level', type=None),
+                            right=IntConst(val=1, type=None),
+                            type=None),
+                        type=None),
+                    body=[
+                        RemoteCallAbstract(compute=<function qr_factor at 0x7f71ce656400>,
+                            output=[
+                                IndexExpr(matrix_name='Vs',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=None),
+                                            right=IntConst(val=1, type=None),
+                                            type=None),
+                                        Ref(name='j', type=None)]),
+                                IndexExpr(matrix_name='Ts',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=None),
+                                            right=IntConst(val=1, type=None),
+                                            type=None),
+                                        Ref(name='j', type=None)]),
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=None),
+                                            right=IntConst(val=1, type=None),
+                                            type=None),
+                                        Ref(name='j', type=None)])],
+                            args=[
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[Ref(name='level', type=None), Ref(name='j', type=None)]),
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[Ref(name='level', type=None),
+                                        BinOp(op='Add',
+                                            left=Ref(name='j', type=None),
+                                            right=BinOp(op='Pow',
+                                                left=IntConst(val=2, type=None),
+                                                right=Ref(name='level', type=None),
+                                                type=None),
+                                            type=None)])],
+                            kwargs=None,
+                            type=None)])])],
+    arg_types=[<class 'numpywren.matrix.BigMatrix'>,
+        <class 'numpywren.matrix.BigMatrix'>,
+        <class 'numpywren.matrix.BigMatrix'>,
+        <class 'numpywren.matrix.BigMatrix'>,
+        <class 'int'>])
+
+2020-04-09 22:57:49,362 - root - DEBUG - typed IR AST:
+FuncDef(name='TSQR',
+    args=['A', 'Vs', 'Ts', 'Rs', 'N'],
+    body=[
+        For(var='j',
+            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+            max=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+            body=[
+                RemoteCallAbstract(compute=<function qr_factor at 0x7f71ce656400>,
+                    output=[
+                        IndexExpr(matrix_name='Vs',
+                            indices=[IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                                Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                        IndexExpr(matrix_name='Ts',
+                            indices=[IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                                Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                        IndexExpr(matrix_name='Rs',
+                            indices=[IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                                Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)])],
+                    args=[
+                        IndexExpr(matrix_name='A',
+                            indices=[Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>)])],
+                    kwargs=None,
+                    type=<class 'type'>)]),
+        For(var='level',
+            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+            max=Mfunc(op='ceiling',
+                e=BinOp(op='Div',
+                    left=Mfunc(op='log',
+                        e=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+                        type=<class 'numpywren.frontend.ConstFloatType'>),
+                    right=Mfunc(op='log',
+                        e=IntConst(val=2, type=<class 'numpywren.frontend.ConstIntType'>),
+                        type=<class 'numpywren.frontend.ConstFloatType'>),
+                    type=<class 'numpywren.frontend.ConstFloatType'>),
+                type=<class 'numpywren.frontend.ConstIntType'>),
+            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                    max=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+                    step=BinOp(op='Pow',
+                        left=IntConst(val=2, type=<class 'numpywren.frontend.ConstIntType'>),
+                        right=BinOp(op='Add',
+                            left=Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                            right=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                            type=<class 'numpywren.frontend.LinearIntType'>),
+                        type=<class 'numpywren.frontend.IntType'>),
+                    body=[
+                        RemoteCallAbstract(compute=<function qr_factor at 0x7f71ce656400>,
+                            output=[
+                                IndexExpr(matrix_name='Vs',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                            right=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                                            type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                IndexExpr(matrix_name='Ts',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                            right=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                                            type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                            right=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                                            type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)])],
+                            args=[
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                        BinOp(op='Add',
+                                            left=Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                            right=BinOp(op='Pow',
+                                                left=IntConst(val=2, type=<class 'numpywren.frontend.ConstIntType'>),
+                                                right=Ref(name='level',
+                                                    type=<class 'numpywren.frontend.LinearIntType'>),
+                                                type=<class 'numpywren.frontend.IntType'>),
+                                            type=<class 'numpywren.frontend.IntType'>)])],
+                            kwargs=None,
+                            type=<class 'type'>)])])],
+    arg_types=[<class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.ConstIntType'>])
+
+2020-04-09 22:57:50,505 - root - INFO - Starting with 1 cores
+2020-04-09 22:57:55,550 - root - DEBUG - 5: Up Workers: 1, Busy Workers: 1
+2020-04-09 22:57:55,550 - root - INFO - Waiting: 1, Currently Processing: 1
+2020-04-09 22:57:55,550 - root - INFO - 5: Up Workers: 1, Busy Workers: 1
+2020-04-09 22:58:00,595 - root - DEBUG - 10: Up Workers: 1, Busy Workers: 1
+2020-04-09 22:58:00,595 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:58:00,595 - root - INFO - 10: Up Workers: 1, Busy Workers: 1
+2020-04-09 22:58:05,643 - root - DEBUG - 15: Up Workers: 1, Busy Workers: 1
+2020-04-09 22:58:05,643 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:58:05,643 - root - INFO - 15: Up Workers: 1, Busy Workers: 1
+2020-04-09 22:58:10,700 - root - DEBUG - 20: Up Workers: 1, Busy Workers: 1
+2020-04-09 22:58:10,701 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:58:10,701 - root - INFO - 20: Up Workers: 1, Busy Workers: 1
+2020-04-09 22:58:15,745 - root - DEBUG - 25: Up Workers: 1, Busy Workers: 1
+2020-04-09 22:58:15,745 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:58:15,745 - root - INFO - 25: Up Workers: 1, Busy Workers: 1
+2020-04-09 22:58:20,795 - root - DEBUG - 30: Up Workers: 1, Busy Workers: 1
+2020-04-09 22:58:20,795 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:58:20,795 - root - INFO - 30: Up Workers: 1, Busy Workers: 1
+2020-04-09 22:58:25,845 - root - DEBUG - 35: Up Workers: 1, Busy Workers: 1
+2020-04-09 22:58:25,845 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:58:25,845 - root - INFO - 35: Up Workers: 1, Busy Workers: 1
+2020-04-09 22:58:30,967 - root - DEBUG - 40: Up Workers: 1, Busy Workers: 1
+2020-04-09 22:58:30,967 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:58:30,967 - root - INFO - 40: Up Workers: 1, Busy Workers: 1
+2020-04-09 22:58:36,013 - root - DEBUG - 45: Up Workers: 1, Busy Workers: 1
+2020-04-09 22:58:36,013 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:58:36,013 - root - INFO - 45: Up Workers: 1, Busy Workers: 1
+2020-04-09 22:59:24,215 - root - INFO - Logging to 245782916cdb4f9a63075cc7e9a01b2e.log
+2020-04-09 22:59:25,019 - root - DEBUG - Python AST:
+FunctionDef(name='TSQR',
+    args=arguments(
+        args=[arg(arg='A', annotation=Name(id='BigMatrix')),
+            arg(arg='Vs', annotation=Name(id='BigMatrix')),
+            arg(arg='Ts', annotation=Name(id='BigMatrix')),
+            arg(arg='Rs', annotation=Name(id='BigMatrix')),
+            arg(arg='N', annotation=Name(id='int'))],
+        vararg=None,
+        kwonlyargs=[],
+        kw_defaults=[],
+        kwarg=None,
+        defaults=[]),
+    body=[
+        For(target=Name(id='j'),
+            iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='N')], keywords=[]),
+            body=[
+                Assign(
+                    targets=[
+                        Tuple(
+                            elts=[
+                                Subscript(value=Name(id='Vs'), slice=Index(value=Tuple(elts=[Num(n=0), Name(id='j')]))),
+                                Subscript(value=Name(id='Ts'), slice=Index(value=Tuple(elts=[Num(n=0), Name(id='j')]))),
+                                Subscript(value=Name(id='Rs'), slice=Index(value=Tuple(elts=[Num(n=0), Name(id='j')])))])],
+                    value=Call(func=Name(id='qr_factor'),
+                        args=[Subscript(value=Name(id='A'), slice=Index(value=Tuple(elts=[Name(id='j'), Num(n=0)])))],
+                        keywords=[]))],
+            orelse=[]),
+        For(target=Name(id='level'),
+            iter=Call(func=Name(id='range'),
+                args=[Num(n=0),
+                    Call(func=Name(id='ceiling'),
+                        args=[
+                            BinOp(left=Call(func=Name(id='log'), args=[Name(id='N')], keywords=[]),
+                                op=Div,
+                                right=Call(func=Name(id='log'), args=[Num(n=2)], keywords=[]))],
+                        keywords=[])],
+                keywords=[]),
+            body=[
+                For(target=Name(id='j'),
+                    iter=Call(func=Name(id='range'),
+                        args=[Num(n=0),
+                            Name(id='N'),
+                            BinOp(left=Num(n=2), op=Pow, right=BinOp(left=Name(id='level'), op=Add, right=Num(n=1)))],
+                        keywords=[]),
+                    body=[
+                        Assign(
+                            targets=[
+                                Tuple(
+                                    elts=[
+                                        Subscript(value=Name(id='Vs'),
+                                            slice=Index(
+                                                value=Tuple(
+                                                    elts=[BinOp(left=Name(id='level'), op=Add, right=Num(n=1)),
+                                                        Name(id='j')]))),
+                                        Subscript(value=Name(id='Ts'),
+                                            slice=Index(
+                                                value=Tuple(
+                                                    elts=[BinOp(left=Name(id='level'), op=Add, right=Num(n=1)),
+                                                        Name(id='j')]))),
+                                        Subscript(value=Name(id='Rs'),
+                                            slice=Index(
+                                                value=Tuple(
+                                                    elts=[BinOp(left=Name(id='level'), op=Add, right=Num(n=1)),
+                                                        Name(id='j')])))])],
+                            value=Call(func=Name(id='qr_factor'),
+                                args=[
+                                    Subscript(value=Name(id='Rs'),
+                                        slice=Index(value=Tuple(elts=[Name(id='level'), Name(id='j')]))),
+                                    Subscript(value=Name(id='Rs'),
+                                        slice=Index(
+                                            value=Tuple(
+                                                elts=[Name(id='level'),
+                                                    BinOp(left=Name(id='j'),
+                                                        op=Add,
+                                                        right=BinOp(left=Num(n=2), op=Pow, right=Name(id='level')))])))],
+                                keywords=[]))],
+                    orelse=[])],
+            orelse=[])],
+    decorator_list=[],
+    returns=None)
+
+2020-04-09 22:59:25,020 - root - DEBUG - IR AST:
+FuncDef(name='TSQR',
+    args=['A', 'Vs', 'Ts', 'Rs', 'N'],
+    body=[
+        For(var='j',
+            min=IntConst(val=0, type=None),
+            max=Ref(name='N', type=None),
+            step=IntConst(val=1, type=None),
+            body=[
+                RemoteCallAbstract(compute=<function qr_factor at 0x7fac77f15400>,
+                    output=[
+                        IndexExpr(matrix_name='Vs', indices=[IntConst(val=0, type=None), Ref(name='j', type=None)]),
+                        IndexExpr(matrix_name='Ts', indices=[IntConst(val=0, type=None), Ref(name='j', type=None)]),
+                        IndexExpr(matrix_name='Rs', indices=[IntConst(val=0, type=None), Ref(name='j', type=None)])],
+                    args=[IndexExpr(matrix_name='A', indices=[Ref(name='j', type=None), IntConst(val=0, type=None)])],
+                    kwargs=None,
+                    type=None)]),
+        For(var='level',
+            min=IntConst(val=0, type=None),
+            max=Mfunc(op='ceiling',
+                e=BinOp(op='Div',
+                    left=Mfunc(op='log', e=Ref(name='N', type=None), type=None),
+                    right=Mfunc(op='log', e=IntConst(val=2, type=None), type=None),
+                    type=None),
+                type=None),
+            step=IntConst(val=1, type=None),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=None),
+                    max=Ref(name='N', type=None),
+                    step=BinOp(op='Pow',
+                        left=IntConst(val=2, type=None),
+                        right=BinOp(op='Add',
+                            left=Ref(name='level', type=None),
+                            right=IntConst(val=1, type=None),
+                            type=None),
+                        type=None),
+                    body=[
+                        RemoteCallAbstract(compute=<function qr_factor at 0x7fac77f15400>,
+                            output=[
+                                IndexExpr(matrix_name='Vs',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=None),
+                                            right=IntConst(val=1, type=None),
+                                            type=None),
+                                        Ref(name='j', type=None)]),
+                                IndexExpr(matrix_name='Ts',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=None),
+                                            right=IntConst(val=1, type=None),
+                                            type=None),
+                                        Ref(name='j', type=None)]),
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=None),
+                                            right=IntConst(val=1, type=None),
+                                            type=None),
+                                        Ref(name='j', type=None)])],
+                            args=[
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[Ref(name='level', type=None), Ref(name='j', type=None)]),
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[Ref(name='level', type=None),
+                                        BinOp(op='Add',
+                                            left=Ref(name='j', type=None),
+                                            right=BinOp(op='Pow',
+                                                left=IntConst(val=2, type=None),
+                                                right=Ref(name='level', type=None),
+                                                type=None),
+                                            type=None)])],
+                            kwargs=None,
+                            type=None)])])],
+    arg_types=[<class 'numpywren.matrix.BigMatrix'>,
+        <class 'numpywren.matrix.BigMatrix'>,
+        <class 'numpywren.matrix.BigMatrix'>,
+        <class 'numpywren.matrix.BigMatrix'>,
+        <class 'int'>])
+
+2020-04-09 22:59:25,021 - root - DEBUG - typed IR AST:
+FuncDef(name='TSQR',
+    args=['A', 'Vs', 'Ts', 'Rs', 'N'],
+    body=[
+        For(var='j',
+            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+            max=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+            body=[
+                RemoteCallAbstract(compute=<function qr_factor at 0x7fac77f15400>,
+                    output=[
+                        IndexExpr(matrix_name='Vs',
+                            indices=[IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                                Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                        IndexExpr(matrix_name='Ts',
+                            indices=[IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                                Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                        IndexExpr(matrix_name='Rs',
+                            indices=[IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                                Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)])],
+                    args=[
+                        IndexExpr(matrix_name='A',
+                            indices=[Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>)])],
+                    kwargs=None,
+                    type=<class 'type'>)]),
+        For(var='level',
+            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+            max=Mfunc(op='ceiling',
+                e=BinOp(op='Div',
+                    left=Mfunc(op='log',
+                        e=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+                        type=<class 'numpywren.frontend.ConstFloatType'>),
+                    right=Mfunc(op='log',
+                        e=IntConst(val=2, type=<class 'numpywren.frontend.ConstIntType'>),
+                        type=<class 'numpywren.frontend.ConstFloatType'>),
+                    type=<class 'numpywren.frontend.ConstFloatType'>),
+                type=<class 'numpywren.frontend.ConstIntType'>),
+            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                    max=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+                    step=BinOp(op='Pow',
+                        left=IntConst(val=2, type=<class 'numpywren.frontend.ConstIntType'>),
+                        right=BinOp(op='Add',
+                            left=Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                            right=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                            type=<class 'numpywren.frontend.LinearIntType'>),
+                        type=<class 'numpywren.frontend.IntType'>),
+                    body=[
+                        RemoteCallAbstract(compute=<function qr_factor at 0x7fac77f15400>,
+                            output=[
+                                IndexExpr(matrix_name='Vs',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                            right=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                                            type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                IndexExpr(matrix_name='Ts',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                            right=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                                            type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                            right=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                                            type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)])],
+                            args=[
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                        BinOp(op='Add',
+                                            left=Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                            right=BinOp(op='Pow',
+                                                left=IntConst(val=2, type=<class 'numpywren.frontend.ConstIntType'>),
+                                                right=Ref(name='level',
+                                                    type=<class 'numpywren.frontend.LinearIntType'>),
+                                                type=<class 'numpywren.frontend.IntType'>),
+                                            type=<class 'numpywren.frontend.IntType'>)])],
+                            kwargs=None,
+                            type=<class 'type'>)])])],
+    arg_types=[<class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.ConstIntType'>])
+
+2020-04-09 22:59:25,875 - root - INFO - Starting with 1 cores
+2020-04-09 22:59:45,946 - root - DEBUG - 20: Up Workers: 1, Busy Workers: 1
+2020-04-09 22:59:45,946 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:59:45,946 - root - INFO - 20: Up Workers: 1, Busy Workers: 1
+2020-04-09 22:59:50,996 - root - DEBUG - 25: Up Workers: 1, Busy Workers: 1
+2020-04-09 22:59:50,996 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:59:50,996 - root - INFO - 25: Up Workers: 1, Busy Workers: 1
+2020-04-09 22:59:56,053 - root - DEBUG - 30: Up Workers: 1, Busy Workers: 1
+2020-04-09 22:59:56,053 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:59:56,053 - root - INFO - 30: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:00:01,105 - root - DEBUG - 35: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:00:01,105 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 23:00:01,106 - root - INFO - 35: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:00:06,158 - root - DEBUG - 40: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:00:06,159 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 23:00:06,159 - root - INFO - 40: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:00:11,207 - root - DEBUG - 45: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:00:11,208 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 23:00:11,208 - root - INFO - 45: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:00:16,256 - root - DEBUG - 50: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:00:16,256 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 23:00:16,257 - root - INFO - 50: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:00:21,308 - root - DEBUG - 55: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:00:21,308 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 23:00:21,308 - root - INFO - 55: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:00:26,356 - root - DEBUG - 60: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:00:26,356 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 23:00:26,356 - root - INFO - 60: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:00:31,409 - root - DEBUG - 65: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:00:31,409 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 23:00:31,409 - root - INFO - 65: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:00:36,456 - root - DEBUG - 70: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:00:36,456 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 23:00:36,456 - root - INFO - 70: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:00:41,507 - root - DEBUG - 75: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:00:41,507 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 23:00:41,507 - root - INFO - 75: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:00:46,555 - root - DEBUG - 80: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:00:46,555 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 23:00:46,555 - root - INFO - 80: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:00:51,605 - root - DEBUG - 85: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:00:51,605 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 23:00:51,605 - root - INFO - 85: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:00:56,656 - root - DEBUG - 90: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:00:56,656 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 23:00:56,656 - root - INFO - 90: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:01:01,709 - root - DEBUG - 95: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:01:01,709 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 23:01:01,709 - root - INFO - 95: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:01:06,757 - root - DEBUG - 100: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:01:06,757 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 23:01:06,757 - root - INFO - 100: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:05:14,989 - root - INFO - Logging to 245782916cdb4f9a63075cc7e9a01b2e.log
+2020-04-09 23:05:36,645 - root - DEBUG - Python AST:
+FunctionDef(name='TSQR',
+    args=arguments(
+        args=[arg(arg='A', annotation=Name(id='BigMatrix')),
+            arg(arg='Vs', annotation=Name(id='BigMatrix')),
+            arg(arg='Ts', annotation=Name(id='BigMatrix')),
+            arg(arg='Rs', annotation=Name(id='BigMatrix')),
+            arg(arg='N', annotation=Name(id='int'))],
+        vararg=None,
+        kwonlyargs=[],
+        kw_defaults=[],
+        kwarg=None,
+        defaults=[]),
+    body=[
+        For(target=Name(id='j'),
+            iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='N')], keywords=[]),
+            body=[
+                Assign(
+                    targets=[
+                        Tuple(
+                            elts=[
+                                Subscript(value=Name(id='Vs'), slice=Index(value=Tuple(elts=[Num(n=0), Name(id='j')]))),
+                                Subscript(value=Name(id='Ts'), slice=Index(value=Tuple(elts=[Num(n=0), Name(id='j')]))),
+                                Subscript(value=Name(id='Rs'), slice=Index(value=Tuple(elts=[Num(n=0), Name(id='j')])))])],
+                    value=Call(func=Name(id='qr_factor'),
+                        args=[Subscript(value=Name(id='A'), slice=Index(value=Tuple(elts=[Name(id='j'), Num(n=0)])))],
+                        keywords=[]))],
+            orelse=[]),
+        For(target=Name(id='level'),
+            iter=Call(func=Name(id='range'),
+                args=[Num(n=0),
+                    Call(func=Name(id='ceiling'),
+                        args=[
+                            BinOp(left=Call(func=Name(id='log'), args=[Name(id='N')], keywords=[]),
+                                op=Div,
+                                right=Call(func=Name(id='log'), args=[Num(n=2)], keywords=[]))],
+                        keywords=[])],
+                keywords=[]),
+            body=[
+                For(target=Name(id='j'),
+                    iter=Call(func=Name(id='range'),
+                        args=[Num(n=0),
+                            Name(id='N'),
+                            BinOp(left=Num(n=2), op=Pow, right=BinOp(left=Name(id='level'), op=Add, right=Num(n=1)))],
+                        keywords=[]),
+                    body=[
+                        Assign(
+                            targets=[
+                                Tuple(
+                                    elts=[
+                                        Subscript(value=Name(id='Vs'),
+                                            slice=Index(
+                                                value=Tuple(
+                                                    elts=[BinOp(left=Name(id='level'), op=Add, right=Num(n=1)),
+                                                        Name(id='j')]))),
+                                        Subscript(value=Name(id='Ts'),
+                                            slice=Index(
+                                                value=Tuple(
+                                                    elts=[BinOp(left=Name(id='level'), op=Add, right=Num(n=1)),
+                                                        Name(id='j')]))),
+                                        Subscript(value=Name(id='Rs'),
+                                            slice=Index(
+                                                value=Tuple(
+                                                    elts=[BinOp(left=Name(id='level'), op=Add, right=Num(n=1)),
+                                                        Name(id='j')])))])],
+                            value=Call(func=Name(id='qr_factor'),
+                                args=[
+                                    Subscript(value=Name(id='Rs'),
+                                        slice=Index(value=Tuple(elts=[Name(id='level'), Name(id='j')]))),
+                                    Subscript(value=Name(id='Rs'),
+                                        slice=Index(
+                                            value=Tuple(
+                                                elts=[Name(id='level'),
+                                                    BinOp(left=Name(id='j'),
+                                                        op=Add,
+                                                        right=BinOp(left=Num(n=2), op=Pow, right=Name(id='level')))])))],
+                                keywords=[]))],
+                    orelse=[])],
+            orelse=[])],
+    decorator_list=[],
+    returns=None)
+
+2020-04-09 23:05:36,647 - root - DEBUG - IR AST:
+FuncDef(name='TSQR',
+    args=['A', 'Vs', 'Ts', 'Rs', 'N'],
+    body=[
+        For(var='j',
+            min=IntConst(val=0, type=None),
+            max=Ref(name='N', type=None),
+            step=IntConst(val=1, type=None),
+            body=[
+                RemoteCallAbstract(compute=<function qr_factor at 0x7f6bf2cbd400>,
+                    output=[
+                        IndexExpr(matrix_name='Vs', indices=[IntConst(val=0, type=None), Ref(name='j', type=None)]),
+                        IndexExpr(matrix_name='Ts', indices=[IntConst(val=0, type=None), Ref(name='j', type=None)]),
+                        IndexExpr(matrix_name='Rs', indices=[IntConst(val=0, type=None), Ref(name='j', type=None)])],
+                    args=[IndexExpr(matrix_name='A', indices=[Ref(name='j', type=None), IntConst(val=0, type=None)])],
+                    kwargs=None,
+                    type=None)]),
+        For(var='level',
+            min=IntConst(val=0, type=None),
+            max=Mfunc(op='ceiling',
+                e=BinOp(op='Div',
+                    left=Mfunc(op='log', e=Ref(name='N', type=None), type=None),
+                    right=Mfunc(op='log', e=IntConst(val=2, type=None), type=None),
+                    type=None),
+                type=None),
+            step=IntConst(val=1, type=None),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=None),
+                    max=Ref(name='N', type=None),
+                    step=BinOp(op='Pow',
+                        left=IntConst(val=2, type=None),
+                        right=BinOp(op='Add',
+                            left=Ref(name='level', type=None),
+                            right=IntConst(val=1, type=None),
+                            type=None),
+                        type=None),
+                    body=[
+                        RemoteCallAbstract(compute=<function qr_factor at 0x7f6bf2cbd400>,
+                            output=[
+                                IndexExpr(matrix_name='Vs',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=None),
+                                            right=IntConst(val=1, type=None),
+                                            type=None),
+                                        Ref(name='j', type=None)]),
+                                IndexExpr(matrix_name='Ts',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=None),
+                                            right=IntConst(val=1, type=None),
+                                            type=None),
+                                        Ref(name='j', type=None)]),
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=None),
+                                            right=IntConst(val=1, type=None),
+                                            type=None),
+                                        Ref(name='j', type=None)])],
+                            args=[
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[Ref(name='level', type=None), Ref(name='j', type=None)]),
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[Ref(name='level', type=None),
+                                        BinOp(op='Add',
+                                            left=Ref(name='j', type=None),
+                                            right=BinOp(op='Pow',
+                                                left=IntConst(val=2, type=None),
+                                                right=Ref(name='level', type=None),
+                                                type=None),
+                                            type=None)])],
+                            kwargs=None,
+                            type=None)])])],
+    arg_types=[<class 'numpywren.matrix.BigMatrix'>,
+        <class 'numpywren.matrix.BigMatrix'>,
+        <class 'numpywren.matrix.BigMatrix'>,
+        <class 'numpywren.matrix.BigMatrix'>,
+        <class 'int'>])
+
+2020-04-09 23:05:36,647 - root - DEBUG - typed IR AST:
+FuncDef(name='TSQR',
+    args=['A', 'Vs', 'Ts', 'Rs', 'N'],
+    body=[
+        For(var='j',
+            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+            max=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+            body=[
+                RemoteCallAbstract(compute=<function qr_factor at 0x7f6bf2cbd400>,
+                    output=[
+                        IndexExpr(matrix_name='Vs',
+                            indices=[IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                                Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                        IndexExpr(matrix_name='Ts',
+                            indices=[IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                                Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                        IndexExpr(matrix_name='Rs',
+                            indices=[IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                                Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)])],
+                    args=[
+                        IndexExpr(matrix_name='A',
+                            indices=[Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>)])],
+                    kwargs=None,
+                    type=<class 'type'>)]),
+        For(var='level',
+            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+            max=Mfunc(op='ceiling',
+                e=BinOp(op='Div',
+                    left=Mfunc(op='log',
+                        e=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+                        type=<class 'numpywren.frontend.ConstFloatType'>),
+                    right=Mfunc(op='log',
+                        e=IntConst(val=2, type=<class 'numpywren.frontend.ConstIntType'>),
+                        type=<class 'numpywren.frontend.ConstFloatType'>),
+                    type=<class 'numpywren.frontend.ConstFloatType'>),
+                type=<class 'numpywren.frontend.ConstIntType'>),
+            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                    max=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+                    step=BinOp(op='Pow',
+                        left=IntConst(val=2, type=<class 'numpywren.frontend.ConstIntType'>),
+                        right=BinOp(op='Add',
+                            left=Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                            right=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                            type=<class 'numpywren.frontend.LinearIntType'>),
+                        type=<class 'numpywren.frontend.IntType'>),
+                    body=[
+                        RemoteCallAbstract(compute=<function qr_factor at 0x7f6bf2cbd400>,
+                            output=[
+                                IndexExpr(matrix_name='Vs',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                            right=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                                            type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                IndexExpr(matrix_name='Ts',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                            right=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                                            type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                            right=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                                            type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)])],
+                            args=[
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                        BinOp(op='Add',
+                                            left=Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                            right=BinOp(op='Pow',
+                                                left=IntConst(val=2, type=<class 'numpywren.frontend.ConstIntType'>),
+                                                right=Ref(name='level',
+                                                    type=<class 'numpywren.frontend.LinearIntType'>),
+                                                type=<class 'numpywren.frontend.IntType'>),
+                                            type=<class 'numpywren.frontend.IntType'>)])],
+                            kwargs=None,
+                            type=<class 'type'>)])])],
+    arg_types=[<class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.ConstIntType'>])
+
+2020-04-09 23:05:37,391 - root - INFO - Starting with 1 cores
+2020-04-09 23:06:02,472 - root - DEBUG - 25: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:06:02,472 - root - INFO - Waiting: 3, Currently Processing: 1
+2020-04-09 23:06:02,472 - root - INFO - 25: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:06:07,525 - root - DEBUG - 30: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:06:07,525 - root - INFO - Waiting: 3, Currently Processing: 1
+2020-04-09 23:06:07,526 - root - INFO - 30: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:06:12,585 - root - DEBUG - 35: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:06:12,586 - root - INFO - Waiting: 3, Currently Processing: 1
+2020-04-09 23:06:12,586 - root - INFO - 35: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:06:17,641 - root - DEBUG - 40: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:06:17,641 - root - INFO - Waiting: 3, Currently Processing: 1
+2020-04-09 23:06:17,641 - root - INFO - 40: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:06:22,690 - root - DEBUG - 45: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:06:22,690 - root - INFO - Waiting: 3, Currently Processing: 1
+2020-04-09 23:06:22,690 - root - INFO - 45: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:06:27,780 - root - DEBUG - 50: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:06:27,780 - root - INFO - Waiting: 3, Currently Processing: 1
+2020-04-09 23:06:27,780 - root - INFO - 50: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:06:32,831 - root - DEBUG - 55: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:06:32,831 - root - INFO - Waiting: 3, Currently Processing: 1
+2020-04-09 23:06:32,831 - root - INFO - 55: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:06:37,883 - root - DEBUG - 60: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:06:37,883 - root - INFO - Waiting: 2, Currently Processing: 1
+2020-04-09 23:06:37,883 - root - INFO - 60: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:06:42,928 - root - DEBUG - 65: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:06:42,928 - root - INFO - Waiting: 2, Currently Processing: 1
+2020-04-09 23:06:42,928 - root - INFO - 65: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:06:47,982 - root - DEBUG - 70: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:06:47,982 - root - INFO - Waiting: 2, Currently Processing: 1
+2020-04-09 23:06:47,982 - root - INFO - 70: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:06:53,035 - root - DEBUG - 75: Up Workers: 1, Busy Workers: 1
+2020-04-09 23:06:53,035 - root - INFO - Waiting: 2, Currently Processing: 1
+2020-04-09 23:06:53,035 - root - INFO - 75: Up Workers: 1, Busy Workers: 1

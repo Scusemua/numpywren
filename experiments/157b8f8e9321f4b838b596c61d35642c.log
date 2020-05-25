@@ -1,0 +1,1288 @@
+2020-04-09 22:15:08,252 - root - INFO - Logging to 157b8f8e9321f4b838b596c61d35642c.log
+2020-04-09 22:15:14,543 - root - DEBUG - Python AST:
+FunctionDef(name='TSQR',
+    args=arguments(
+        args=[arg(arg='A', annotation=Name(id='BigMatrix')),
+            arg(arg='Vs', annotation=Name(id='BigMatrix')),
+            arg(arg='Ts', annotation=Name(id='BigMatrix')),
+            arg(arg='Rs', annotation=Name(id='BigMatrix')),
+            arg(arg='N', annotation=Name(id='int'))],
+        vararg=None,
+        kwonlyargs=[],
+        kw_defaults=[],
+        kwarg=None,
+        defaults=[]),
+    body=[
+        For(target=Name(id='j'),
+            iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='N')], keywords=[]),
+            body=[
+                Assign(
+                    targets=[
+                        Tuple(
+                            elts=[
+                                Subscript(value=Name(id='Vs'), slice=Index(value=Tuple(elts=[Num(n=0), Name(id='j')]))),
+                                Subscript(value=Name(id='Ts'), slice=Index(value=Tuple(elts=[Num(n=0), Name(id='j')]))),
+                                Subscript(value=Name(id='Rs'), slice=Index(value=Tuple(elts=[Num(n=0), Name(id='j')])))])],
+                    value=Call(func=Name(id='qr_factor'),
+                        args=[Subscript(value=Name(id='A'), slice=Index(value=Tuple(elts=[Name(id='j'), Num(n=0)])))],
+                        keywords=[]))],
+            orelse=[]),
+        For(target=Name(id='level'),
+            iter=Call(func=Name(id='range'),
+                args=[Num(n=0),
+                    Call(func=Name(id='ceiling'),
+                        args=[
+                            BinOp(left=Call(func=Name(id='log'), args=[Name(id='N')], keywords=[]),
+                                op=Div,
+                                right=Call(func=Name(id='log'), args=[Num(n=2)], keywords=[]))],
+                        keywords=[])],
+                keywords=[]),
+            body=[
+                For(target=Name(id='j'),
+                    iter=Call(func=Name(id='range'),
+                        args=[Num(n=0),
+                            Name(id='N'),
+                            BinOp(left=Num(n=2), op=Pow, right=BinOp(left=Name(id='level'), op=Add, right=Num(n=1)))],
+                        keywords=[]),
+                    body=[
+                        Assign(
+                            targets=[
+                                Tuple(
+                                    elts=[
+                                        Subscript(value=Name(id='Vs'),
+                                            slice=Index(
+                                                value=Tuple(
+                                                    elts=[BinOp(left=Name(id='level'), op=Add, right=Num(n=1)),
+                                                        Name(id='j')]))),
+                                        Subscript(value=Name(id='Ts'),
+                                            slice=Index(
+                                                value=Tuple(
+                                                    elts=[BinOp(left=Name(id='level'), op=Add, right=Num(n=1)),
+                                                        Name(id='j')]))),
+                                        Subscript(value=Name(id='Rs'),
+                                            slice=Index(
+                                                value=Tuple(
+                                                    elts=[BinOp(left=Name(id='level'), op=Add, right=Num(n=1)),
+                                                        Name(id='j')])))])],
+                            value=Call(func=Name(id='qr_factor'),
+                                args=[
+                                    Subscript(value=Name(id='Rs'),
+                                        slice=Index(value=Tuple(elts=[Name(id='level'), Name(id='j')]))),
+                                    Subscript(value=Name(id='Rs'),
+                                        slice=Index(
+                                            value=Tuple(
+                                                elts=[Name(id='level'),
+                                                    BinOp(left=Name(id='j'),
+                                                        op=Add,
+                                                        right=BinOp(left=Num(n=2), op=Pow, right=Name(id='level')))])))],
+                                keywords=[]))],
+                    orelse=[])],
+            orelse=[])],
+    decorator_list=[],
+    returns=None)
+
+2020-04-09 22:15:14,544 - root - DEBUG - IR AST:
+FuncDef(name='TSQR',
+    args=['A', 'Vs', 'Ts', 'Rs', 'N'],
+    body=[
+        For(var='j',
+            min=IntConst(val=0, type=None),
+            max=Ref(name='N', type=None),
+            step=IntConst(val=1, type=None),
+            body=[
+                RemoteCallAbstract(compute=<function qr_factor at 0x7f436ff19400>,
+                    output=[
+                        IndexExpr(matrix_name='Vs', indices=[IntConst(val=0, type=None), Ref(name='j', type=None)]),
+                        IndexExpr(matrix_name='Ts', indices=[IntConst(val=0, type=None), Ref(name='j', type=None)]),
+                        IndexExpr(matrix_name='Rs', indices=[IntConst(val=0, type=None), Ref(name='j', type=None)])],
+                    args=[IndexExpr(matrix_name='A', indices=[Ref(name='j', type=None), IntConst(val=0, type=None)])],
+                    kwargs=None,
+                    type=None)]),
+        For(var='level',
+            min=IntConst(val=0, type=None),
+            max=Mfunc(op='ceiling',
+                e=BinOp(op='Div',
+                    left=Mfunc(op='log', e=Ref(name='N', type=None), type=None),
+                    right=Mfunc(op='log', e=IntConst(val=2, type=None), type=None),
+                    type=None),
+                type=None),
+            step=IntConst(val=1, type=None),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=None),
+                    max=Ref(name='N', type=None),
+                    step=BinOp(op='Pow',
+                        left=IntConst(val=2, type=None),
+                        right=BinOp(op='Add',
+                            left=Ref(name='level', type=None),
+                            right=IntConst(val=1, type=None),
+                            type=None),
+                        type=None),
+                    body=[
+                        RemoteCallAbstract(compute=<function qr_factor at 0x7f436ff19400>,
+                            output=[
+                                IndexExpr(matrix_name='Vs',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=None),
+                                            right=IntConst(val=1, type=None),
+                                            type=None),
+                                        Ref(name='j', type=None)]),
+                                IndexExpr(matrix_name='Ts',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=None),
+                                            right=IntConst(val=1, type=None),
+                                            type=None),
+                                        Ref(name='j', type=None)]),
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=None),
+                                            right=IntConst(val=1, type=None),
+                                            type=None),
+                                        Ref(name='j', type=None)])],
+                            args=[
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[Ref(name='level', type=None), Ref(name='j', type=None)]),
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[Ref(name='level', type=None),
+                                        BinOp(op='Add',
+                                            left=Ref(name='j', type=None),
+                                            right=BinOp(op='Pow',
+                                                left=IntConst(val=2, type=None),
+                                                right=Ref(name='level', type=None),
+                                                type=None),
+                                            type=None)])],
+                            kwargs=None,
+                            type=None)])])],
+    arg_types=[<class 'numpywren.matrix.BigMatrix'>,
+        <class 'numpywren.matrix.BigMatrix'>,
+        <class 'numpywren.matrix.BigMatrix'>,
+        <class 'numpywren.matrix.BigMatrix'>,
+        <class 'int'>])
+
+2020-04-09 22:15:14,545 - root - DEBUG - typed IR AST:
+FuncDef(name='TSQR',
+    args=['A', 'Vs', 'Ts', 'Rs', 'N'],
+    body=[
+        For(var='j',
+            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+            max=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+            body=[
+                RemoteCallAbstract(compute=<function qr_factor at 0x7f436ff19400>,
+                    output=[
+                        IndexExpr(matrix_name='Vs',
+                            indices=[IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                                Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                        IndexExpr(matrix_name='Ts',
+                            indices=[IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                                Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                        IndexExpr(matrix_name='Rs',
+                            indices=[IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                                Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)])],
+                    args=[
+                        IndexExpr(matrix_name='A',
+                            indices=[Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>)])],
+                    kwargs=None,
+                    type=<class 'type'>)]),
+        For(var='level',
+            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+            max=Mfunc(op='ceiling',
+                e=BinOp(op='Div',
+                    left=Mfunc(op='log',
+                        e=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+                        type=<class 'numpywren.frontend.ConstFloatType'>),
+                    right=Mfunc(op='log',
+                        e=IntConst(val=2, type=<class 'numpywren.frontend.ConstIntType'>),
+                        type=<class 'numpywren.frontend.ConstFloatType'>),
+                    type=<class 'numpywren.frontend.ConstFloatType'>),
+                type=<class 'numpywren.frontend.ConstIntType'>),
+            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                    max=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+                    step=BinOp(op='Pow',
+                        left=IntConst(val=2, type=<class 'numpywren.frontend.ConstIntType'>),
+                        right=BinOp(op='Add',
+                            left=Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                            right=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                            type=<class 'numpywren.frontend.LinearIntType'>),
+                        type=<class 'numpywren.frontend.IntType'>),
+                    body=[
+                        RemoteCallAbstract(compute=<function qr_factor at 0x7f436ff19400>,
+                            output=[
+                                IndexExpr(matrix_name='Vs',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                            right=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                                            type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                IndexExpr(matrix_name='Ts',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                            right=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                                            type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                            right=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                                            type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)])],
+                            args=[
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                        BinOp(op='Add',
+                                            left=Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                            right=BinOp(op='Pow',
+                                                left=IntConst(val=2, type=<class 'numpywren.frontend.ConstIntType'>),
+                                                right=Ref(name='level',
+                                                    type=<class 'numpywren.frontend.LinearIntType'>),
+                                                type=<class 'numpywren.frontend.IntType'>),
+                                            type=<class 'numpywren.frontend.IntType'>)])],
+                            kwargs=None,
+                            type=<class 'type'>)])])],
+    arg_types=[<class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.ConstIntType'>])
+
+2020-04-09 22:15:15,452 - root - INFO - Starting with 32 cores
+2020-04-09 22:15:20,495 - root - DEBUG - 5: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:15:20,495 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:15:20,495 - root - INFO - 5: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:15:25,539 - root - DEBUG - 10: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:15:25,539 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:15:25,539 - root - INFO - 10: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:15:30,589 - root - DEBUG - 15: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:15:30,589 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:15:30,589 - root - INFO - 15: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:15:35,633 - root - DEBUG - 20: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:15:35,633 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:15:35,634 - root - INFO - 20: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:15:40,681 - root - DEBUG - 25: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:15:40,682 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:15:40,682 - root - INFO - 25: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:15:45,726 - root - DEBUG - 30: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:15:45,726 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:15:45,726 - root - INFO - 30: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:15:50,770 - root - DEBUG - 35: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:15:50,770 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:15:50,770 - root - INFO - 35: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:15:55,814 - root - DEBUG - 40: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:15:55,814 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:15:55,814 - root - INFO - 40: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:16:00,858 - root - DEBUG - 45: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:16:00,858 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:16:00,858 - root - INFO - 45: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:16:05,925 - root - DEBUG - 50: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:16:05,925 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:16:05,925 - root - INFO - 50: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:16:10,981 - root - DEBUG - 55: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:16:10,982 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:16:10,982 - root - INFO - 55: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:16:16,027 - root - DEBUG - 60: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:16:16,027 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:16:16,027 - root - INFO - 60: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:16:21,067 - root - DEBUG - 65: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:16:21,068 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:16:21,068 - root - INFO - 65: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:16:26,108 - root - DEBUG - 70: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:16:26,108 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:16:26,108 - root - INFO - 70: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:16:31,151 - root - DEBUG - 75: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:16:31,151 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:16:31,151 - root - INFO - 75: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:16:36,194 - root - DEBUG - 80: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:16:36,194 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:16:36,194 - root - INFO - 80: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:16:41,235 - root - DEBUG - 85: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:16:41,235 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:16:41,235 - root - INFO - 85: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:16:46,279 - root - DEBUG - 90: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:16:46,279 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:16:46,279 - root - INFO - 90: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:16:51,322 - root - DEBUG - 95: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:16:51,322 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:16:51,322 - root - INFO - 95: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:16:56,365 - root - DEBUG - 100: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:16:56,365 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:16:56,365 - root - INFO - 100: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:17:01,408 - root - DEBUG - 105: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:17:01,408 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:17:01,409 - root - INFO - 105: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:17:06,453 - root - DEBUG - 110: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:17:06,453 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:17:06,453 - root - INFO - 110: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:17:11,494 - root - DEBUG - 116: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:17:16,537 - root - DEBUG - 121: Up Workers: 32, Busy Workers: 1
+2020-04-09 22:17:16,542 - root - INFO - launching 32 new tasks....
+2020-04-09 22:17:21,586 - root - DEBUG - 126: Up Workers: 64, Busy Workers: 2
+2020-04-09 22:17:26,632 - root - DEBUG - 131: Up Workers: 64, Busy Workers: 2
+2020-04-09 22:17:31,675 - root - DEBUG - 136: Up Workers: 64, Busy Workers: 2
+2020-04-09 22:17:36,718 - root - DEBUG - 141: Up Workers: 64, Busy Workers: 2
+2020-04-09 22:17:41,785 - root - DEBUG - 146: Up Workers: 34, Busy Workers: 2
+2020-04-09 22:17:46,827 - root - DEBUG - 151: Up Workers: 34, Busy Workers: 2
+2020-04-09 22:17:51,869 - root - DEBUG - 156: Up Workers: 34, Busy Workers: 2
+2020-04-09 22:17:56,911 - root - DEBUG - 161: Up Workers: 34, Busy Workers: 2
+2020-04-09 22:18:01,953 - root - DEBUG - 166: Up Workers: 34, Busy Workers: 2
+2020-04-09 22:18:06,995 - root - DEBUG - 171: Up Workers: 34, Busy Workers: 2
+2020-04-09 22:18:12,039 - root - DEBUG - 176: Up Workers: 34, Busy Workers: 2
+2020-04-09 22:18:17,078 - root - DEBUG - 181: Up Workers: 34, Busy Workers: 2
+2020-04-09 22:18:22,126 - root - DEBUG - 186: Up Workers: 34, Busy Workers: 2
+2020-04-09 22:18:27,171 - root - DEBUG - 191: Up Workers: 34, Busy Workers: 2
+2020-04-09 22:18:32,215 - root - DEBUG - 196: Up Workers: 34, Busy Workers: 2
+2020-04-09 22:18:37,256 - root - DEBUG - 201: Up Workers: 34, Busy Workers: 2
+2020-04-09 22:18:42,308 - root - DEBUG - 206: Up Workers: 34, Busy Workers: 2
+2020-04-09 22:18:47,364 - root - DEBUG - 211: Up Workers: 34, Busy Workers: 2
+2020-04-09 22:18:52,408 - root - DEBUG - 216: Up Workers: 34, Busy Workers: 2
+2020-04-09 22:18:57,454 - root - DEBUG - 221: Up Workers: 34, Busy Workers: 2
+2020-04-09 22:19:02,497 - root - DEBUG - 227: Up Workers: 34, Busy Workers: 2
+2020-04-09 22:19:07,542 - root - DEBUG - 232: Up Workers: 34, Busy Workers: 2
+2020-04-09 22:19:12,631 - root - DEBUG - 237: Up Workers: 34, Busy Workers: 2
+2020-04-09 22:19:17,676 - root - DEBUG - 242: Up Workers: 34, Busy Workers: 2
+2020-04-09 22:19:17,681 - root - INFO - launching 32 new tasks....
+2020-04-09 22:19:22,771 - root - DEBUG - 247: Up Workers: 66, Busy Workers: 3
+2020-04-09 22:19:27,811 - root - DEBUG - 252: Up Workers: 66, Busy Workers: 3
+2020-04-09 22:19:32,856 - root - DEBUG - 257: Up Workers: 66, Busy Workers: 3
+2020-04-09 22:19:37,904 - root - DEBUG - 262: Up Workers: 66, Busy Workers: 3
+2020-04-09 22:19:42,956 - root - DEBUG - 267: Up Workers: 35, Busy Workers: 3
+2020-04-09 22:19:48,001 - root - DEBUG - 272: Up Workers: 35, Busy Workers: 3
+2020-04-09 22:19:53,044 - root - DEBUG - 277: Up Workers: 35, Busy Workers: 3
+2020-04-09 22:19:58,086 - root - DEBUG - 282: Up Workers: 35, Busy Workers: 3
+2020-04-09 22:20:03,140 - root - DEBUG - 287: Up Workers: 35, Busy Workers: 3
+2020-04-09 22:20:08,183 - root - DEBUG - 292: Up Workers: 35, Busy Workers: 3
+2020-04-09 22:20:13,226 - root - DEBUG - 297: Up Workers: 35, Busy Workers: 3
+2020-04-09 22:20:18,270 - root - DEBUG - 302: Up Workers: 35, Busy Workers: 3
+2020-04-09 22:20:23,316 - root - DEBUG - 307: Up Workers: 35, Busy Workers: 3
+2020-04-09 22:20:28,360 - root - DEBUG - 312: Up Workers: 35, Busy Workers: 3
+2020-04-09 22:20:33,471 - root - DEBUG - 317: Up Workers: 35, Busy Workers: 3
+2020-04-09 22:20:38,513 - root - DEBUG - 323: Up Workers: 35, Busy Workers: 3
+2020-04-09 22:20:43,556 - root - DEBUG - 328: Up Workers: 35, Busy Workers: 3
+2020-04-09 22:20:48,602 - root - DEBUG - 333: Up Workers: 35, Busy Workers: 3
+2020-04-09 22:20:53,645 - root - DEBUG - 338: Up Workers: 35, Busy Workers: 3
+2020-04-09 22:20:58,686 - root - DEBUG - 343: Up Workers: 35, Busy Workers: 3
+2020-04-09 22:21:03,794 - root - DEBUG - 348: Up Workers: 35, Busy Workers: 3
+2020-04-09 22:21:08,839 - root - DEBUG - 353: Up Workers: 35, Busy Workers: 3
+2020-04-09 22:21:13,935 - root - DEBUG - 358: Up Workers: 35, Busy Workers: 3
+2020-04-09 22:21:18,977 - root - DEBUG - 363: Up Workers: 35, Busy Workers: 4
+2020-04-09 22:21:18,982 - root - INFO - launching 32 new tasks....
+2020-04-09 22:21:24,028 - root - DEBUG - 368: Up Workers: 67, Busy Workers: 4
+2020-04-09 22:21:29,082 - root - DEBUG - 373: Up Workers: 67, Busy Workers: 4
+2020-04-09 22:21:34,126 - root - DEBUG - 378: Up Workers: 67, Busy Workers: 4
+2020-04-09 22:21:39,244 - root - DEBUG - 383: Up Workers: 67, Busy Workers: 4
+2020-04-09 22:21:44,379 - root - DEBUG - 388: Up Workers: 36, Busy Workers: 4
+2020-04-09 22:21:49,421 - root - DEBUG - 393: Up Workers: 36, Busy Workers: 4
+2020-04-09 22:21:54,499 - root - DEBUG - 398: Up Workers: 36, Busy Workers: 4
+2020-04-09 22:21:59,542 - root - DEBUG - 404: Up Workers: 36, Busy Workers: 4
+2020-04-09 22:22:04,588 - root - DEBUG - 409: Up Workers: 36, Busy Workers: 4
+2020-04-09 22:22:09,635 - root - DEBUG - 414: Up Workers: 36, Busy Workers: 4
+2020-04-09 22:22:14,679 - root - DEBUG - 419: Up Workers: 36, Busy Workers: 4
+2020-04-09 22:22:19,721 - root - DEBUG - 424: Up Workers: 36, Busy Workers: 4
+2020-04-09 22:22:24,835 - root - DEBUG - 429: Up Workers: 36, Busy Workers: 4
+2020-04-09 22:22:29,879 - root - DEBUG - 434: Up Workers: 36, Busy Workers: 4
+2020-04-09 22:22:34,943 - root - DEBUG - 439: Up Workers: 36, Busy Workers: 4
+2020-04-09 22:22:39,988 - root - DEBUG - 444: Up Workers: 36, Busy Workers: 4
+2020-04-09 22:22:45,032 - root - DEBUG - 449: Up Workers: 36, Busy Workers: 4
+2020-04-09 22:22:50,133 - root - DEBUG - 454: Up Workers: 36, Busy Workers: 4
+2020-04-09 22:22:55,197 - root - DEBUG - 459: Up Workers: 36, Busy Workers: 4
+2020-04-09 22:23:00,239 - root - DEBUG - 464: Up Workers: 36, Busy Workers: 4
+2020-04-09 22:23:05,278 - root - DEBUG - 469: Up Workers: 36, Busy Workers: 4
+2020-04-09 22:23:10,344 - root - DEBUG - 474: Up Workers: 36, Busy Workers: 4
+2020-04-09 22:23:15,387 - root - DEBUG - 479: Up Workers: 36, Busy Workers: 4
+2020-04-09 22:23:20,426 - root - DEBUG - 484: Up Workers: 36, Busy Workers: 5
+2020-04-09 22:23:20,431 - root - INFO - launching 32 new tasks....
+2020-04-09 22:23:25,477 - root - DEBUG - 489: Up Workers: 68, Busy Workers: 5
+2020-04-09 22:23:30,567 - root - DEBUG - 495: Up Workers: 68, Busy Workers: 5
+2020-04-09 22:23:30,567 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:23:30,567 - root - INFO - 495: Up Workers: 68, Busy Workers: 5
+2020-04-09 22:23:35,611 - root - DEBUG - 500: Up Workers: 68, Busy Workers: 5
+2020-04-09 22:23:35,612 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:23:35,612 - root - INFO - 500: Up Workers: 68, Busy Workers: 5
+2020-04-09 22:23:40,657 - root - DEBUG - 505: Up Workers: 68, Busy Workers: 5
+2020-04-09 22:23:40,657 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:23:40,657 - root - INFO - 505: Up Workers: 68, Busy Workers: 5
+2020-04-09 22:23:45,774 - root - DEBUG - 510: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:23:45,774 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:23:45,774 - root - INFO - 510: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:23:50,814 - root - DEBUG - 515: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:23:50,814 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:23:50,814 - root - INFO - 515: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:23:55,855 - root - DEBUG - 520: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:23:55,855 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:23:55,855 - root - INFO - 520: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:24:00,898 - root - DEBUG - 525: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:24:00,898 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:24:00,898 - root - INFO - 525: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:24:05,970 - root - DEBUG - 530: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:24:05,970 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:24:05,970 - root - INFO - 530: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:24:11,048 - root - DEBUG - 535: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:24:11,048 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:24:11,048 - root - INFO - 535: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:24:16,138 - root - DEBUG - 540: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:24:16,138 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:24:16,138 - root - INFO - 540: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:24:21,177 - root - DEBUG - 545: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:24:21,177 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:24:21,177 - root - INFO - 545: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:24:26,243 - root - DEBUG - 550: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:24:26,243 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:24:26,243 - root - INFO - 550: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:24:31,282 - root - DEBUG - 555: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:24:31,282 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:24:31,282 - root - INFO - 555: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:24:36,325 - root - DEBUG - 560: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:24:36,325 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:24:36,325 - root - INFO - 560: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:24:41,369 - root - DEBUG - 565: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:24:41,369 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:24:41,369 - root - INFO - 565: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:24:46,464 - root - DEBUG - 570: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:24:46,464 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:24:46,464 - root - INFO - 570: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:24:51,504 - root - DEBUG - 576: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:24:56,545 - root - DEBUG - 581: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:25:01,585 - root - DEBUG - 586: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:25:06,634 - root - DEBUG - 591: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:25:11,677 - root - DEBUG - 596: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:25:16,718 - root - DEBUG - 601: Up Workers: 37, Busy Workers: 5
+2020-04-09 22:25:21,757 - root - DEBUG - 606: Up Workers: 37, Busy Workers: 6
+2020-04-09 22:25:21,762 - root - INFO - launching 32 new tasks....
+2020-04-09 22:25:26,806 - root - DEBUG - 611: Up Workers: 68, Busy Workers: 6
+2020-04-09 22:25:31,851 - root - DEBUG - 616: Up Workers: 68, Busy Workers: 6
+2020-04-09 22:25:36,900 - root - DEBUG - 621: Up Workers: 68, Busy Workers: 6
+2020-04-09 22:25:41,942 - root - DEBUG - 626: Up Workers: 69, Busy Workers: 6
+2020-04-09 22:25:46,997 - root - DEBUG - 631: Up Workers: 38, Busy Workers: 6
+2020-04-09 22:25:52,043 - root - DEBUG - 636: Up Workers: 38, Busy Workers: 6
+2020-04-09 22:25:57,086 - root - DEBUG - 641: Up Workers: 38, Busy Workers: 6
+2020-04-09 22:26:02,126 - root - DEBUG - 646: Up Workers: 38, Busy Workers: 6
+2020-04-09 22:26:07,169 - root - DEBUG - 651: Up Workers: 38, Busy Workers: 6
+2020-04-09 22:26:12,214 - root - DEBUG - 656: Up Workers: 38, Busy Workers: 6
+2020-04-09 22:26:17,298 - root - DEBUG - 661: Up Workers: 38, Busy Workers: 6
+2020-04-09 22:26:22,341 - root - DEBUG - 666: Up Workers: 38, Busy Workers: 6
+2020-04-09 22:26:27,387 - root - DEBUG - 671: Up Workers: 38, Busy Workers: 6
+2020-04-09 22:26:32,431 - root - DEBUG - 676: Up Workers: 38, Busy Workers: 6
+2020-04-09 22:26:37,473 - root - DEBUG - 681: Up Workers: 38, Busy Workers: 6
+2020-04-09 22:26:42,514 - root - DEBUG - 687: Up Workers: 38, Busy Workers: 6
+2020-04-09 22:26:47,555 - root - DEBUG - 692: Up Workers: 38, Busy Workers: 6
+2020-04-09 22:26:52,595 - root - DEBUG - 697: Up Workers: 38, Busy Workers: 6
+2020-04-09 22:26:57,636 - root - DEBUG - 702: Up Workers: 38, Busy Workers: 6
+2020-04-09 22:27:02,679 - root - DEBUG - 707: Up Workers: 38, Busy Workers: 6
+2020-04-09 22:27:07,727 - root - DEBUG - 712: Up Workers: 38, Busy Workers: 6
+2020-04-09 22:27:12,766 - root - DEBUG - 717: Up Workers: 38, Busy Workers: 6
+2020-04-09 22:27:17,810 - root - DEBUG - 722: Up Workers: 38, Busy Workers: 6
+2020-04-09 22:27:22,856 - root - DEBUG - 727: Up Workers: 38, Busy Workers: 7
+2020-04-09 22:27:22,861 - root - INFO - launching 32 new tasks....
+2020-04-09 22:27:27,904 - root - DEBUG - 732: Up Workers: 70, Busy Workers: 7
+2020-04-09 22:27:33,004 - root - DEBUG - 737: Up Workers: 70, Busy Workers: 7
+2020-04-09 22:27:38,047 - root - DEBUG - 742: Up Workers: 70, Busy Workers: 7
+2020-04-09 22:27:43,169 - root - DEBUG - 747: Up Workers: 70, Busy Workers: 7
+2020-04-09 22:27:48,220 - root - DEBUG - 752: Up Workers: 40, Busy Workers: 7
+2020-04-09 22:27:53,287 - root - DEBUG - 757: Up Workers: 40, Busy Workers: 7
+2020-04-09 22:27:58,330 - root - DEBUG - 762: Up Workers: 39, Busy Workers: 7
+2020-04-09 22:28:03,459 - root - DEBUG - 767: Up Workers: 39, Busy Workers: 7
+2020-04-09 22:28:08,502 - root - DEBUG - 773: Up Workers: 39, Busy Workers: 7
+2020-04-09 22:28:13,539 - root - DEBUG - 778: Up Workers: 39, Busy Workers: 7
+2020-04-09 22:28:18,581 - root - DEBUG - 783: Up Workers: 39, Busy Workers: 7
+2020-04-09 22:28:23,660 - root - DEBUG - 788: Up Workers: 39, Busy Workers: 7
+2020-04-09 22:28:28,702 - root - DEBUG - 793: Up Workers: 39, Busy Workers: 7
+2020-04-09 22:28:33,754 - root - DEBUG - 798: Up Workers: 39, Busy Workers: 7
+2020-04-09 22:28:38,853 - root - DEBUG - 803: Up Workers: 39, Busy Workers: 7
+2020-04-09 22:28:43,893 - root - DEBUG - 808: Up Workers: 39, Busy Workers: 7
+2020-04-09 22:28:48,935 - root - DEBUG - 813: Up Workers: 39, Busy Workers: 7
+2020-04-09 22:28:53,981 - root - DEBUG - 818: Up Workers: 39, Busy Workers: 7
+2020-04-09 22:28:59,022 - root - DEBUG - 823: Up Workers: 39, Busy Workers: 7
+2020-04-09 22:29:04,062 - root - DEBUG - 828: Up Workers: 39, Busy Workers: 7
+2020-04-09 22:29:09,105 - root - DEBUG - 833: Up Workers: 39, Busy Workers: 7
+2020-04-09 22:29:14,148 - root - DEBUG - 838: Up Workers: 39, Busy Workers: 7
+2020-04-09 22:29:19,191 - root - DEBUG - 843: Up Workers: 39, Busy Workers: 7
+2020-04-09 22:29:24,230 - root - DEBUG - 848: Up Workers: 39, Busy Workers: 8
+2020-04-09 22:29:24,235 - root - INFO - launching 32 new tasks....
+2020-04-09 22:29:29,276 - root - DEBUG - 853: Up Workers: 70, Busy Workers: 8
+2020-04-09 22:29:34,316 - root - DEBUG - 858: Up Workers: 70, Busy Workers: 8
+2020-04-09 22:29:39,354 - root - DEBUG - 863: Up Workers: 70, Busy Workers: 8
+2020-04-09 22:29:44,394 - root - DEBUG - 868: Up Workers: 70, Busy Workers: 8
+2020-04-09 22:29:49,438 - root - DEBUG - 873: Up Workers: 39, Busy Workers: 8
+2020-04-09 22:29:54,478 - root - DEBUG - 878: Up Workers: 39, Busy Workers: 8
+2020-04-09 22:29:59,515 - root - DEBUG - 884: Up Workers: 39, Busy Workers: 8
+2020-04-09 22:30:04,556 - root - DEBUG - 889: Up Workers: 39, Busy Workers: 8
+2020-04-09 22:30:09,607 - root - DEBUG - 894: Up Workers: 39, Busy Workers: 8
+2020-04-09 22:30:14,650 - root - DEBUG - 899: Up Workers: 39, Busy Workers: 8
+2020-04-09 22:30:19,693 - root - DEBUG - 904: Up Workers: 39, Busy Workers: 8
+2020-04-09 22:30:24,734 - root - DEBUG - 909: Up Workers: 39, Busy Workers: 8
+2020-04-09 22:30:29,774 - root - DEBUG - 914: Up Workers: 39, Busy Workers: 8
+2020-04-09 22:30:34,818 - root - DEBUG - 919: Up Workers: 39, Busy Workers: 8
+2020-04-09 22:30:39,860 - root - DEBUG - 924: Up Workers: 39, Busy Workers: 8
+2020-04-09 22:30:44,905 - root - DEBUG - 929: Up Workers: 39, Busy Workers: 8
+2020-04-09 22:30:49,956 - root - DEBUG - 934: Up Workers: 39, Busy Workers: 8
+2020-04-09 22:30:55,000 - root - DEBUG - 939: Up Workers: 39, Busy Workers: 8
+2020-04-09 22:31:00,047 - root - DEBUG - 944: Up Workers: 39, Busy Workers: 8
+2020-04-09 22:31:05,106 - root - DEBUG - 949: Up Workers: 39, Busy Workers: 8
+2020-04-09 22:31:10,152 - root - DEBUG - 954: Up Workers: 39, Busy Workers: 8
+2020-04-09 22:31:15,199 - root - DEBUG - 959: Up Workers: 39, Busy Workers: 8
+2020-04-09 22:31:20,243 - root - DEBUG - 964: Up Workers: 39, Busy Workers: 9
+2020-04-09 22:31:25,292 - root - DEBUG - 969: Up Workers: 39, Busy Workers: 9
+2020-04-09 22:31:25,297 - root - INFO - launching 32 new tasks....
+2020-04-09 22:31:30,340 - root - DEBUG - 974: Up Workers: 69, Busy Workers: 9
+2020-04-09 22:31:35,393 - root - DEBUG - 979: Up Workers: 69, Busy Workers: 9
+2020-04-09 22:31:40,439 - root - DEBUG - 984: Up Workers: 69, Busy Workers: 9
+2020-04-09 22:31:45,517 - root - DEBUG - 989: Up Workers: 71, Busy Workers: 9
+2020-04-09 22:31:50,563 - root - DEBUG - 995: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:31:50,563 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:31:50,563 - root - INFO - 995: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:31:55,607 - root - DEBUG - 1000: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:31:55,607 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:31:55,607 - root - INFO - 1000: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:32:00,719 - root - DEBUG - 1005: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:32:00,719 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:32:00,719 - root - INFO - 1005: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:32:05,763 - root - DEBUG - 1010: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:32:05,763 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:32:05,763 - root - INFO - 1010: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:32:10,811 - root - DEBUG - 1015: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:32:10,811 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:32:10,811 - root - INFO - 1015: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:32:15,878 - root - DEBUG - 1020: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:32:15,878 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:32:15,878 - root - INFO - 1020: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:32:20,924 - root - DEBUG - 1025: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:32:20,924 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:32:20,924 - root - INFO - 1025: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:32:25,998 - root - DEBUG - 1030: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:32:25,998 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:32:25,998 - root - INFO - 1030: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:32:31,042 - root - DEBUG - 1035: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:32:31,042 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:32:31,042 - root - INFO - 1035: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:32:36,148 - root - DEBUG - 1040: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:32:36,148 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:32:36,148 - root - INFO - 1040: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:32:41,189 - root - DEBUG - 1045: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:32:41,189 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:32:41,189 - root - INFO - 1045: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:32:46,234 - root - DEBUG - 1050: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:32:46,235 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:32:46,235 - root - INFO - 1050: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:32:51,276 - root - DEBUG - 1055: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:32:51,276 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:32:51,276 - root - INFO - 1055: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:32:56,319 - root - DEBUG - 1060: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:32:56,319 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:32:56,319 - root - INFO - 1060: Up Workers: 41, Busy Workers: 9
+2020-04-09 22:33:01,362 - root - DEBUG - 1065: Up Workers: 42, Busy Workers: 9
+2020-04-09 22:33:01,362 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:33:01,363 - root - INFO - 1065: Up Workers: 42, Busy Workers: 9
+2020-04-09 22:33:06,469 - root - DEBUG - 1070: Up Workers: 42, Busy Workers: 9
+2020-04-09 22:33:06,469 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:33:06,469 - root - INFO - 1070: Up Workers: 42, Busy Workers: 9
+2020-04-09 22:33:11,512 - root - DEBUG - 1076: Up Workers: 42, Busy Workers: 9
+2020-04-09 22:33:16,553 - root - DEBUG - 1081: Up Workers: 42, Busy Workers: 9
+2020-04-09 22:33:21,630 - root - DEBUG - 1086: Up Workers: 42, Busy Workers: 10
+2020-04-09 22:33:26,674 - root - DEBUG - 1091: Up Workers: 42, Busy Workers: 10
+2020-04-09 22:33:26,679 - root - INFO - launching 32 new tasks....
+2020-04-09 22:33:31,721 - root - DEBUG - 1096: Up Workers: 71, Busy Workers: 10
+2020-04-09 22:33:36,764 - root - DEBUG - 1101: Up Workers: 71, Busy Workers: 10
+2020-04-09 22:33:41,805 - root - DEBUG - 1106: Up Workers: 71, Busy Workers: 10
+2020-04-09 22:33:46,846 - root - DEBUG - 1111: Up Workers: 73, Busy Workers: 10
+2020-04-09 22:33:51,972 - root - DEBUG - 1116: Up Workers: 45, Busy Workers: 10
+2020-04-09 22:33:57,024 - root - DEBUG - 1121: Up Workers: 45, Busy Workers: 10
+2020-04-09 22:34:02,063 - root - DEBUG - 1126: Up Workers: 44, Busy Workers: 10
+2020-04-09 22:34:07,105 - root - DEBUG - 1131: Up Workers: 43, Busy Workers: 10
+2020-04-09 22:34:12,146 - root - DEBUG - 1136: Up Workers: 43, Busy Workers: 10
+2020-04-09 22:34:17,188 - root - DEBUG - 1141: Up Workers: 43, Busy Workers: 10
+2020-04-09 22:34:22,253 - root - DEBUG - 1146: Up Workers: 43, Busy Workers: 10
+2020-04-09 22:34:27,299 - root - DEBUG - 1151: Up Workers: 43, Busy Workers: 10
+2020-04-09 22:34:32,355 - root - DEBUG - 1156: Up Workers: 43, Busy Workers: 10
+2020-04-09 22:34:37,396 - root - DEBUG - 1161: Up Workers: 43, Busy Workers: 10
+2020-04-09 22:34:42,468 - root - DEBUG - 1166: Up Workers: 43, Busy Workers: 10
+2020-04-09 22:34:47,511 - root - DEBUG - 1172: Up Workers: 43, Busy Workers: 10
+2020-04-09 22:34:52,553 - root - DEBUG - 1177: Up Workers: 43, Busy Workers: 10
+2020-04-09 22:34:57,597 - root - DEBUG - 1182: Up Workers: 43, Busy Workers: 10
+2020-04-09 22:35:02,640 - root - DEBUG - 1187: Up Workers: 43, Busy Workers: 10
+2020-04-09 22:35:07,683 - root - DEBUG - 1192: Up Workers: 43, Busy Workers: 10
+2020-04-09 22:35:12,725 - root - DEBUG - 1197: Up Workers: 43, Busy Workers: 10
+2020-04-09 22:35:17,844 - root - DEBUG - 1202: Up Workers: 43, Busy Workers: 10
+2020-04-09 22:35:22,885 - root - DEBUG - 1207: Up Workers: 43, Busy Workers: 11
+2020-04-09 22:35:27,928 - root - DEBUG - 1212: Up Workers: 43, Busy Workers: 11
+2020-04-09 22:35:27,933 - root - INFO - launching 32 new tasks....
+2020-04-09 22:35:32,970 - root - DEBUG - 1217: Up Workers: 75, Busy Workers: 11
+2020-04-09 22:35:38,013 - root - DEBUG - 1222: Up Workers: 75, Busy Workers: 11
+2020-04-09 22:35:43,130 - root - DEBUG - 1227: Up Workers: 75, Busy Workers: 11
+2020-04-09 22:35:48,171 - root - DEBUG - 1232: Up Workers: 75, Busy Workers: 11
+2020-04-09 22:35:53,211 - root - DEBUG - 1237: Up Workers: 47, Busy Workers: 11
+2020-04-09 22:35:58,266 - root - DEBUG - 1242: Up Workers: 47, Busy Workers: 11
+2020-04-09 22:36:03,307 - root - DEBUG - 1247: Up Workers: 46, Busy Workers: 11
+2020-04-09 22:36:08,347 - root - DEBUG - 1252: Up Workers: 44, Busy Workers: 11
+2020-04-09 22:36:13,389 - root - DEBUG - 1257: Up Workers: 44, Busy Workers: 11
+2020-04-09 22:36:18,428 - root - DEBUG - 1262: Up Workers: 44, Busy Workers: 11
+2020-04-09 22:36:23,475 - root - DEBUG - 1267: Up Workers: 44, Busy Workers: 11
+2020-04-09 22:36:28,526 - root - DEBUG - 1273: Up Workers: 44, Busy Workers: 11
+2020-04-09 22:36:33,574 - root - DEBUG - 1278: Up Workers: 44, Busy Workers: 11
+2020-04-09 22:36:38,615 - root - DEBUG - 1283: Up Workers: 44, Busy Workers: 11
+2020-04-09 22:36:43,659 - root - DEBUG - 1288: Up Workers: 44, Busy Workers: 11
+2020-04-09 22:36:48,700 - root - DEBUG - 1293: Up Workers: 44, Busy Workers: 11
+2020-04-09 22:36:53,747 - root - DEBUG - 1298: Up Workers: 44, Busy Workers: 11
+2020-04-09 22:36:58,790 - root - DEBUG - 1303: Up Workers: 44, Busy Workers: 11
+2020-04-09 22:37:03,835 - root - DEBUG - 1308: Up Workers: 44, Busy Workers: 11
+2020-04-09 22:37:08,877 - root - DEBUG - 1313: Up Workers: 44, Busy Workers: 11
+2020-04-09 22:37:13,923 - root - DEBUG - 1318: Up Workers: 44, Busy Workers: 11
+2020-04-09 22:37:18,966 - root - DEBUG - 1323: Up Workers: 44, Busy Workers: 11
+2020-04-09 22:37:24,008 - root - DEBUG - 1328: Up Workers: 44, Busy Workers: 12
+2020-04-09 22:37:29,054 - root - DEBUG - 1333: Up Workers: 44, Busy Workers: 12
+2020-04-09 22:37:29,059 - root - INFO - launching 32 new tasks....
+2020-04-09 22:37:34,158 - root - DEBUG - 1338: Up Workers: 76, Busy Workers: 12
+2020-04-09 22:37:39,204 - root - DEBUG - 1343: Up Workers: 76, Busy Workers: 12
+2020-04-09 22:37:44,244 - root - DEBUG - 1348: Up Workers: 76, Busy Workers: 12
+2020-04-09 22:37:49,290 - root - DEBUG - 1353: Up Workers: 76, Busy Workers: 12
+2020-04-09 22:37:54,344 - root - DEBUG - 1358: Up Workers: 45, Busy Workers: 12
+2020-04-09 22:37:59,385 - root - DEBUG - 1363: Up Workers: 45, Busy Workers: 12
+2020-04-09 22:38:04,499 - root - DEBUG - 1368: Up Workers: 45, Busy Workers: 12
+2020-04-09 22:38:09,606 - root - DEBUG - 1374: Up Workers: 45, Busy Workers: 12
+2020-04-09 22:38:14,656 - root - DEBUG - 1379: Up Workers: 45, Busy Workers: 12
+2020-04-09 22:38:19,739 - root - DEBUG - 1384: Up Workers: 45, Busy Workers: 12
+2020-04-09 22:38:24,775 - root - DEBUG - 1389: Up Workers: 45, Busy Workers: 12
+2020-04-09 22:38:29,819 - root - DEBUG - 1394: Up Workers: 45, Busy Workers: 12
+2020-04-09 22:38:34,863 - root - DEBUG - 1399: Up Workers: 45, Busy Workers: 12
+2020-04-09 22:38:39,907 - root - DEBUG - 1404: Up Workers: 45, Busy Workers: 12
+2020-04-09 22:38:44,949 - root - DEBUG - 1409: Up Workers: 45, Busy Workers: 12
+2020-04-09 22:38:49,994 - root - DEBUG - 1414: Up Workers: 45, Busy Workers: 12
+2020-04-09 22:38:55,035 - root - DEBUG - 1419: Up Workers: 45, Busy Workers: 12
+2020-04-09 22:39:00,080 - root - DEBUG - 1424: Up Workers: 45, Busy Workers: 12
+2020-04-09 22:39:05,146 - root - DEBUG - 1429: Up Workers: 45, Busy Workers: 12
+2020-04-09 22:39:10,195 - root - DEBUG - 1434: Up Workers: 45, Busy Workers: 12
+2020-04-09 22:39:15,238 - root - DEBUG - 1439: Up Workers: 45, Busy Workers: 12
+2020-04-09 22:39:20,288 - root - DEBUG - 1444: Up Workers: 45, Busy Workers: 12
+2020-04-09 22:39:25,334 - root - DEBUG - 1449: Up Workers: 45, Busy Workers: 13
+2020-04-09 22:39:30,383 - root - DEBUG - 1454: Up Workers: 45, Busy Workers: 13
+2020-04-09 22:39:30,388 - root - INFO - launching 32 new tasks....
+2020-04-09 22:39:35,431 - root - DEBUG - 1459: Up Workers: 77, Busy Workers: 13
+2020-04-09 22:39:40,474 - root - DEBUG - 1464: Up Workers: 77, Busy Workers: 13
+2020-04-09 22:39:45,517 - root - DEBUG - 1470: Up Workers: 77, Busy Workers: 13
+2020-04-09 22:39:45,517 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:39:45,518 - root - INFO - 1470: Up Workers: 77, Busy Workers: 13
+2020-04-09 22:39:50,561 - root - DEBUG - 1475: Up Workers: 77, Busy Workers: 13
+2020-04-09 22:39:50,561 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:39:50,561 - root - INFO - 1475: Up Workers: 77, Busy Workers: 13
+2020-04-09 22:39:55,703 - root - DEBUG - 1480: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:39:55,703 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:39:55,704 - root - INFO - 1480: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:40:00,750 - root - DEBUG - 1485: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:40:00,750 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:40:00,750 - root - INFO - 1485: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:40:05,806 - root - DEBUG - 1490: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:40:05,806 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:40:05,807 - root - INFO - 1490: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:40:10,909 - root - DEBUG - 1495: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:40:10,909 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:40:10,909 - root - INFO - 1495: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:40:15,984 - root - DEBUG - 1500: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:40:15,984 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:40:15,984 - root - INFO - 1500: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:40:21,026 - root - DEBUG - 1505: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:40:21,026 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:40:21,026 - root - INFO - 1505: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:40:26,073 - root - DEBUG - 1510: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:40:26,073 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:40:26,073 - root - INFO - 1510: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:40:31,115 - root - DEBUG - 1515: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:40:31,115 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:40:31,115 - root - INFO - 1515: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:40:36,158 - root - DEBUG - 1520: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:40:36,158 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:40:36,158 - root - INFO - 1520: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:40:41,200 - root - DEBUG - 1525: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:40:41,200 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:40:41,200 - root - INFO - 1525: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:40:46,243 - root - DEBUG - 1530: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:40:46,243 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:40:46,243 - root - INFO - 1530: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:40:51,290 - root - DEBUG - 1535: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:40:51,290 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:40:51,290 - root - INFO - 1535: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:40:56,339 - root - DEBUG - 1540: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:40:56,339 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:40:56,339 - root - INFO - 1540: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:41:01,386 - root - DEBUG - 1545: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:41:01,386 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:41:01,386 - root - INFO - 1545: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:41:06,440 - root - DEBUG - 1550: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:41:06,440 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:41:06,440 - root - INFO - 1550: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:41:11,485 - root - DEBUG - 1555: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:41:11,485 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:41:11,485 - root - INFO - 1555: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:41:16,529 - root - DEBUG - 1561: Up Workers: 46, Busy Workers: 13
+2020-04-09 22:41:21,572 - root - DEBUG - 1566: Up Workers: 46, Busy Workers: 14
+2020-04-09 22:41:26,645 - root - DEBUG - 1571: Up Workers: 46, Busy Workers: 14
+2020-04-09 22:41:31,689 - root - DEBUG - 1576: Up Workers: 46, Busy Workers: 14
+2020-04-09 22:41:31,694 - root - INFO - launching 32 new tasks....
+2020-04-09 22:41:36,733 - root - DEBUG - 1581: Up Workers: 78, Busy Workers: 14
+2020-04-09 22:41:41,779 - root - DEBUG - 1586: Up Workers: 78, Busy Workers: 14
+2020-04-09 22:41:46,822 - root - DEBUG - 1591: Up Workers: 78, Busy Workers: 14
+2020-04-09 22:41:51,865 - root - DEBUG - 1596: Up Workers: 78, Busy Workers: 14
+2020-04-09 22:41:56,953 - root - DEBUG - 1601: Up Workers: 47, Busy Workers: 14
+2020-04-09 22:42:01,991 - root - DEBUG - 1606: Up Workers: 47, Busy Workers: 14
+2020-04-09 22:42:07,034 - root - DEBUG - 1611: Up Workers: 47, Busy Workers: 14
+2020-04-09 22:42:12,073 - root - DEBUG - 1616: Up Workers: 47, Busy Workers: 14
+2020-04-09 22:42:17,115 - root - DEBUG - 1621: Up Workers: 47, Busy Workers: 14
+2020-04-09 22:42:22,159 - root - DEBUG - 1626: Up Workers: 47, Busy Workers: 14
+2020-04-09 22:42:27,198 - root - DEBUG - 1631: Up Workers: 47, Busy Workers: 14
+2020-04-09 22:42:32,245 - root - DEBUG - 1636: Up Workers: 47, Busy Workers: 14
+2020-04-09 22:42:37,290 - root - DEBUG - 1641: Up Workers: 47, Busy Workers: 14
+2020-04-09 22:42:42,332 - root - DEBUG - 1646: Up Workers: 47, Busy Workers: 14
+2020-04-09 22:42:47,373 - root - DEBUG - 1651: Up Workers: 47, Busy Workers: 14
+2020-04-09 22:42:52,416 - root - DEBUG - 1656: Up Workers: 47, Busy Workers: 14
+2020-04-09 22:42:57,524 - root - DEBUG - 1661: Up Workers: 47, Busy Workers: 14
+2020-04-09 22:43:02,565 - root - DEBUG - 1667: Up Workers: 47, Busy Workers: 14
+2020-04-09 22:43:07,607 - root - DEBUG - 1672: Up Workers: 47, Busy Workers: 14
+2020-04-09 22:43:12,653 - root - DEBUG - 1677: Up Workers: 47, Busy Workers: 14
+2020-04-09 22:43:17,779 - root - DEBUG - 1682: Up Workers: 47, Busy Workers: 14
+2020-04-09 22:43:22,833 - root - DEBUG - 1687: Up Workers: 47, Busy Workers: 15
+2020-04-09 22:43:27,878 - root - DEBUG - 1692: Up Workers: 47, Busy Workers: 15
+2020-04-09 22:43:32,928 - root - DEBUG - 1697: Up Workers: 47, Busy Workers: 15
+2020-04-09 22:43:32,933 - root - INFO - launching 32 new tasks....
+2020-04-09 22:43:38,055 - root - DEBUG - 1702: Up Workers: 77, Busy Workers: 15
+2020-04-09 22:43:43,097 - root - DEBUG - 1707: Up Workers: 77, Busy Workers: 15
+2020-04-09 22:43:48,141 - root - DEBUG - 1712: Up Workers: 77, Busy Workers: 15
+2020-04-09 22:43:53,181 - root - DEBUG - 1717: Up Workers: 79, Busy Workers: 15
+2020-04-09 22:43:58,225 - root - DEBUG - 1722: Up Workers: 48, Busy Workers: 15
+2020-04-09 22:44:03,338 - root - DEBUG - 1727: Up Workers: 48, Busy Workers: 15
+2020-04-09 22:44:08,380 - root - DEBUG - 1732: Up Workers: 48, Busy Workers: 15
+2020-04-09 22:44:13,423 - root - DEBUG - 1737: Up Workers: 48, Busy Workers: 15
+2020-04-09 22:44:18,464 - root - DEBUG - 1742: Up Workers: 48, Busy Workers: 15
+2020-04-09 22:44:23,508 - root - DEBUG - 1748: Up Workers: 48, Busy Workers: 15
+2020-04-09 22:44:28,550 - root - DEBUG - 1753: Up Workers: 48, Busy Workers: 15
+2020-04-09 22:44:33,593 - root - DEBUG - 1758: Up Workers: 48, Busy Workers: 15
+2020-04-09 22:44:38,639 - root - DEBUG - 1763: Up Workers: 48, Busy Workers: 15
+2020-04-09 22:44:43,682 - root - DEBUG - 1768: Up Workers: 48, Busy Workers: 15
+2020-04-09 22:44:48,726 - root - DEBUG - 1773: Up Workers: 48, Busy Workers: 15
+2020-04-09 22:44:53,843 - root - DEBUG - 1778: Up Workers: 48, Busy Workers: 15
+2020-04-09 22:44:58,887 - root - DEBUG - 1783: Up Workers: 48, Busy Workers: 15
+2020-04-09 22:45:03,931 - root - DEBUG - 1788: Up Workers: 48, Busy Workers: 15
+2020-04-09 22:45:09,005 - root - DEBUG - 1793: Up Workers: 48, Busy Workers: 15
+2020-04-09 22:45:14,045 - root - DEBUG - 1798: Up Workers: 48, Busy Workers: 15
+2020-04-09 22:45:19,091 - root - DEBUG - 1803: Up Workers: 48, Busy Workers: 15
+2020-04-09 22:45:24,134 - root - DEBUG - 1808: Up Workers: 48, Busy Workers: 16
+2020-04-09 22:45:29,176 - root - DEBUG - 1813: Up Workers: 48, Busy Workers: 16
+2020-04-09 22:45:34,216 - root - DEBUG - 1818: Up Workers: 48, Busy Workers: 16
+2020-04-09 22:45:34,220 - root - INFO - launching 32 new tasks....
+2020-04-09 22:45:39,299 - root - DEBUG - 1823: Up Workers: 79, Busy Workers: 16
+2020-04-09 22:45:44,341 - root - DEBUG - 1828: Up Workers: 79, Busy Workers: 16
+2020-04-09 22:45:49,441 - root - DEBUG - 1833: Up Workers: 79, Busy Workers: 16
+2020-04-09 22:45:54,480 - root - DEBUG - 1839: Up Workers: 80, Busy Workers: 16
+2020-04-09 22:45:59,523 - root - DEBUG - 1844: Up Workers: 51, Busy Workers: 16
+2020-04-09 22:46:04,563 - root - DEBUG - 1849: Up Workers: 51, Busy Workers: 16
+2020-04-09 22:46:09,616 - root - DEBUG - 1854: Up Workers: 49, Busy Workers: 16
+2020-04-09 22:46:14,662 - root - DEBUG - 1859: Up Workers: 49, Busy Workers: 16
+2020-04-09 22:46:19,711 - root - DEBUG - 1864: Up Workers: 49, Busy Workers: 16
+2020-04-09 22:46:24,755 - root - DEBUG - 1869: Up Workers: 49, Busy Workers: 16
+2020-04-09 22:46:29,801 - root - DEBUG - 1874: Up Workers: 49, Busy Workers: 16
+2020-04-09 22:46:34,848 - root - DEBUG - 1879: Up Workers: 49, Busy Workers: 16
+2020-04-09 22:46:39,892 - root - DEBUG - 1884: Up Workers: 49, Busy Workers: 16
+2020-04-09 22:46:44,945 - root - DEBUG - 1889: Up Workers: 49, Busy Workers: 16
+2020-04-09 22:46:50,002 - root - DEBUG - 1894: Up Workers: 49, Busy Workers: 16
+2020-04-09 22:46:55,046 - root - DEBUG - 1899: Up Workers: 49, Busy Workers: 16
+2020-04-09 22:47:00,090 - root - DEBUG - 1904: Up Workers: 49, Busy Workers: 16
+2020-04-09 22:47:05,143 - root - DEBUG - 1909: Up Workers: 49, Busy Workers: 16
+2020-04-09 22:47:10,188 - root - DEBUG - 1914: Up Workers: 49, Busy Workers: 16
+2020-04-09 22:47:15,285 - root - DEBUG - 1919: Up Workers: 49, Busy Workers: 16
+2020-04-09 22:47:20,328 - root - DEBUG - 1924: Up Workers: 49, Busy Workers: 16
+2020-04-09 22:47:25,446 - root - DEBUG - 1929: Up Workers: 49, Busy Workers: 17
+2020-04-09 22:47:30,487 - root - DEBUG - 1935: Up Workers: 49, Busy Workers: 17
+2020-04-09 22:47:30,487 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:47:30,487 - root - INFO - 1935: Up Workers: 49, Busy Workers: 17
+2020-04-09 22:47:35,530 - root - DEBUG - 1940: Up Workers: 49, Busy Workers: 17
+2020-04-09 22:47:35,530 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:47:35,530 - root - INFO - 1940: Up Workers: 49, Busy Workers: 17
+2020-04-09 22:47:35,535 - root - INFO - launching 32 new tasks....
+2020-04-09 22:47:40,573 - root - DEBUG - 1945: Up Workers: 80, Busy Workers: 17
+2020-04-09 22:47:40,573 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:47:40,573 - root - INFO - 1945: Up Workers: 80, Busy Workers: 17
+2020-04-09 22:47:45,621 - root - DEBUG - 1950: Up Workers: 80, Busy Workers: 17
+2020-04-09 22:47:45,622 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:47:45,622 - root - INFO - 1950: Up Workers: 80, Busy Workers: 17
+2020-04-09 22:47:50,672 - root - DEBUG - 1955: Up Workers: 80, Busy Workers: 17
+2020-04-09 22:47:50,672 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:47:50,672 - root - INFO - 1955: Up Workers: 80, Busy Workers: 17
+2020-04-09 22:47:55,715 - root - DEBUG - 1960: Up Workers: 81, Busy Workers: 17
+2020-04-09 22:47:55,715 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:47:55,715 - root - INFO - 1960: Up Workers: 81, Busy Workers: 17
+2020-04-09 22:48:00,758 - root - DEBUG - 1965: Up Workers: 51, Busy Workers: 17
+2020-04-09 22:48:00,758 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:48:00,758 - root - INFO - 1965: Up Workers: 51, Busy Workers: 17
+2020-04-09 22:48:05,805 - root - DEBUG - 1970: Up Workers: 51, Busy Workers: 17
+2020-04-09 22:48:05,805 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:48:05,805 - root - INFO - 1970: Up Workers: 51, Busy Workers: 17
+2020-04-09 22:48:10,847 - root - DEBUG - 1975: Up Workers: 51, Busy Workers: 17
+2020-04-09 22:48:10,847 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:48:10,847 - root - INFO - 1975: Up Workers: 51, Busy Workers: 17
+2020-04-09 22:48:15,980 - root - DEBUG - 1980: Up Workers: 50, Busy Workers: 17
+2020-04-09 22:48:15,981 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:48:15,981 - root - INFO - 1980: Up Workers: 50, Busy Workers: 17
+2020-04-09 22:48:21,025 - root - DEBUG - 1985: Up Workers: 50, Busy Workers: 17
+2020-04-09 22:48:21,025 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:48:21,025 - root - INFO - 1985: Up Workers: 50, Busy Workers: 17
+2020-04-09 22:48:26,065 - root - DEBUG - 1990: Up Workers: 50, Busy Workers: 17
+2020-04-09 22:48:26,065 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:48:26,065 - root - INFO - 1990: Up Workers: 50, Busy Workers: 17
+2020-04-09 22:48:31,130 - root - DEBUG - 1995: Up Workers: 50, Busy Workers: 17
+2020-04-09 22:48:31,130 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:48:31,130 - root - INFO - 1995: Up Workers: 50, Busy Workers: 17
+2020-04-09 22:48:36,170 - root - DEBUG - 2000: Up Workers: 50, Busy Workers: 17
+2020-04-09 22:48:36,170 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:48:36,171 - root - INFO - 2000: Up Workers: 50, Busy Workers: 17
+2020-04-09 22:48:41,218 - root - DEBUG - 2005: Up Workers: 50, Busy Workers: 17
+2020-04-09 22:48:41,218 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:48:41,218 - root - INFO - 2005: Up Workers: 50, Busy Workers: 17
+2020-04-09 22:48:46,259 - root - DEBUG - 2010: Up Workers: 50, Busy Workers: 17
+2020-04-09 22:48:46,259 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:48:46,259 - root - INFO - 2010: Up Workers: 50, Busy Workers: 17
+2020-04-09 22:48:51,306 - root - DEBUG - 2015: Up Workers: 50, Busy Workers: 17
+2020-04-09 22:48:51,306 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:48:51,306 - root - INFO - 2015: Up Workers: 50, Busy Workers: 17
+2020-04-09 22:48:56,347 - root - DEBUG - 2020: Up Workers: 50, Busy Workers: 17
+2020-04-09 22:48:56,347 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:48:56,347 - root - INFO - 2020: Up Workers: 50, Busy Workers: 17
+2020-04-09 22:49:01,394 - root - DEBUG - 2025: Up Workers: 50, Busy Workers: 17
+2020-04-09 22:49:01,394 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:49:01,394 - root - INFO - 2025: Up Workers: 50, Busy Workers: 17
+2020-04-09 22:49:06,437 - root - DEBUG - 2030: Up Workers: 50, Busy Workers: 17
+2020-04-09 22:49:06,437 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:49:06,438 - root - INFO - 2030: Up Workers: 50, Busy Workers: 17
+2020-04-09 22:49:11,479 - root - DEBUG - 2035: Up Workers: 50, Busy Workers: 17
+2020-04-09 22:49:11,479 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 22:49:11,479 - root - INFO - 2035: Up Workers: 50, Busy Workers: 17
+2020-04-09 22:49:16,521 - root - DEBUG - 2041: Up Workers: 50, Busy Workers: 17
+2020-04-09 22:49:21,560 - root - DEBUG - 2046: Up Workers: 50, Busy Workers: 18
+2020-04-09 22:49:26,660 - root - DEBUG - 2051: Up Workers: 50, Busy Workers: 18
+2020-04-09 22:49:31,740 - root - DEBUG - 2056: Up Workers: 50, Busy Workers: 18
+2020-04-09 22:49:36,779 - root - DEBUG - 2061: Up Workers: 50, Busy Workers: 18
+2020-04-09 22:49:36,785 - root - INFO - launching 32 new tasks....
+2020-04-09 22:49:41,860 - root - DEBUG - 2066: Up Workers: 81, Busy Workers: 18
+2020-04-09 22:49:46,907 - root - DEBUG - 2071: Up Workers: 81, Busy Workers: 18
+2020-04-09 22:49:51,958 - root - DEBUG - 2076: Up Workers: 81, Busy Workers: 18
+2020-04-09 22:49:56,997 - root - DEBUG - 2081: Up Workers: 82, Busy Workers: 18
+2020-04-09 22:50:02,046 - root - DEBUG - 2086: Up Workers: 52, Busy Workers: 18
+2020-04-09 22:50:07,091 - root - DEBUG - 2091: Up Workers: 52, Busy Workers: 18
+2020-04-09 22:50:12,128 - root - DEBUG - 2096: Up Workers: 52, Busy Workers: 18
+2020-04-09 22:50:17,170 - root - DEBUG - 2101: Up Workers: 51, Busy Workers: 18
+2020-04-09 22:50:22,213 - root - DEBUG - 2106: Up Workers: 51, Busy Workers: 18
+2020-04-09 22:50:27,256 - root - DEBUG - 2111: Up Workers: 51, Busy Workers: 18
+2020-04-09 22:50:32,299 - root - DEBUG - 2116: Up Workers: 51, Busy Workers: 18
+2020-04-09 22:50:37,344 - root - DEBUG - 2121: Up Workers: 51, Busy Workers: 18
+2020-04-09 22:50:42,390 - root - DEBUG - 2126: Up Workers: 51, Busy Workers: 18
+2020-04-09 22:50:47,433 - root - DEBUG - 2131: Up Workers: 51, Busy Workers: 18
+2020-04-09 22:50:52,476 - root - DEBUG - 2136: Up Workers: 51, Busy Workers: 18
+2020-04-09 22:50:57,514 - root - DEBUG - 2142: Up Workers: 51, Busy Workers: 18
+2020-04-09 22:51:02,617 - root - DEBUG - 2147: Up Workers: 51, Busy Workers: 18
+2020-04-09 22:51:07,656 - root - DEBUG - 2152: Up Workers: 51, Busy Workers: 18
+2020-04-09 22:51:12,701 - root - DEBUG - 2157: Up Workers: 51, Busy Workers: 18
+2020-04-09 22:51:17,753 - root - DEBUG - 2162: Up Workers: 51, Busy Workers: 18
+2020-04-09 22:51:22,855 - root - DEBUG - 2167: Up Workers: 51, Busy Workers: 19
+2020-04-09 22:51:27,897 - root - DEBUG - 2172: Up Workers: 51, Busy Workers: 19
+2020-04-09 22:51:32,945 - root - DEBUG - 2177: Up Workers: 51, Busy Workers: 19
+2020-04-09 22:51:37,986 - root - DEBUG - 2182: Up Workers: 51, Busy Workers: 19
+2020-04-09 22:51:37,991 - root - INFO - launching 32 new tasks....
+2020-04-09 22:51:43,032 - root - DEBUG - 2187: Up Workers: 82, Busy Workers: 19
+2020-04-09 22:51:48,077 - root - DEBUG - 2192: Up Workers: 82, Busy Workers: 19
+2020-04-09 22:51:53,119 - root - DEBUG - 2197: Up Workers: 82, Busy Workers: 19
+2020-04-09 22:51:58,160 - root - DEBUG - 2202: Up Workers: 83, Busy Workers: 19
+2020-04-09 22:52:03,200 - root - DEBUG - 2207: Up Workers: 53, Busy Workers: 19
+2020-04-09 22:52:08,314 - root - DEBUG - 2212: Up Workers: 53, Busy Workers: 19
+2020-04-09 22:52:13,355 - root - DEBUG - 2217: Up Workers: 53, Busy Workers: 19
+2020-04-09 22:52:18,436 - root - DEBUG - 2222: Up Workers: 52, Busy Workers: 19
+2020-04-09 22:52:23,482 - root - DEBUG - 2227: Up Workers: 52, Busy Workers: 19
+2020-04-09 22:52:28,525 - root - DEBUG - 2233: Up Workers: 52, Busy Workers: 19
+2020-04-09 22:52:33,572 - root - DEBUG - 2238: Up Workers: 52, Busy Workers: 19
+2020-04-09 22:52:38,623 - root - DEBUG - 2243: Up Workers: 52, Busy Workers: 19
+2020-04-09 22:52:43,665 - root - DEBUG - 2248: Up Workers: 52, Busy Workers: 19
+2020-04-09 22:52:48,708 - root - DEBUG - 2253: Up Workers: 52, Busy Workers: 19
+2020-04-09 22:52:53,751 - root - DEBUG - 2258: Up Workers: 52, Busy Workers: 19
+2020-04-09 22:52:58,798 - root - DEBUG - 2263: Up Workers: 52, Busy Workers: 19
+2020-04-09 22:53:03,865 - root - DEBUG - 2268: Up Workers: 52, Busy Workers: 19
+2020-04-09 22:53:08,905 - root - DEBUG - 2273: Up Workers: 52, Busy Workers: 19
+2020-04-09 22:53:14,028 - root - DEBUG - 2278: Up Workers: 52, Busy Workers: 19
+2020-04-09 22:53:19,080 - root - DEBUG - 2283: Up Workers: 52, Busy Workers: 19
+2020-04-09 22:53:24,205 - root - DEBUG - 2288: Up Workers: 52, Busy Workers: 20
+2020-04-09 22:53:29,250 - root - DEBUG - 2293: Up Workers: 52, Busy Workers: 20
+2020-04-09 22:53:34,293 - root - DEBUG - 2298: Up Workers: 52, Busy Workers: 20
+2020-04-09 22:53:39,338 - root - DEBUG - 2303: Up Workers: 52, Busy Workers: 20
+2020-04-09 22:53:39,343 - root - INFO - launching 32 new tasks....
+2020-04-09 22:53:44,392 - root - DEBUG - 2308: Up Workers: 83, Busy Workers: 20
+2020-04-09 22:53:49,436 - root - DEBUG - 2313: Up Workers: 83, Busy Workers: 20
+2020-04-09 22:53:54,494 - root - DEBUG - 2318: Up Workers: 83, Busy Workers: 20
+2020-04-09 22:53:59,580 - root - DEBUG - 2324: Up Workers: 84, Busy Workers: 20
+2020-04-09 23:06:58,898 - root - INFO - Logging to 157b8f8e9321f4b838b596c61d35642c.log
+2020-04-09 23:06:59,663 - root - DEBUG - Python AST:
+FunctionDef(name='TSQR',
+    args=arguments(
+        args=[arg(arg='A', annotation=Name(id='BigMatrix')),
+            arg(arg='Vs', annotation=Name(id='BigMatrix')),
+            arg(arg='Ts', annotation=Name(id='BigMatrix')),
+            arg(arg='Rs', annotation=Name(id='BigMatrix')),
+            arg(arg='N', annotation=Name(id='int'))],
+        vararg=None,
+        kwonlyargs=[],
+        kw_defaults=[],
+        kwarg=None,
+        defaults=[]),
+    body=[
+        For(target=Name(id='j'),
+            iter=Call(func=Name(id='range'), args=[Num(n=0), Name(id='N')], keywords=[]),
+            body=[
+                Assign(
+                    targets=[
+                        Tuple(
+                            elts=[
+                                Subscript(value=Name(id='Vs'), slice=Index(value=Tuple(elts=[Num(n=0), Name(id='j')]))),
+                                Subscript(value=Name(id='Ts'), slice=Index(value=Tuple(elts=[Num(n=0), Name(id='j')]))),
+                                Subscript(value=Name(id='Rs'), slice=Index(value=Tuple(elts=[Num(n=0), Name(id='j')])))])],
+                    value=Call(func=Name(id='qr_factor'),
+                        args=[Subscript(value=Name(id='A'), slice=Index(value=Tuple(elts=[Name(id='j'), Num(n=0)])))],
+                        keywords=[]))],
+            orelse=[]),
+        For(target=Name(id='level'),
+            iter=Call(func=Name(id='range'),
+                args=[Num(n=0),
+                    Call(func=Name(id='ceiling'),
+                        args=[
+                            BinOp(left=Call(func=Name(id='log'), args=[Name(id='N')], keywords=[]),
+                                op=Div,
+                                right=Call(func=Name(id='log'), args=[Num(n=2)], keywords=[]))],
+                        keywords=[])],
+                keywords=[]),
+            body=[
+                For(target=Name(id='j'),
+                    iter=Call(func=Name(id='range'),
+                        args=[Num(n=0),
+                            Name(id='N'),
+                            BinOp(left=Num(n=2), op=Pow, right=BinOp(left=Name(id='level'), op=Add, right=Num(n=1)))],
+                        keywords=[]),
+                    body=[
+                        Assign(
+                            targets=[
+                                Tuple(
+                                    elts=[
+                                        Subscript(value=Name(id='Vs'),
+                                            slice=Index(
+                                                value=Tuple(
+                                                    elts=[BinOp(left=Name(id='level'), op=Add, right=Num(n=1)),
+                                                        Name(id='j')]))),
+                                        Subscript(value=Name(id='Ts'),
+                                            slice=Index(
+                                                value=Tuple(
+                                                    elts=[BinOp(left=Name(id='level'), op=Add, right=Num(n=1)),
+                                                        Name(id='j')]))),
+                                        Subscript(value=Name(id='Rs'),
+                                            slice=Index(
+                                                value=Tuple(
+                                                    elts=[BinOp(left=Name(id='level'), op=Add, right=Num(n=1)),
+                                                        Name(id='j')])))])],
+                            value=Call(func=Name(id='qr_factor'),
+                                args=[
+                                    Subscript(value=Name(id='Rs'),
+                                        slice=Index(value=Tuple(elts=[Name(id='level'), Name(id='j')]))),
+                                    Subscript(value=Name(id='Rs'),
+                                        slice=Index(
+                                            value=Tuple(
+                                                elts=[Name(id='level'),
+                                                    BinOp(left=Name(id='j'),
+                                                        op=Add,
+                                                        right=BinOp(left=Num(n=2), op=Pow, right=Name(id='level')))])))],
+                                keywords=[]))],
+                    orelse=[])],
+            orelse=[])],
+    decorator_list=[],
+    returns=None)
+
+2020-04-09 23:06:59,664 - root - DEBUG - IR AST:
+FuncDef(name='TSQR',
+    args=['A', 'Vs', 'Ts', 'Rs', 'N'],
+    body=[
+        For(var='j',
+            min=IntConst(val=0, type=None),
+            max=Ref(name='N', type=None),
+            step=IntConst(val=1, type=None),
+            body=[
+                RemoteCallAbstract(compute=<function qr_factor at 0x7f39e3c3f400>,
+                    output=[
+                        IndexExpr(matrix_name='Vs', indices=[IntConst(val=0, type=None), Ref(name='j', type=None)]),
+                        IndexExpr(matrix_name='Ts', indices=[IntConst(val=0, type=None), Ref(name='j', type=None)]),
+                        IndexExpr(matrix_name='Rs', indices=[IntConst(val=0, type=None), Ref(name='j', type=None)])],
+                    args=[IndexExpr(matrix_name='A', indices=[Ref(name='j', type=None), IntConst(val=0, type=None)])],
+                    kwargs=None,
+                    type=None)]),
+        For(var='level',
+            min=IntConst(val=0, type=None),
+            max=Mfunc(op='ceiling',
+                e=BinOp(op='Div',
+                    left=Mfunc(op='log', e=Ref(name='N', type=None), type=None),
+                    right=Mfunc(op='log', e=IntConst(val=2, type=None), type=None),
+                    type=None),
+                type=None),
+            step=IntConst(val=1, type=None),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=None),
+                    max=Ref(name='N', type=None),
+                    step=BinOp(op='Pow',
+                        left=IntConst(val=2, type=None),
+                        right=BinOp(op='Add',
+                            left=Ref(name='level', type=None),
+                            right=IntConst(val=1, type=None),
+                            type=None),
+                        type=None),
+                    body=[
+                        RemoteCallAbstract(compute=<function qr_factor at 0x7f39e3c3f400>,
+                            output=[
+                                IndexExpr(matrix_name='Vs',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=None),
+                                            right=IntConst(val=1, type=None),
+                                            type=None),
+                                        Ref(name='j', type=None)]),
+                                IndexExpr(matrix_name='Ts',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=None),
+                                            right=IntConst(val=1, type=None),
+                                            type=None),
+                                        Ref(name='j', type=None)]),
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=None),
+                                            right=IntConst(val=1, type=None),
+                                            type=None),
+                                        Ref(name='j', type=None)])],
+                            args=[
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[Ref(name='level', type=None), Ref(name='j', type=None)]),
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[Ref(name='level', type=None),
+                                        BinOp(op='Add',
+                                            left=Ref(name='j', type=None),
+                                            right=BinOp(op='Pow',
+                                                left=IntConst(val=2, type=None),
+                                                right=Ref(name='level', type=None),
+                                                type=None),
+                                            type=None)])],
+                            kwargs=None,
+                            type=None)])])],
+    arg_types=[<class 'numpywren.matrix.BigMatrix'>,
+        <class 'numpywren.matrix.BigMatrix'>,
+        <class 'numpywren.matrix.BigMatrix'>,
+        <class 'numpywren.matrix.BigMatrix'>,
+        <class 'int'>])
+
+2020-04-09 23:06:59,665 - root - DEBUG - typed IR AST:
+FuncDef(name='TSQR',
+    args=['A', 'Vs', 'Ts', 'Rs', 'N'],
+    body=[
+        For(var='j',
+            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+            max=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+            body=[
+                RemoteCallAbstract(compute=<function qr_factor at 0x7f39e3c3f400>,
+                    output=[
+                        IndexExpr(matrix_name='Vs',
+                            indices=[IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                                Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                        IndexExpr(matrix_name='Ts',
+                            indices=[IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                                Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                        IndexExpr(matrix_name='Rs',
+                            indices=[IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                                Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)])],
+                    args=[
+                        IndexExpr(matrix_name='A',
+                            indices=[Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>)])],
+                    kwargs=None,
+                    type=<class 'type'>)]),
+        For(var='level',
+            min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+            max=Mfunc(op='ceiling',
+                e=BinOp(op='Div',
+                    left=Mfunc(op='log',
+                        e=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+                        type=<class 'numpywren.frontend.ConstFloatType'>),
+                    right=Mfunc(op='log',
+                        e=IntConst(val=2, type=<class 'numpywren.frontend.ConstIntType'>),
+                        type=<class 'numpywren.frontend.ConstFloatType'>),
+                    type=<class 'numpywren.frontend.ConstFloatType'>),
+                type=<class 'numpywren.frontend.ConstIntType'>),
+            step=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+            body=[
+                For(var='j',
+                    min=IntConst(val=0, type=<class 'numpywren.frontend.ConstIntType'>),
+                    max=Ref(name='N', type=<class 'numpywren.frontend.ConstIntType'>),
+                    step=BinOp(op='Pow',
+                        left=IntConst(val=2, type=<class 'numpywren.frontend.ConstIntType'>),
+                        right=BinOp(op='Add',
+                            left=Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                            right=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                            type=<class 'numpywren.frontend.LinearIntType'>),
+                        type=<class 'numpywren.frontend.IntType'>),
+                    body=[
+                        RemoteCallAbstract(compute=<function qr_factor at 0x7f39e3c3f400>,
+                            output=[
+                                IndexExpr(matrix_name='Vs',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                            right=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                                            type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                IndexExpr(matrix_name='Ts',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                            right=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                                            type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[
+                                        BinOp(op='Add',
+                                            left=Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                            right=IntConst(val=1, type=<class 'numpywren.frontend.ConstIntType'>),
+                                            type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)])],
+                            args=[
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                        Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>)]),
+                                IndexExpr(matrix_name='Rs',
+                                    indices=[Ref(name='level', type=<class 'numpywren.frontend.LinearIntType'>),
+                                        BinOp(op='Add',
+                                            left=Ref(name='j', type=<class 'numpywren.frontend.LinearIntType'>),
+                                            right=BinOp(op='Pow',
+                                                left=IntConst(val=2, type=<class 'numpywren.frontend.ConstIntType'>),
+                                                right=Ref(name='level',
+                                                    type=<class 'numpywren.frontend.LinearIntType'>),
+                                                type=<class 'numpywren.frontend.IntType'>),
+                                            type=<class 'numpywren.frontend.IntType'>)])],
+                            kwargs=None,
+                            type=<class 'type'>)])])],
+    arg_types=[<class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.BigMatrixType'>,
+        <class 'numpywren.frontend.ConstIntType'>])
+
+2020-04-09 23:07:00,543 - root - INFO - Starting with 32 cores
+2020-04-09 23:07:25,642 - root - DEBUG - 25: Up Workers: 28, Busy Workers: 3
+2020-04-09 23:07:25,642 - root - INFO - Waiting: 0, Currently Processing: 3
+2020-04-09 23:07:25,642 - root - INFO - 25: Up Workers: 28, Busy Workers: 3
+2020-04-09 23:07:30,688 - root - DEBUG - 30: Up Workers: 28, Busy Workers: 3
+2020-04-09 23:07:30,688 - root - INFO - Waiting: 0, Currently Processing: 3
+2020-04-09 23:07:30,689 - root - INFO - 30: Up Workers: 28, Busy Workers: 3
+2020-04-09 23:07:35,734 - root - DEBUG - 35: Up Workers: 28, Busy Workers: 3
+2020-04-09 23:07:35,734 - root - INFO - Waiting: 0, Currently Processing: 3
+2020-04-09 23:07:35,734 - root - INFO - 35: Up Workers: 28, Busy Workers: 3
+2020-04-09 23:07:40,782 - root - DEBUG - 40: Up Workers: 28, Busy Workers: 3
+2020-04-09 23:07:40,782 - root - INFO - Waiting: 0, Currently Processing: 3
+2020-04-09 23:07:40,782 - root - INFO - 40: Up Workers: 28, Busy Workers: 3
+2020-04-09 23:07:45,839 - root - DEBUG - 45: Up Workers: 28, Busy Workers: 3
+2020-04-09 23:07:45,839 - root - INFO - Waiting: 0, Currently Processing: 3
+2020-04-09 23:07:45,839 - root - INFO - 45: Up Workers: 28, Busy Workers: 3
+2020-04-09 23:07:50,886 - root - DEBUG - 50: Up Workers: 28, Busy Workers: 3
+2020-04-09 23:07:50,886 - root - INFO - Waiting: 0, Currently Processing: 3
+2020-04-09 23:07:50,886 - root - INFO - 50: Up Workers: 28, Busy Workers: 3
+2020-04-09 23:07:55,937 - root - DEBUG - 55: Up Workers: 28, Busy Workers: 2
+2020-04-09 23:07:55,937 - root - INFO - Waiting: 0, Currently Processing: 2
+2020-04-09 23:07:55,937 - root - INFO - 55: Up Workers: 28, Busy Workers: 2
+2020-04-09 23:08:00,977 - root - DEBUG - 60: Up Workers: 28, Busy Workers: 2
+2020-04-09 23:08:00,978 - root - INFO - Waiting: 0, Currently Processing: 2
+2020-04-09 23:08:00,978 - root - INFO - 60: Up Workers: 28, Busy Workers: 2
+2020-04-09 23:08:06,024 - root - DEBUG - 65: Up Workers: 28, Busy Workers: 2
+2020-04-09 23:08:06,024 - root - INFO - Waiting: 0, Currently Processing: 2
+2020-04-09 23:08:06,024 - root - INFO - 65: Up Workers: 28, Busy Workers: 2
+2020-04-09 23:08:11,064 - root - DEBUG - 70: Up Workers: 29, Busy Workers: 2
+2020-04-09 23:08:11,064 - root - INFO - Waiting: 0, Currently Processing: 2
+2020-04-09 23:08:11,064 - root - INFO - 70: Up Workers: 29, Busy Workers: 2
+2020-04-09 23:08:16,121 - root - DEBUG - 75: Up Workers: 29, Busy Workers: 2
+2020-04-09 23:08:16,121 - root - INFO - Waiting: 0, Currently Processing: 2
+2020-04-09 23:08:16,121 - root - INFO - 75: Up Workers: 29, Busy Workers: 2
+2020-04-09 23:08:21,164 - root - DEBUG - 80: Up Workers: 30, Busy Workers: 2
+2020-04-09 23:08:21,164 - root - INFO - Waiting: 0, Currently Processing: 2
+2020-04-09 23:08:21,164 - root - INFO - 80: Up Workers: 30, Busy Workers: 2
+2020-04-09 23:08:26,220 - root - DEBUG - 85: Up Workers: 31, Busy Workers: 2
+2020-04-09 23:08:26,220 - root - INFO - Waiting: 0, Currently Processing: 2
+2020-04-09 23:08:26,220 - root - INFO - 85: Up Workers: 31, Busy Workers: 2
+2020-04-09 23:08:31,263 - root - DEBUG - 90: Up Workers: 31, Busy Workers: 2
+2020-04-09 23:08:31,263 - root - INFO - Waiting: 0, Currently Processing: 2
+2020-04-09 23:08:31,263 - root - INFO - 90: Up Workers: 31, Busy Workers: 2
+2020-04-09 23:08:36,307 - root - DEBUG - 95: Up Workers: 31, Busy Workers: 2
+2020-04-09 23:08:36,307 - root - INFO - Waiting: 0, Currently Processing: 2
+2020-04-09 23:08:36,307 - root - INFO - 95: Up Workers: 31, Busy Workers: 2
+2020-04-09 23:08:41,356 - root - DEBUG - 100: Up Workers: 31, Busy Workers: 2
+2020-04-09 23:08:41,356 - root - INFO - Waiting: 0, Currently Processing: 2
+2020-04-09 23:08:41,356 - root - INFO - 100: Up Workers: 31, Busy Workers: 2
+2020-04-09 23:08:46,400 - root - DEBUG - 105: Up Workers: 31, Busy Workers: 1
+2020-04-09 23:08:46,400 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 23:08:46,400 - root - INFO - 105: Up Workers: 31, Busy Workers: 1
+2020-04-09 23:08:51,444 - root - DEBUG - 110: Up Workers: 31, Busy Workers: 1
+2020-04-09 23:08:51,444 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 23:08:51,444 - root - INFO - 110: Up Workers: 31, Busy Workers: 1
+2020-04-09 23:08:56,490 - root - DEBUG - 115: Up Workers: 31, Busy Workers: 1
+2020-04-09 23:08:56,490 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 23:08:56,490 - root - INFO - 115: Up Workers: 31, Busy Workers: 1
+2020-04-09 23:09:01,542 - root - DEBUG - 120: Up Workers: 31, Busy Workers: 1
+2020-04-09 23:09:01,542 - root - INFO - Waiting: 0, Currently Processing: 1
+2020-04-09 23:09:01,542 - root - INFO - 120: Up Workers: 31, Busy Workers: 1
+2020-04-09 23:09:01,548 - root - INFO - launching 32 new tasks....
+2020-04-09 23:09:06,593 - root - DEBUG - 126: Up Workers: 32, Busy Workers: 1
+2020-04-09 23:09:11,639 - root - DEBUG - 131: Up Workers: 32, Busy Workers: 1
+2020-04-09 23:09:16,683 - root - DEBUG - 136: Up Workers: 32, Busy Workers: 1
+2020-04-09 23:09:21,727 - root - DEBUG - 141: Up Workers: 57, Busy Workers: 1
+2020-04-09 23:09:26,771 - root - DEBUG - 146: Up Workers: 57, Busy Workers: 2
+2020-04-09 23:09:31,816 - root - DEBUG - 151: Up Workers: 57, Busy Workers: 2
+2020-04-09 23:09:36,860 - root - DEBUG - 156: Up Workers: 57, Busy Workers: 2
+2020-04-09 23:09:41,901 - root - DEBUG - 161: Up Workers: 34, Busy Workers: 2
+2020-04-09 23:09:46,943 - root - DEBUG - 166: Up Workers: 33, Busy Workers: 2
+2020-04-09 23:09:51,981 - root - DEBUG - 171: Up Workers: 33, Busy Workers: 2
+2020-04-09 23:09:57,025 - root - DEBUG - 176: Up Workers: 34, Busy Workers: 2
+2020-04-09 23:10:02,066 - root - DEBUG - 181: Up Workers: 34, Busy Workers: 2
+2020-04-09 23:10:07,109 - root - DEBUG - 186: Up Workers: 35, Busy Workers: 2
+2020-04-09 23:10:12,150 - root - DEBUG - 191: Up Workers: 35, Busy Workers: 2
+2020-04-09 23:10:17,191 - root - DEBUG - 196: Up Workers: 35, Busy Workers: 2
+2020-04-09 23:10:22,235 - root - DEBUG - 201: Up Workers: 35, Busy Workers: 2
+2020-04-09 23:10:27,276 - root - DEBUG - 206: Up Workers: 34, Busy Workers: 2
+2020-04-09 23:10:32,325 - root - DEBUG - 211: Up Workers: 34, Busy Workers: 2
+2020-04-09 23:10:37,369 - root - DEBUG - 216: Up Workers: 33, Busy Workers: 2
+2020-04-09 23:10:42,413 - root - DEBUG - 221: Up Workers: 33, Busy Workers: 2
+2020-04-09 23:10:47,457 - root - DEBUG - 226: Up Workers: 32, Busy Workers: 2
+2020-04-09 23:10:52,499 - root - DEBUG - 231: Up Workers: 32, Busy Workers: 2
+2020-04-09 23:10:57,548 - root - DEBUG - 236: Up Workers: 32, Busy Workers: 2
+2020-04-09 23:11:02,593 - root - DEBUG - 242: Up Workers: 32, Busy Workers: 2
+2020-04-09 23:11:02,599 - root - INFO - launching 32 new tasks....
+2020-04-09 23:11:07,636 - root - DEBUG - 247: Up Workers: 63, Busy Workers: 2
+2020-04-09 23:11:12,684 - root - DEBUG - 252: Up Workers: 63, Busy Workers: 2
+2020-04-09 23:11:17,733 - root - DEBUG - 257: Up Workers: 63, Busy Workers: 2
+2020-04-09 23:11:22,776 - root - DEBUG - 262: Up Workers: 65, Busy Workers: 2
+2020-04-09 23:11:27,815 - root - DEBUG - 267: Up Workers: 64, Busy Workers: 3
+2020-04-09 23:11:32,908 - root - DEBUG - 272: Up Workers: 64, Busy Workers: 3
+2020-04-09 23:11:37,948 - root - DEBUG - 277: Up Workers: 64, Busy Workers: 3
+2020-04-09 23:11:42,981 - root - DEBUG - 282: Up Workers: 39, Busy Workers: 3
+2020-04-09 23:11:48,021 - root - DEBUG - 287: Up Workers: 38, Busy Workers: 3
+2020-04-09 23:11:53,061 - root - DEBUG - 292: Up Workers: 39, Busy Workers: 3
+2020-04-09 23:11:58,101 - root - DEBUG - 297: Up Workers: 39, Busy Workers: 3
+2020-04-09 23:12:03,140 - root - DEBUG - 302: Up Workers: 39, Busy Workers: 3
+2020-04-09 23:12:08,377 - root - DEBUG - 307: Up Workers: 39, Busy Workers: 3
+2020-04-09 23:12:13,416 - root - DEBUG - 312: Up Workers: 39, Busy Workers: 3
+2020-04-09 23:12:18,458 - root - DEBUG - 317: Up Workers: 39, Busy Workers: 3

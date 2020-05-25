@@ -1,7 +1,7 @@
 control_plane:
   control_plane_prefix: numpywren.control
   ec2_instance_type: m5.24xlarge
-  ec2_ssh_key: CS484_DESKTOP2
+  ec2_ssh_key: CS484_Desktop2
   idle_terminate_granularity: 1200
   max_idle_time: 300
   password: potato
