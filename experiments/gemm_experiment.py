@@ -50,6 +50,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     fh = logging.FileHandler(log_file)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     fh.setFormatter(formatter)
+    time_data = dict()
     ch = logging.StreamHandler()
     ch.setLevel(logging.INFO)
     ch.setFormatter(formatter)
@@ -169,6 +170,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     #print([f.result() for f in all_futures])
     # print([f.result() for f in all_futures])
     start_time = time.time()
+    time_data[0] = 0
     last_run_time = start_time
     print(program.program_status())
     print("QUEUE URLS", len(program.queue_urls))
@@ -212,6 +214,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
             up_workers_counts.append(up_workers)
             busy_workers_counts.append(busy_workers)
 
+            time_data[curr_time] = up_workers
             logger.debug("{2}: Up Workers: {0}, Busy Workers: {1}".format(up_workers, busy_workers, curr_time))
             if ((curr_time % INFO_FREQ) == 0):
                 logger.info("Waiting: {0}, Currently Processing: {1}".format(waiting, running))
@@ -339,6 +342,9 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     print("Average Flop Rate (GFlop/s): {0}".format(exp["flops"][-1]/(times[-1] - times[0])))
     with open("/tmp/last_run", "w+") as f:
         f.write(program.hash)
+    
+    for timestamp, num_workers in time_data.items():
+        print("{} {}".format(timestamp, num_workers))
     
     return {
         "time": times[-1] - times[0]
