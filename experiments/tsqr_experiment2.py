@@ -54,6 +54,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     ch.setFormatter(formatter)
     logger.addHandler(fh)
     logger.addHandler(ch)
+    time_data = dict()
     logger.info("Logging to {0}".format(log_file))
     if standalone:
         extra_env ={"AWS_ACCESS_KEY_ID" : os.environ["AWS_ACCESS_KEY_ID"].strip(), "AWS_SECRET_ACCESS_KEY": os.environ["AWS_SECRET_ACCESS_KEY"].strip(), "OMP_NUM_THREADS":"1", "AWS_DEFAULT_REGION":region}
@@ -158,6 +159,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     all_futures = [all_future_futures]
     # print([f.result() for f in all_futures])
     start_time = time.time()
+    time_data[0] = 0
     last_run_time = start_time
     print(program.program_status())
     print("QUEUE URLS", len(program.queue_urls))
@@ -197,6 +199,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
             up_workers_counts.append(up_workers)
             busy_workers_counts.append(busy_workers)
 
+            time_data[curr_time] = up_workers
             logger.debug("{2}: Up Workers: {0}, Busy Workers: {1}".format(up_workers, busy_workers, curr_time))
             if ((curr_time % INFO_FREQ) == 0):
                 logger.info("Waiting: {0}, Currently Processing: {1}".format(waiting, running))
@@ -334,6 +337,10 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     print("Average Flop Rate (GFlop/s): {0}".format(exp["flops"][-1]/(times[-1] - times[0])))
     with open("/tmp/last_run", "w+") as f:
         f.write(program.hash)
+    
+    for timestamp, upworkers in time_data.items():
+        print("{} {}".format(timestamp, upworkers))
+
     return {
         "time": times[-1] - times[0],
         "gb_read": current_gbytes_read,

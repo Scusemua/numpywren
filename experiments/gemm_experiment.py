@@ -50,6 +50,7 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
     fh = logging.FileHandler(log_file)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     fh.setFormatter(formatter)
+    time_data = dict()
     ch = logging.StreamHandler()
     ch.setLevel(logging.INFO)
     ch.setFormatter(formatter)

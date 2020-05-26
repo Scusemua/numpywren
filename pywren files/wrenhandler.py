@@ -68,11 +68,11 @@ logger = logging.getLogger(__name__)
 PROCESS_STDOUT_SLEEP_SECS = 0.25
 CANCEL_CHECK_EVERY_SECS = 5.0
 
-redis_client = redis_alt.RedisAlt(host = "ec2-3-87-96-115.compute-1.amazonaws.com", port = 6379)
+redis_client = redis_alt.RedisAlt(host = "ec2-3-88-156-210.compute-1.amazonaws.com", port = 6379)
 
-redis_client.set("test", "hello")
-test_redis_var = redis_client.get("test")
-print("test_redis_var = {}".format(test_redis_var))
+#redis_client.set("test", "hello")
+#test_redis_var = redis_client.get("test")
+#print("test_redis_var = {}".format(test_redis_var))
 
 def get_key_size(s3client, bucket, key):
     try:
@@ -240,6 +240,7 @@ def generic_handler(event, context_dict, custom_handler_env=None):
     custom_handler_env are environment variables we should set
     based on the platform we are on.
     """
+    start_time = time.time()
     pid = os.getpid()
 
     s3_bucket = ""
@@ -502,3 +503,8 @@ def generic_handler(event, context_dict, custom_handler_env=None):
         # creating new client in case the client has not been created
         #boto3.client("s3").put_object(Bucket=s3_bucket, Key=status_key,
         #                              Body=json.dumps(response_status))
+        stop_time = time.time()
+        duration = time.time()
+        vals = [start_time, stop_time, duration]
+        vals_serialized = json.dumps(vals)
+        redis_client.lpush("durations", vals)

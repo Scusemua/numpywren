@@ -18,10 +18,10 @@ s3:
     pywren_prefix: pywren.jobs
 
 runtime:
-  s3_bucket: numpywrenpublic
-  s3_key: pywren.runtime/pywren_runtime-3.6-numpywren.tar.gz
   #s3_bucket: wukong-dependencies
   #s3_key: pywren_runtime-3.6-numpywren-mod.tar.gz
+  s3_bucket: numpywrenpublic
+  s3_key: pywren.runtime/pywren_runtime-3.6-numpywren.tar.gz  
   runtime_storage: s3
 
 scheduler:
