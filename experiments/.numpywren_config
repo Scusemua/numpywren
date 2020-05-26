@@ -13,11 +13,14 @@ iam:
   instance_profile_name: numpywren_exec_instance_profile
   role_name: numpywren_exec_role_1
 runtime:
-  bucket: wukong-dependencies
-  s3_key: pywren_runtime-3.6-numpywren-mod.tar.gz
+  #bucket: wukong-dependencies
+  #s3_key: pywren_runtime-3.6-numpywren-mod.tar.gz
+  bucket: numpywrenpublic
+  s3_key: pywren.runtime/pywren_runtime-3.6-numpywren.tar.gz
 s3:
   bucket: ec2-user-pywren-899
   lifespan: 1
   prefix: npw
 logging:
     level: INFO
+

@@ -9,7 +9,7 @@ lambda:
     function_name : pywren_1
 
 storage_backend: redis
-redis_host: ec2-54-167-35-197.compute-1.amazonaws.com
+redis_host: ec2-54-208-187-56.compute-1.amazonaws.com
 redis_port: 6379
 storage_prefix: pywren.jobs
 
@@ -18,8 +18,10 @@ s3:
     pywren_prefix: pywren.jobs
 
 runtime:
-  s3_bucket: wukong-dependencies
-  s3_key: pywren_runtime-3.6-numpywren-mod.tar.gz
+  s3_bucket: numpywrenpublic
+  s3_key: pywren.runtime/pywren_runtime-3.6-numpywren.tar.gz
+  #s3_bucket: wukong-dependencies
+  #s3_key: pywren_runtime-3.6-numpywren-mod.tar.gz
   runtime_storage: s3
 
 scheduler:
