@@ -495,7 +495,7 @@ def generic_handler(event, context_dict, custom_handler_env=None):
         response_status['exception_args'] = e.args
         response_status['exception_traceback'] = traceback.format_exc()
     finally:
-        print("Attempting to store status data in S3 at key {}".format(status_key))
+        print("Attempting to store status data in Redis at key {}".format(status_key))
         print("Response Status: {}".format(response_status))
         #boto3.client("s3").put_object(Bucket=s3_bucket, Key=status_key,
         #                              Body=json.dumps(response_status))
@@ -507,4 +507,4 @@ def generic_handler(event, context_dict, custom_handler_env=None):
         duration = time.time()
         vals = [start_time, stop_time, duration]
         vals_serialized = json.dumps(vals)
-        redis_client.lpush("durations", vals)
+        redis_client.lpush("durations", vals_serialized)

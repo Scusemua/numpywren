@@ -11,6 +11,7 @@ import numpywren.binops as binops
 import os
 import time
 import boto3
+import json
 import redis
 import pickle
 import os
@@ -351,10 +352,6 @@ def run_experiment(problem_size, shard_size, pipeline, num_priorities, lru, eage
         "time": times[-1] - times[0]
     }
 
-
-
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run OSDI optimization effectiveness experiments')
     parser.add_argument("problem_size", type=int)
@@ -373,6 +370,7 @@ if __name__ == "__main__":
     parser.add_argument('--trial', type=int, default=0)
     parser.add_argument('--trials', type=int, default=1)
     parser.add_argument('--num_priorities', type=int, default=1) 
+    parser.add_argument('--clear_durations', action='store_true')
     parser.add_argument('--lru', action='store_true')
     parser.add_argument('--eager', action='store_true')
     parser.add_argument('--standalone', action='store_true')
@@ -382,11 +380,31 @@ if __name__ == "__main__":
     args = parser.parse_args()
     #run_experiment(args.problem_size, args.shard_size, args.pipeline, args.num_priorities, args.lru, args.eager, args.truncate, args.max_cores, args.start_cores, args.trial, args.launch_granularity, args.timeout, args.log_granularity, args.autoscale_policy, args.standalone, args.warmup, args.verify, args.matrix_exists, args.write_limit, args.read_limit, args.n_threads)
 
+    def_conf = wc.default()
+    rc = redis.Redis(host = def_conf['redis_host'], port = def_conf['redis_port'], db = 0)
+
+    if args.clear_durations:
+        print("Deleting all {} duration entries from Redis now...".format(rc.llen("durations")))
+        rc.delete("durations")
+    else:
+        print("There are {} existing entries in the durations list in Redis.".format(rc.llen("durations")))
+
     times = []
     for i in range(0, args.trials):
         print("----------- TRIAL #{} -----------".format(i))
         res = run_experiment(args.problem_size, args.shard_size, args.pipeline, args.num_priorities, args.lru, args.eager, args.truncate, args.max_cores, args.start_cores, args.trial, args.launch_granularity, args.timeout, args.log_granularity, args.autoscale_policy, args.standalone, args.warmup, args.verify, args.matrix_exists, args.write_limit, args.read_limit, args.n_threads)
         times.append(res["time"])
+
+        time.sleep(1.0)
+        print("There are now {} entries in the durations list in Redis.".format(rc.llen("durations")))
+        durations_serialized = rc.lrange("durations", 0, -1)
+        durations = list()
+        for lst in durations_serialized:
+            durations.append(json.loads(lst))
+        
+        print("START\tSTOP\tDURATION")
+        for entry in durations:
+            print("{}\t{}\t{}".format(entry[0], entry[1], entry[2]))
     
     print("=== Results (# Trials = {}) ===".format(args.trials))
     print("Average/Min/Max\n{}\n{}\n{}".format(sum(times)/len(times), min(times),max(times)))
