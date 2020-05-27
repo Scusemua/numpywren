@@ -16,8 +16,6 @@
 
 from __future__ import print_function
 
-print("HELLO FROM JOBRUNNER")
-
 import os
 import base64
 import shutil
@@ -25,12 +23,14 @@ import json
 import sys
 import traceback
 import time
-import redis 
+import redis  
 import boto3
 from botocore.vendored.requests.packages.urllib3.exceptions import ReadTimeoutError
 
 from six.moves import cPickle as pickle
 from tblib import pickling_support
+
+print("HELLO FROM JOBRUNNER")
 
 pickling_support.install()
 BACKOFF = 1
@@ -53,7 +53,7 @@ jobrunner_config_filename = sys.argv[1]
 jobrunner_config = json.load(open(jobrunner_config_filename, 'r'))
 
 # Need to change in wrenhandler.py, wrenconfig.py, matrix.py, matrix_utils.py, jobrunner.py.
-redis_client = redis.StrictRedis(host = "ec2-3-88-156-210.compute-1.amazonaws.com", port = 6379)
+redis_client = redis.StrictRedis(host = "ec2-18-208-217-26.compute-1.amazonaws.com", port = 6379)
 
 # FIXME someday switch to storage handler
 # download the func data into memory
@@ -69,6 +69,8 @@ data_byte_range = jobrunner_config['data_byte_range']
 output_bucket = jobrunner_config['output_bucket']
 output_key = jobrunner_config['output_key']
 
+storage_config = jobrunner_config["storage_config"]
+
 ## Jobrunner stats are fieldname float
 jobrunner_stats_filename = jobrunner_config['stats_filename']
 # open the stats filename
@@ -77,6 +79,19 @@ stats_fid = open(jobrunner_stats_filename, 'w')
 def write_stat(stat, val):
     stats_fid.write("{} {:f}\n".format(stat, val))
     stats_fid.flush()
+
+def get_object_with_backoff(s3_client, bucket, key, max_tries=MAX_TRIES, backoff=BACKOFF, **extra_get_args):
+    num_tries = 0
+    while (num_tries < max_tries):
+        try:
+            print("Attempting to get data from S3 bucket {} at key {}.".format(bucket, key))
+            func_obj_stream = s3_client.get_object(Bucket=bucket, Key=key, **extra_get_args)
+            break
+        except ReadTimeoutError:
+            time.sleep(backoff)
+            backoff *= 2
+            num_tries += 1
+    return func_obj_stream
 
 def get_object_with_backoff_redis(key, max_tries=MAX_TRIES, backoff=BACKOFF, **extra_get_args):
     num_tries = 0
@@ -98,11 +113,21 @@ try:
 
     print("Attempting to download func_obj_stream from Redis...")
 
-    func_obj_stream = get_object_with_backoff_redis(key=func_key)
-
-    print("Successfully downloaded. Attempting to load/deserialize data retrieved from Redis.")
-
-    loaded_func_all = pickle.loads(func_obj_stream)
+    if storage_config['storage_backend'] == 's3':
+        func_obj_stream = get_object_with_backoff(s3_client, bucket=func_bucket, key=func_key)
+        print("Successfully downloaded. Attempting to load/deserialize data retrieved from S3.")
+        obj = func_obj_stream['Body'].read()
+        
+        print("Successfully streamed. Attempting to deserialize data retrieved from S3.")
+        loaded_func_all = pickle.loads(obj)
+        
+        func_download_time_t2 = time.time()
+        write_stat('func_download_time',
+                   func_download_time_t2-func_download_time_t1)        
+    else:
+        func_obj_stream = get_object_with_backoff_redis(key=func_key)
+        print("Successfully downloaded. Attempting to load/deserialize data retrieved from Redis.")
+        loaded_func_all = pickle.loads(func_obj_stream)
 
     print("Data loaded (deserialized) successfully!")
     func_download_time_t2 = time.time()
@@ -117,12 +142,12 @@ try:
     shutil.rmtree(PYTHON_MODULE_PATH, True) # delete old modules
     print("Deleted old modules located at {}".format(PYTHON_MODULE_PATH))
     os.mkdir(PYTHON_MODULE_PATH)
-    print("Created new directory at {}".format(PYTHON_MODULE_PATH))
+    print("Created new directory at {}".format(PYTHON_MODULE_PATH)) 
     sys.path.append(PYTHON_MODULE_PATH)
     print("Added newly-created directory {} to system path.".format(PYTHON_MODULE_PATH))
 
     for m_filename, m_data in loaded_func_all['module_data'].items():
-        print("Processing module data with filename {}".format(m_filename))
+        #print("Processing module data with filename {}".format(m_filename))
         m_path = os.path.dirname(m_filename)
 
         if len(m_path) > 0 and m_path[0] == "/":
@@ -150,28 +175,39 @@ try:
     print("Loaded function.")
     print("loaded_func = {}".format(loaded_func))
 
-    #extra_get_args = {}
-    #if data_byte_range is not None:
-    #    range_str = 'bytes={}-{}'.format(*data_byte_range)
-    #    extra_get_args['Range'] = range_str
+    extra_get_args = {}
+    if data_byte_range is not None:
+        range_str = 'bytes={}-{}'.format(*data_byte_range)
+        extra_get_args['Range'] = range_str
 
     print("Getting data from Redis.")
     data_download_time_t1 = time.time()
-    data_obj_stream = get_object_with_backoff_redis(key = data_key)
+    if storage_config['storage_backend'] == 's3':
+        data_obj_stream = get_object_with_backoff(s3_client, bucket=data_bucket,
+                                                  key=data_key,
+                                                  **extra_get_args)
+        print("Got data from S3. Trying to deserialize it now.")                                          
+        loaded_data = pickle.loads(data_obj_stream['Body'].read())
+        data_download_time_t2 = time.time()
+        write_stat('data_download_time',data_download_time_t2-data_download_time_t1)        
+    else:
+        data_obj_stream = get_object_with_backoff_redis(key=data_key)    
+        print("Got data from S3. Trying to deserialize it now.")                                          
+        # FIXME make this streaming
+        loaded_data = pickle.loads(data_obj_stream['Body'].read())
+        print("Deserialized data successfully.")
+        data_download_time_t2 = time.time()
+        write_stat('data_download_time',data_download_time_t2-data_download_time_t1)
+        if data_byte_range is not None:
+            print("We only want bytes {} through {} (inclusive) of the object...".format(data_byte_range[0], data_byte_range[1]))
+            data_obj_stream = data_obj_stream[data_byte_range[0]:data_byte_range[1] + 1] # INCLUSIVE
 
-    if data_byte_range is not None:
-        print("We only want bytes {} through {} (inclusive) of the object...".format(data_byte_range[0], data_byte_range[1]))
-        data_obj_stream = data_obj_stream[data_byte_range[0]:data_byte_range[1] + 1] # INCLUSIVE
+        print("Got data from Redis. Trying to deserialize it now.")
+        loaded_data = pickle.loads(data_obj_stream)
+        data_download_time_t2 = time.time()
+        write_stat('data_download_time',data_download_time_t2-data_download_time_t1)
 
-    # FIXME make this streaming
-    print("Got data from Redis. Trying to deserialize it now.")
-    loaded_data = pickle.loads(data_obj_stream)
-    print("Deserialized data from Redis successfully.")
-    data_download_time_t2 = time.time()
-    write_stat('data_download_time',
-               data_download_time_t2-data_download_time_t1)
-
-    print("Executing function {} with arguments {} now.".format(loaded_func, loaded_data))
+    print("Executing function now...")
     y = loaded_func(loaded_data)
     print("Function executed successfully!")
     output_dict = {'result' : y,
@@ -216,11 +252,15 @@ except Exception as e:
                                        'success' : False})
 finally:
     output_upload_timestamp_t1 = time.time()
-    #s3_client.put_object(Body=pickled_output,
-    #                     Bucket=output_bucket,
-    #                     Key=output_key)
-    print("Storing output/result/data in Redis at key \"{}\".".format(output_key))
-    redis_client.set(output_key, pickled_output)
-    output_upload_timestamp_t2 = time.time()
-    write_stat("output_upload_time",
-               output_upload_timestamp_t2 - output_upload_timestamp_t1)
+    if storage_config['storage_backend'] == 's3':
+        print("Storing output/result/data in S3 at key \"{}\".".format(output_key))
+        s3_client.put_object(Body=pickled_output,
+                             Bucket=output_bucket,
+                             Key=output_key)
+        output_upload_timestamp_t2 = time.time()
+        write_stat("output_upload_time", output_upload_timestamp_t2 - output_upload_timestamp_t1)                             
+    elif storage_config['storage_backend'] == 'redis':
+        print("Storing output/result/data in Redis at key \"{}\".".format(output_key))
+        redis_client.set(output_key, pickled_output)
+        output_upload_timestamp_t2 = time.time()
+        write_stat("output_upload_time", output_upload_timestamp_t2 - output_upload_timestamp_t1)

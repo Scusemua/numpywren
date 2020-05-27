@@ -68,7 +68,7 @@ logger = logging.getLogger(__name__)
 PROCESS_STDOUT_SLEEP_SECS = 0.25
 CANCEL_CHECK_EVERY_SECS = 5.0
 
-redis_client = redis_alt.RedisAlt(host = "ec2-3-88-156-210.compute-1.amazonaws.com", port = 6379)
+redis_client = redis_alt.RedisAlt(host = "ec2-18-208-217-26.compute-1.amazonaws.com", port = 6379)
 
 #redis_client.set("test", "hello")
 #test_redis_var = redis_client.get("test")
@@ -260,12 +260,20 @@ def generic_handler(event, context_dict, custom_handler_env=None):
         func_key = event['func_key']
         data_key = event['data_key']
         cancel_key = event['cancel_key']
-
+    
+        if event['storage_config']['storage_backend'] == 's3':
+            if key_exists(s3_client, s3_bucket, cancel_key):
+                logger.info("invocation cancelled")
+                raise Exception("CANCELLED", "Function cancelled")
+        elif event['storage_config']['storage_backend'] == 'redis':
+            if key_exists_redis(cancel_key):
+                logger.info("invocation cancelled")
+                raise Exception("CANCELLED", "Function cancelled")
         # Check for cancel
         #if key_exists(s3_client, s3_bucket, cancel_key):
-        if key_exists_redis(cancel_key):
-            logger.info("invocation cancelled")
-            raise Exception("CANCELLED", "Function cancelled")
+        #if key_exists_redis(cancel_key):
+        #    logger.info("invocation cancelled")
+        #    raise Exception("CANCELLED", "Function cancelled")
         time_of_last_cancel_check = time.time()
 
         data_byte_range = event['data_byte_range']
@@ -298,15 +306,19 @@ def generic_handler(event, context_dict, custom_handler_env=None):
         response_status['output_key'] = output_key
         response_status['status_key'] = status_key
 
-        #data_key_size = get_key_size(s3_client, s3_bucket, data_key)
-        #data_key_size = get_key_size(s3_client, s3_bucket, data_key)
-        _key_exists = key_exists_redis(data_key)
-        #logger.info("bucket=", s3_bucket, "key=", data_key,  "status: ", data_key_size, "bytes" )
-        while _key_exists is False:
-            logger.warning("WARNING COULD NOT GET FIRST KEY \"{}\" FROM BUCKET \"{}\"".format(data_key, s3_bucket))
-
-            #data_key_size = get_key_size(s3_client, s3_bucket, data_key)
+        if event['storage_config']['storage_backend'] == 's3':
+            data_key_size = get_key_size(s3_client, s3_bucket, data_key)
+            #logger.info("bucket=", s3_bucket, "key=", data_key,  "status: ", data_key_size, "bytes" )
+            while data_key_size is None:
+                logger.warning("WARNING COULD NOT GET FIRST KEY")
+    
+                data_key_size = get_key_size(s3_client, s3_bucket, data_key)
+        elif event['storage_config']['storage_backend'] == 'redis':
             _key_exists = key_exists_redis(data_key)
+            while _key_exists is False:
+                logger.warning("WARNING COULD NOT GET FIRST KEY \"{}\" FROM BUCKET \"{}\"".format(data_key, s3_bucket))
+    
+                _key_exists = key_exists_redis(data_key)
         if not event['use_cached_runtime']:
             shutil.rmtree(RUNTIME_LOC, True)
             os.mkdir(RUNTIME_LOC)
@@ -358,7 +370,9 @@ def generic_handler(event, context_dict, custom_handler_env=None):
                             'python_module_path' : python_module_path,
                             'output_bucket' : s3_bucket,
                             'output_key' : output_key,
-                            'stats_filename' : jobrunner_stats_filename}
+                            'stats_filename' : jobrunner_stats_filename,
+                            'storage_config': event['storage_config']
+        }
 
         print("==== JobRunner Configuration ====")
         for key,value in jobrunner_config.items():
@@ -393,13 +407,13 @@ def generic_handler(event, context_dict, custom_handler_env=None):
 
         if os.name == 'nt':
             #process = subprocess.Popen(cmdstr, shell=True, env=local_env,
-            process = subprocess.Popen(cmdstr, shell=False, env=local_env,
+            process = subprocess.Popen(cmdstr, shell=True, env=local_env,
                                        bufsize=1, stdout=subprocess.PIPE,
                                        creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
         else:
             process = subprocess.Popen(cmdstr, # pylint: disable=subprocess-popen-preexec-fn
                                        #shell=True, env=local_env, bufsize=1,
-                                       shell=False, env=local_env, bufsize=1,                                       
+                                       shell=True, env=local_env, bufsize=1,                                       
                                        stdout=subprocess.PIPE, preexec_fn=os.setsid)
         logger.info("launched process")
 
@@ -443,14 +457,20 @@ def generic_handler(event, context_dict, custom_handler_env=None):
             total_runtime = time.time() - start_time
             time_since_cancel_check = time.time() - time_of_last_cancel_check
             if time_since_cancel_check > CANCEL_CHECK_EVERY_SECS:
-
-                #if key_exists(s3_client, s3_bucket, cancel_key):
-                if key_exists_redis(cancel_key):
-                    logger.info("invocation cancelled")
-                    # kill the process
-                    kill_process(process)
-                    raise Exception("CANCELLED",
-                                    "Function cancelled")
+                if event['storage_config']['storage_backend'] == 's3':
+                    if key_exists(s3_client, s3_bucket, cancel_key):
+                        logger.info("invocation cancelled")
+                        # kill the process
+                        kill_process(process)
+                        raise Exception("CANCELLED",
+                                        "Function cancelled")
+                elif event['storage_config']['storage_backend'] == 'redis':
+                    if key_exists_redis(cancel_key):
+                        logger.info("invocation cancelled")
+                        # kill the process
+                        kill_process(process)
+                        raise Exception("CANCELLED",
+                                        "Function cancelled")
                 time_of_last_cancel_check = time.time()
 
             if total_runtime > job_max_runtime:
@@ -495,16 +515,23 @@ def generic_handler(event, context_dict, custom_handler_env=None):
         response_status['exception_args'] = e.args
         response_status['exception_traceback'] = traceback.format_exc()
     finally:
-        print("Attempting to store status data in Redis at key {}".format(status_key))
-        print("Response Status: {}".format(response_status))
+        
+        
         #boto3.client("s3").put_object(Bucket=s3_bucket, Key=status_key,
         #                              Body=json.dumps(response_status))
-        redis_client.set(status_key, json.dumps(response_status))
-        # creating new client in case the client has not been created
-        #boto3.client("s3").put_object(Bucket=s3_bucket, Key=status_key,
-        #                              Body=json.dumps(response_status))
+        if event['storage_config']['storage_backend'] == 's3':
+            print("Attempting to store status data in S3 at key {}".format(status_key))
+            print("Response Status: {}".format(response_status))
+            
+            # creating new client in case the client has not been created
+            boto3.client("s3").put_object(Bucket=s3_bucket, Key=status_key,
+                                          Body=json.dumps(response_status))        
+        elif event['storage_config']['storage_backend'] == 'redis':        
+            print("Attempting to store status data in Redis at key {}".format(status_key))
+            print("Response Status: {}".format(response_status))
+            redis_client.set(status_key, json.dumps(response_status))
         stop_time = time.time()
-        duration = time.time()
+        duration = stop_time - start_time
         vals = [start_time, stop_time, duration]
         vals_serialized = json.dumps(vals)
         redis_client.lpush("durations", vals_serialized)
